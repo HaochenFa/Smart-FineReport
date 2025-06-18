@@ -6,26 +6,28 @@
  *
  * @import ../utils/default-prompt.js
  * @import ../utils/logger.js
- * @import ./ContextManager.js
  */
 
 import {DEFAULT_PROMPT_TEMPLATE} from "../utils/default-prompt.js";
 import {Logger as log} from "../utils/logger.js";
-import {ContextManager} from "./context-manager.js";
 
 export class PromptBuilder {
   /**
    * @description 构建最终的Prompt字符串。
    * @param {string} userRequest - 用户的当前问题。
-   * @param {object} structuredData - 从ReportDataProvider获取的结构化数据对象。
-   * @param {ContextManager} contextManager - 管理对话历史的上下文管理器实例。
+   * @param {object} structuredData - 结构化的数据对象。
+   * @param {object} contextProvider - 一个遵循上下文提供者“契约”的对象。
+   * @property {function(): string} contextProvider.getFormattedHistory - 该对象必须包含一个用于获取格式化历史记录的方法。
    * @returns {string} - 准备发送给AI的、序列化为JSON字符串的完整Prompt。
    */
-  build(userRequest, structuredData, contextManager) {
-    log.log("Starting to build prompt with received data:", {
+  build(userRequest, structuredData, contextProvider) {
+    log.log("开始构建Prompt，接收到的数据：", {
       userRequest,
       structuredData,
-      history: contextManager instanceof ContextManager ? "ContextManager instance provided" : "No valid ContextManager",
+      // 通过检查方法是否存在（鸭子类型）来判断是否提供了有效的上下文提供者
+      history: (contextProvider && typeof contextProvider.getFormattedHistory === 'function')
+        ? "有效的上下文提供者已提供"
+        : "未提供有效的上下文提供者",
     });
 
     try {
@@ -35,21 +37,21 @@ export class PromptBuilder {
       // 步骤 2: 填充动态数据和上下文
       finalPrompt.Header.TimeStamp = new Date().toISOString();
       finalPrompt.User = userRequest || "";
-      // 从 ContextManager 获取格式化后的历史记录
-      finalPrompt.Context = (contextManager instanceof ContextManager)
-        ? contextManager.getFormattedHistory()
-        : "";
-      if (!(contextManager instanceof ContextManager)) {
-        log.warn("A valid ContextManager instance was not provided. Context will be empty.");
+
+      // 根据契约（contract）使用传入的上下文提供者
+      if (contextProvider && typeof contextProvider.getFormattedHistory === 'function') {
+        finalPrompt.Context = contextProvider.getFormattedHistory();
+      } else {
+        finalPrompt.Context = "";
+        log.warn("未提供有效的上下文提供者 (contextProvider)，上下文将为空。");
       }
 
       // 步骤 3: 填充结构化数据，并处理不匹配的数据
       if (structuredData && typeof structuredData === 'object') {
-        const dataKeys = Object.keys(finalPrompt.Data); // 模板中预设的键
-        const structuredDataKeys = Object.keys(structuredData); // 实际数据中的键
-        const matchedStructuredDataKeys = new Set(); // 记录已匹配的实际数据键
+        const dataKeys = Object.keys(finalPrompt.Data);
+        const structuredDataKeys = Object.keys(structuredData);
+        const matchedStructuredDataKeys = new Set();
 
-        // 优先填充预设的键
         dataKeys.forEach(templateKey => {
           const matchingDataKey = structuredDataKeys.find(
             dataKey => dataKey.toLowerCase() === templateKey.toLowerCase()
@@ -57,28 +59,21 @@ export class PromptBuilder {
 
           if (matchingDataKey) {
             finalPrompt.Data[templateKey] = structuredData[matchingDataKey];
-            matchedStructuredDataKeys.add(matchingDataKey); // 标记为已匹配
+            matchedStructuredDataKeys.add(matchingDataKey);
           } else {
-            finalPrompt.Data[templateKey] = ""; // 若无匹配，则设为空
+            finalPrompt.Data[templateKey] = "";
           }
         });
 
-        // **备选方案 (Fallback Logic)**
-        // 查找所有未被匹配的实际数据键
         const unmatchedKeys = structuredDataKeys.filter(key => !matchedStructuredDataKeys.has(key));
-
         if (unmatchedKeys.length > 0) {
-          log.warn("Found unmatched data keys, appending to DashBoard as fallback:", unmatchedKeys);
+          log.warn("发现未匹配的数据键，将作为备用数据追加到DashBoard中：", unmatchedKeys);
           const unmatchedDataObject = {};
           unmatchedKeys.forEach(key => {
             unmatchedDataObject[key] = structuredData[key];
           });
-
-          // 将未匹配的数据打包成一个清晰的JSON字符串
           const fallbackString = JSON.stringify({uncategorizedData: unmatchedDataObject}, null, 2);
-
-          // 将备选数据追加到DashBoard字段，并用注释明确分隔
-          const separator = "\n\n// --- Additional Uncategorized Data ---\n";
+          const separator = "\n\n// --- 额外的未分类数据 ---\n";
           finalPrompt.Data.DashBoard = (finalPrompt.Data.DashBoard ? finalPrompt.Data.DashBoard : "") + separator + fallbackString;
         }
 
@@ -86,19 +81,18 @@ export class PromptBuilder {
         Object.keys(finalPrompt.Data).forEach(key => {
           finalPrompt.Data[key] = "";
         });
-        log.warn("structuredData is not a valid object. All data fields will be empty.", structuredData);
+        log.warn("structuredData不是一个有效的对象，所有数据字段将为空。", structuredData);
       }
-
 
       // 步骤 4: 序列化为JSON字符串
       const promptString = JSON.stringify(finalPrompt, null, 2);
-      log.log("Successfully built the final prompt string.");
+      log.log("成功构建最终的Prompt字符串。");
 
       return promptString;
 
     } catch (error) {
-      log.error("Failed to build prompt string due to an error:", error);
-      return "{}";
+      log.error("构建Prompt字符串时出错：", error);
+      return "{}"; // 返回一个空的JSON对象字符串作为安全备用
     }
   }
 }
