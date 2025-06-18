@@ -5,8 +5,8 @@
  */
 
 import {afterEach, beforeEach, describe, expect, it, jest} from "@jest/globals";
-import {APIService} from '../../src/services/api-service.js';
-import {Logger} from '../../src/utils/logger.js';
+import {APIService} from '@/services/api-service.js';
+import {Logger} from '@/utils/logger.js';
 
 let logErrSpy;
 

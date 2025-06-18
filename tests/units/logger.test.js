@@ -4,7 +4,7 @@
  * @description Unit test for src/utils/logger.js
  */
 
-import {Logger} from "../../src/utils/logger.js";
+import {Logger} from "@/utils/logger.js";
 import {afterEach, beforeEach, describe, expect, it, jest} from "@jest/globals";
 
 describe('Logger', () => {

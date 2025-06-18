@@ -20,7 +20,12 @@ export default {
   ],
 
   // 3. 模块查找路径 (在 ESM 项目中, 这个选项可能需要配合其他设置使用)
-  // modulePaths: ['<rootDir>/src'], // 如果遇到模块解析问题可以启用
+  modulePaths: ['<rootDir>/src'], // 如果遇到模块解析问题可以启用
+  moduleNameMapper: {
+    // Creates an alias. Now, "@/path/to/file" will resolve to "<rootDir>/src/path/to/file".
+    // 创建一个别名。现在, "@/path/to/file" 将会解析到 "<rootDir>/src/path/to/file"。
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 
   // 4. 设置文件转换器
   // 对于 ESM 项目, 确保 Babel 或 ts-jest 配置正确
