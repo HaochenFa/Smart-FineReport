@@ -4,7 +4,7 @@
  * @description 日志记录器
  */
 
-class Logger {
+export class Logger {
   static LEVELS = {
     LOG: 3,
     WARN: 2,
