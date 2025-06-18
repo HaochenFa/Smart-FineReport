@@ -5,6 +5,7 @@
  */
 
 import {Logger} from "../../src/utils/logger.js";
+import {afterEach, beforeEach, describe, expect, it, jest} from "@jest/globals";
 
 describe('Logger', () => {
   let logSpy, warnSpy, errorSpy;
@@ -40,13 +41,13 @@ describe('Logger', () => {
       Logger.setLevel('warn');
       // 验证 setLevel 是否打印了正确的确认信息
       expect(logSpy).toHaveBeenCalledTimes(1);
-      expect(logSpy).toHaveBeenCalledWith('[Logger] Log level set to: warn');
+      expect(logSpy).toHaveBeenCalledWith('[Logger] Log level set to: WARN');
     });
 
     it('should handle uppercase level strings correctly', () => {
       Logger.setLevel('ERROR');
       expect(logSpy).toHaveBeenCalledTimes(1);
-      expect(logSpy).toHaveBeenCalledWith('[Logger] Log level set to: error');
+      expect(logSpy).toHaveBeenCalledWith('[Logger] Log level set to: ERROR');
     });
 
     it('should print an error message for an invalid log level', () => {
@@ -54,7 +55,7 @@ describe('Logger', () => {
       // 验证对于无效级别，是否打印了错误信息
       expect(errorSpy).toHaveBeenCalledTimes(1);
       expect(errorSpy).toHaveBeenCalledWith(
-        "[Logger] Invalid log level: invalidLevel. Please use one of 'log', 'warn', 'error', or 'none'."
+        "[Logger] Invalid log level: INVALIDLEVEL. Please use one of 'LOG', 'WARN', 'ERROR', or 'NONE'."
       );
     });
 

@@ -4,16 +4,17 @@
  */
 
 // 1. 扩展 Jest 的断言 (expect)
-// 例如，在使用 @testing-library/react 时，我们希望有一些更方便的 DOM 断言
-// 比如 expect(element).toBeInTheDocument()
-// 这就需要引入 jest-dom
-
-// npm install --save-dev @testing-library/jest-dom
 import '@testing-library/jest-dom';
 
-// 2. 设置全局的 Mocks
-// 如果你的代码依赖于一些难以在测试环境中使用的全局对象或函数
-// 比如 window.matchMedia 或 fetch API，可以在这里进行全局 Mock
+// 2. 导入 Jest 的全局工具对象
+// 在纯 ESM 环境下，'jest' 对象必须被显式导入。
+// 4. 在所有测试运行前执行一次的钩子
+// beforeAll, afterAll 等 Jest 全局函数不需要导入。
+// 如果它们也报错，同样可以从 '@jest/globals' 导入。
+import {afterAll, beforeAll, jest} from '@jest/globals';
+
+// 3. 设置全局的 Mocks
+// 示例：Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
@@ -28,8 +29,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-
-// 3. 在所有测试运行前执行一次的钩子
 beforeAll(() => {
   // console.log('所有测试即将开始...');
 });

@@ -19,14 +19,14 @@ export class Logger {
    * @param {string} level - "none" <-> 0, "error" <-> 1, "warn" <-> 2, "log" <-> 3
    */
   static setLevel(level) {
-    level = level.toLowerCase(); // 不区分大小写
+    level = level.toUpperCase(); // 不区分大小写
 
     if (Logger.LEVELS[level] !== undefined) {
       Logger.#currentLevel = Logger.LEVELS[level];
       console.log(`[Logger] Log level set to: ${level}`);
     } else {
       console.error(
-        `[Logger] Invalid log level: ${level}. Please use one of 'log', 'warn', 'error', or 'none'.`
+        `[Logger] Invalid log level: ${level}. Please use one of 'LOG', 'WARN', 'ERROR', or 'NONE'.`
       );
     }
   }
