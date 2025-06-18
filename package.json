@@ -1,10 +1,14 @@
 {
-  "name": "SmartFineReport",
-  "version": "1.0.0",
-  "description": "",
+  "name": "smartfinereport",
+  "version": "0.0.1-alpha",
+  "description": "ai-integrated-finereport",
   "main": "main.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   },
   "private": true
 }
