@@ -3,7 +3,11 @@
  * @author Haochen (Billy) Fa
  * @description 存储和管理多轮对话的上下文历史记录。
  * Manages the context history of a multi-turn conversation.
+ *
+ * @import ../utils/logger.js
  */
+
+import {Logger as log} from "../utils/logger.js";
 
 /**
  * @class ContextManager
@@ -34,9 +38,7 @@ export class ContextManager {
      */
     this.maxMessages = maxMessages;
 
-    // 为了符合您提供的 Logger 风格，此处使用 console.log 进行初始化提示。
-    // In alignment with the Logger style you provided, console.log is used for initialization notifications.
-    console.log(`[ContextManager] ContextManager initialized. Maximum history capacity set to ${this.maxMessages} messages.`);
+    log.log(`[ContextManager] ContextManager initialized. Maximum history capacity set to ${this.maxMessages} messages.`);
   }
 
   /**
@@ -51,7 +53,7 @@ export class ContextManager {
   addMessage(role, content) {
     // 参数校验 (Parameter Validation)
     if (typeof role !== 'string' || !role.trim() || typeof content !== 'string' || !content.trim()) {
-      console.error("[ContextManager] Invalid arguments. 'role' and 'content' must be non-empty strings.");
+      log.error("[ContextManager] Invalid arguments. 'role' and 'content' must be non-empty strings.");
       return;
     }
 
@@ -63,10 +65,10 @@ export class ContextManager {
       // 移除数组中的第一条 (最旧的) 消息
       // Remove the first (oldest) message from the array
       this.history.shift();
-      console.log("[ContextManager] History exceeded max size. Oldest message removed.");
+      log.log("[ContextManager] History exceeded max size. Oldest message removed.");
     }
 
-    console.log(`[ContextManager] Message added: { role: '${role}' }`);
+    log.log(`[ContextManager] Message added: { role: '${role}' }`);
   }
 
   /**
@@ -91,6 +93,6 @@ export class ContextManager {
    */
   clear() {
     this.history = [];
-    console.log("[ContextManager] Conversation history has been cleared.");
+    log.log("[ContextManager] Conversation history has been cleared.");
   }
 }
