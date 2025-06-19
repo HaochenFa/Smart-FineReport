@@ -36,6 +36,16 @@ window.initAIAssistant = (options) => {
     Logger.log("AI Assistant Initialized Successfully.");
   } catch (error) {
     Logger.error("A critical error occurred during initialization:", error);
-    // todo)) 考虑在 UI 界面上加入友好的错误信息，提示用户加载失败
+
+    // 这里不尝试调用 `app.addMessage()`，因为 app 可能没有被正确实例化
+    const container = document.querySelector(options.containerSelector);
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
+          <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
+          <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
+        </div>
+      `;
+    }
   }
 };
