@@ -38,21 +38,25 @@ flowchart BT
 ├── main.js             # The Main Entrance
 ├── src/                # Source files
 │   ├── app/            # Application control and initialization
+│   │    ├── app-controller.js        # Core service
+│   │    └── state-manager.js         # UI <-> Backend bridging
 │   ├── core/           # Core AI and analysis logic
-│   │    ├── ai-analysis-pipeline.js    # AI service controller
-│   │    ├── context-manager.js         # Manage context (conversation)
-│   │    ├── vllm-interface.js          # Connect to vLLM service
-│   │    └── prompt-builder.js          # Build structured prompts
+│   │    ├── ai-analysis-pipeline.js  # AI service controller
+│   │    ├── context-manager.js       # Manage context (conversation)
+│   │    ├── vllm-interface.js        # Connect to vLLM service
+│   │    └── prompt-builder.js        # Build structured prompts
 │   ├── integration/    # FineReport integration
-│   │    ├── data-processor.js          # Organize and clean raw data
-│   │    └── fr-interface.js            # Fetch FR data
+│   │    ├── data-processor.js        # Organize and clean raw data
+│   │    └── fr-interface.js          # Fetch FR data
 │   ├── services/       # Common services
-│   │    └── api-service.js             # General API service wrapper
-│   ├── ui/             # User interface components   
+│   │    └── api-service.js           # General API service wrapper
+│   ├── ui/             # User interface components
+│   │    ├── chat-view.js             # Basic chat window implementation
+│   │    └── ui-manager.js            # Control UI status
 │   └── utils/          # Utility functions and configs
-│        ├── default-prompt.js          # Prompt template
-│        ├── logger.js                  # Logger
-│        └── settings.js                # Static config and secrets
+│        ├── default-prompt.js        # Prompt template
+│        ├── logger.js                # Logger
+│        └── settings.js              # Static config and secrets
 │
 └──tests/               # Test files
     ├── e2e/            # E2E tests
@@ -70,8 +74,8 @@ flowchart BT
 7. [x] 上下文管理：整理对话历史，自动清理旧对话
 8. [x] AI 核心服务管理：AI 服务协调器
 9. [x] 单元测试：编写底层核心服务单元测试
-10. [ ] UI 界面：编写基础 UI 界面
-11. [ ] APP 控制：创建整体核心控件
+10. [x] UI 界面：编写基础 UI 界面
+11. [x] APP 控制：创建整体核心控件
 12. [ ] 模块入口：创建模块入口
 13. [ ] 单元测试：编写顶层组件单元测试
 14. [ ] 集成测试：调试项目是否顺利运行
