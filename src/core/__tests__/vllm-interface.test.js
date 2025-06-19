@@ -4,7 +4,7 @@
  * @description Unit test for src/core/vllm-interface.js
  */
 
-import {beforeEach, describe, expect, it, jest} from "@jest/globals";
+import {beforeAll, beforeEach, describe, expect, it, jest} from "@jest/globals";
 
 // Module-level variables to hold the imported modules after mocking.
 // 模块级变量，用于在模拟后持有导入的模块。
