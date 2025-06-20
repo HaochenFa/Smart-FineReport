@@ -19,19 +19,66 @@ vLLM 部署的 LLM。
 
 ### 架构设计
 
+[//]: # (```mermaid)
+
+[//]: # (flowchart BT)
+
+[//]: # (    id0[BFF 后端代理服务])
+
+[//]: # (    id1[Utils 工具与配置])
+
+[//]: # (    id2[Services 通用服务])
+
+[//]: # (    id3[Integration 帆软集成])
+
+[//]: # (    id4[Core 核心 AI 逻辑])
+
+[//]: # (    id5[UI 界面])
+
+[//]: # (    id6[App 应用控制])
+
+[//]: # (    id7[Entry Point 模块入口])
+
+[//]: # (    id0 --> id2)
+
+[//]: # (    id1 --> id2)
+
+[//]: # (    id2 --> id3 --> id4 --> id5 --> id6 --> id7)
+
+[//]: # (```)
+
 ```mermaid
 flowchart BT
-    id0[BFF 后端代理服务]
-    id1[Utils 工具与配置]
-    id2[Services 通用服务]
-    id3[Integration 帆软集成]
-    id4[Core 核心 AI 逻辑]
-    id5[UI 界面]
-    id6[App 应用控制]
-    id7[Entry Point 模块入口]
-    id0 --> id2
+    subgraph "External Service 外部服务"
+        id0((BFF 后端代理服务))
+        id_vLLM((vLLM 服务))
+    end
+
+    subgraph "Frontend Application 前端应用"
+        id1[Utils 工具与配置]
+        id2[Services 通用服务]
+        id3[Integration 帆软集成]
+        id4[Core 核心 AI 逻辑]
+        id5[UI 界面]
+        id6[App 应用控制]
+        id7[Entry Point 模块入口]
+    end
+
+%% 依赖关系与请求流 (实线)
+    id2 -- " 1. API Request 发起API请求 " --> id0
     id1 --> id2
-    id2 --> id3 --> id4 --> id5 --> id6 --> id7
+    id1 --> id3
+    id1 --> id4
+    id1 --> id6
+    id2 --> id4
+    id3 --> id4
+    id4 --> id6
+    id5 --> id6
+    id6 --> id7
+    id0 -- " 2. Forward & Authenticate 转发并鉴权 " --> id_vLLM
+%% 响应流 (虚线)
+    id_vLLM -.->|" 3. 返回AI结果 "| id0
+    id0 -.->|" 4. 返回给前端 "| id2
 ```
 
 ### 文件结构
