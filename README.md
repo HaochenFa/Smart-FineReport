@@ -21,6 +21,7 @@ vLLM 部署的 LLM。
 
 ```mermaid
 flowchart BT
+    id0[BFF 后端代理服务]
     id1[Utils 工具与配置]
     id2[Services 通用服务]
     id3[Integration 帆软集成]
@@ -28,7 +29,9 @@ flowchart BT
     id5[UI 界面]
     id6[App 应用控制]
     id7[Entry Point 模块入口]
-    id1 --> id2 --> id3 --> id4 --> id5 --> id6 --> id7
+    id0 --> id2
+    id1 --> id2
+    id2 --> id3 --> id4 --> id5 --> id6 --> id7
 ```
 
 ### 文件结构
