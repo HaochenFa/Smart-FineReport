@@ -15,7 +15,7 @@ import {AnalysisPipeline} from "../core/ai-analysis-pipeline.js";
 import {Logger} from '../utils/logger.js';
 import {ContextManager} from "@/core/context-manager.js";
 
-class AppController {
+export default class AppController {
   /**
    * @constructor 导入全局静态配置
    */
@@ -103,5 +103,3 @@ class AppController {
     }
   }
 }
-
-export default new AppController();
