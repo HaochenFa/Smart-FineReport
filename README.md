@@ -65,7 +65,7 @@ flowchart BT
     end
 
 %% 依赖关系与请求流 (实线)
-    id2 -- " 1. API Request 发起API请求 " --> id0
+    id2 -- " API Request 发起API请求 " --> id0
     id1 --> id2
     id1 --> id3
     id1 --> id4
@@ -75,10 +75,10 @@ flowchart BT
     id4 --> id6
     id5 --> id6
     id6 --> id7
-    id0 -- " 2. Forward & Authenticate 转发并鉴权 " --> id_vLLM
+    id0 -- " Forward & Authenticate 转发并鉴权 " --> id_vLLM
 %% 响应流 (虚线)
-    id_vLLM -.->|" 3. 返回AI结果 "| id0
-    id0 -.->|" 4. 返回给前端 "| id2
+    id_vLLM -.->|" 返回AI结果 "| id0
+    id0 -.->|" 返回给前端 "| id2
 ```
 
 ### 文件结构
