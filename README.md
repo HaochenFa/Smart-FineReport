@@ -61,6 +61,7 @@ flowchart BT
 └──tests/               # Test files
     ├── e2e/            # E2E tests
     └── integration/    # Integration tests
+         └── full-analysis-flow.test.js # Statndard path integration test
 ```
 
 ## 开发计划
@@ -78,7 +79,7 @@ flowchart BT
 11. [x] APP 控制：创建整体核心控件
 12. [x] 单元测试：编写顶层组件单元测试
 13. [x] 编写入口文件
-14. [ ] 集成测试：调试项目是否顺利运行
+14. [x] 集成测试：调试项目是否顺利运行
 15. [ ] UI 适配：适配面板 UI 设计
 
 ## 部署调试
