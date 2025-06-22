@@ -21,6 +21,10 @@
   "private": true,
   "dependencies": {
     "@jest/globals": "^30.0.0",
-    "@testing-library/jest-dom": "^6.6.3"
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "rollup-plugin-terser": "^7.0.2"
   }
 }
