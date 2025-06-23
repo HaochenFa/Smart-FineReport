@@ -40,7 +40,6 @@ export class AIEngine {
     }
 
     this.url = config.url;
-    this.apiKey = config.apiKey; // Can be undefined if not provided
 
     log.log(`[AIEngine] Initialized with URL: ${this.url}`);
   }
@@ -59,16 +58,11 @@ export class AIEngine {
       throw new Error(errorMsg);
     }
 
-    const headers = {};
-    if (this.apiKey) {
-      headers['Authorization'] = `Bearer ${this.apiKey}`;
-    }
-
     // OpenAI-compatible API (vLLM)
     const body = {
       prompt: prompt,
-      max_tokens: 1024,
-      temperature: 0.7,
+      max_tokens: 4096,
+      temperature: 0.5,
       n: 1,
       stream: false,
     };
