@@ -6,9 +6,7 @@
 
 export const SETTINGS = {
   service: {
-    url: "https://vllm.conpany.com/v1/chat/completion",
-    API_KEY: "YOUR_API_KEY",
-    model: "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
+    url: "http://localhost:3001/api/v1/",
   },
   logger: {
     level: "log"
