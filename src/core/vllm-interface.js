@@ -40,6 +40,7 @@ export class AIEngine {
     }
 
     this.url = config.url;
+    this.apiKey = config.apiKey;
 
     log.log(`[AIEngine] Initialized with URL: ${this.url}`);
   }
@@ -58,27 +59,33 @@ export class AIEngine {
       throw new Error(errorMsg);
     }
 
-    // OpenAI-compatible API (vLLM)
-    const body = {
-      prompt: prompt,
-      max_tokens: 4096,
-      temperature: 0.5,
-      n: 1,
-      stream: false,
-    };
+    // The prompt is now a JSON string payload for multimodal chat completion
+    let body;
+    try {
+      body = JSON.parse(prompt);
+    } catch (error) {
+      const errorMsg = "[AIEngine] Error: Prompt is not a valid JSON string.";
+      log.error(errorMsg, error);
+      throw new Error(errorMsg);
+    }
 
     try {
       log.log('[AIEngine] Sending request to vLLM API...');
-      const response = await APIService.post(this.url, body, {});
+      const headers = {};
+      if (this.apiKey) {
+        headers['Authorization'] = `Bearer ${this.apiKey}`;
+      }
+
+      const response = await APIService.post(this.url, body, headers);
       log.log('[AIEngine] Received API response.');
 
-      // Validate the structure of the response and extract the text
-      if (response && Array.isArray(response.choices) && response.choices.length > 0 && response.choices[0].text) {
-        const processedText = response.choices[0].text.trim();
-        log.log('[AIEngine] Successfully processed response text.');
+      // Validate the structure of the response for chat completions and extract the message content
+      if (response && Array.isArray(response.choices) && response.choices.length > 0 && response.choices[0].message && typeof response.choices[0].message.content === 'string') {
+        const processedText = response.choices[0].message.content.trim();
+        log.log('[AIEngine] Successfully processed response message.');
         return processedText;
       } else {
-        const errorMsg = "[AIEngine] Error: Invalid or unexpected response structure from API.";
+        const errorMsg = "[AIEngine] Error: Invalid or unexpected response structure from ChatCompletion API.";
         log.error(errorMsg, response); // Log the problematic response object
         throw new Error(errorMsg);
       }

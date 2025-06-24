@@ -14,6 +14,7 @@ import {AIEngine} from "../core/vllm-interface.js";
 import {AnalysisPipeline} from "../core/ai-analysis-pipeline.js";
 import {Logger} from '../utils/logger.js';
 import {ContextManager} from "@/core/context-manager.js";
+import html2canvas from 'html2canvas';
 
 export default class AppController {
   /**
@@ -37,14 +38,12 @@ export default class AppController {
 
     // 2. 初始化所有后端的逻辑和 AI 模块
     // 注意实例化顺序
-    const frInterface = new FRInterface(frInstance);
-    const dataProcessor = new DataProcessor(frInterface);
     const promptBuilder = new PromptBuilder();
     const aiEngine = new AIEngine(this.settings.service);
     this.contextManager = new ContextManager();
 
     // 3. 整合核心分析管线 ai-analysis-pipeline
-    this.pipeline = new AnalysisPipeline(dataProcessor, promptBuilder, aiEngine);
+    this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine);
 
     // 4. 初始化 UI 管理器
     this.uiManager = new UIManager(
@@ -82,7 +81,16 @@ export default class AppController {
       const history = this.contextManager.getFormattedHistory();
 
       // 3. 调用核心分析逻辑
-      const aiResponse = await this.pipeline.run(text, window.FR, history);
+      // 3.1. 截取报表区域的图像
+      const reportContainer = document.querySelector('.report-container'); // 请将 '.report-container' 替换为实际的报表容器选择器
+      if (!reportContainer) {
+        throw new Error('无法找到报表容器，请检查选择器是否正确。');
+      }
+      const canvas = await html2canvas(reportContainer);
+      const imageBase64 = canvas.toDataURL('image/png');
+
+      // 3.2. 调用核心分析逻辑，并传入截图数据
+      const aiResponse = await this.pipeline.run(text, imageBase64, history);
 
       // 4. 更新上下文和 UI 状态
       this.contextManager.addMessage("assistant", aiResponse);

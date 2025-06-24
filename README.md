@@ -1,13 +1,12 @@
 # 🤖 智帆报表 (Smart FineReport Dashboard)
 
-一个集成 AI 分析功能的帆软报表 (FineReport) 框架。通过帆软提供的 JS API 抓取面板数据，并以结构化 (JSON) 格式创建提示词传递给通过
-vLLM 部署的 LLM。
+一个集成 AI 分析功能的帆软报表 (FineReport) 框架。该项目当前版本为 v1.0.x-vision，其核心思想是：通过捕获报表界面的截图，并将其发送给多模态大语言模型（vLLM 部署），从而实现对报表数据的智能分析。
 
 ## 核心功能
 
-- 📊 抓取帆软报表面板数据，并按照数据类型 (表格、图表、交叉表等等) 分别传递给 LLM
-- 🧐 生成标准的数据分析报告，包括 总结分析、措施分析、改善建议、关键数据、下一步行动 等
-- 💬 支持用户根据生成的默认分析报告与 LLM 进行多轮次对话交流
+- 📸 **截图分析**：通过 `html2canvas` 等技术将当前报表视图渲染为图片，并将其作为核心分析依据。
+- 🤖 **多模态对话**：将用户提问和报表截图一同发送给多模态大模型，生成包含总结、洞察和建议的分析报告。
+- 💬 **多轮次交互**：支持用户围绕报表截图和生成的分析报告，与 AI 进行多轮次的追问和探讨。
 
 ## 部署方式
 
@@ -95,9 +94,9 @@ flowchart BT
 │   │    ├── context-manager.js       # Manage context (conversation)
 │   │    ├── vllm-interface.js        # Connect to vLLM service
 │   │    └── prompt-builder.js        # Build structured prompts
-│   ├── integration/    # FineReport integration
-│   │    ├── data-processor.js        # Organize and clean raw data
-│   │    └── fr-interface.js          # Fetch FR data
+│   ├── integration/    # FineReport integration (v1.5.x)
+│   │    ├── data-processor.js        # (v1.5.x) Organize and clean raw data
+│   │    └── fr-interface.js          # (v1.5.x) Fetch FR data
 │   ├── services/       # Common services
 │   │    └── api-service.js           # General API service wrapper
 │   ├── ui/             # User interface components
@@ -118,8 +117,8 @@ flowchart BT
 
 1. [x] 工具配置：日志记录、静态配置、默认提示词模版
 2. [x] 通用服务：API 服务的封装（POST）
-3. [x] 帆软集成：帆软 JS API 的封装
-4. [x] 数据清理：清理并结构化获取的原始数据
+3. [x] ~~帆软集成：帆软 JS API 的封装~~ (v1.5.x 规划)
+4. [x] ~~数据清理：清理并结构化获取的原始数据~~ (v1.5.x 规划)
 5. [x] AI 服务：vLLM API 封装
 6. [x] 提示词整理：根据模版规范填充数据
 7. [x] 上下文管理：整理对话历史，自动清理旧对话

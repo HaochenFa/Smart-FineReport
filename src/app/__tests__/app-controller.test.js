@@ -7,7 +7,6 @@
 import {jest, describe, it, expect, beforeAll, beforeEach} from '@jest/globals';
 
 // --- 模拟所有依赖项 (Mocking all dependencies) ---
-// 为每个模块创建模拟构造函数和方法
 const mockSetState = jest.fn();
 const mockGetState = jest.fn();
 const mockStateManager = jest.fn(() => ({
@@ -19,8 +18,6 @@ const mockUIManager = jest.fn(() => ({
   init: mockUIManagerInit,
 }));
 
-const mockFRInterface = jest.fn();
-const mockDataProcessor = jest.fn();
 const mockPromptBuilder = jest.fn();
 const mockAIEngine = jest.fn();
 
@@ -35,24 +32,19 @@ const mockAnalysisPipeline = jest.fn(() => ({
   run: mockPipelineRun,
 }));
 
+const mockHtml2canvas = jest.fn();
+
 const mockLoggerLog = jest.spyOn(console, 'log').mockImplementation(() => {
 });
 const mockLoggerError = jest.spyOn(console, 'error').mockImplementation(() => {
 });
 
 // 使用 jest.unstable_mockModule 进行 ESM 模块模拟
-// 这些 mock 会被 Jest "提升" 到模块顶部，在任何 import 之前生效
 jest.unstable_mockModule('@/app/state-manager.js', () => ({
   StateManager: mockStateManager,
 }));
 jest.unstable_mockModule('@/ui/ui-manager.js', () => ({
   UIManager: mockUIManager,
-}));
-jest.unstable_mockModule('@/integration/fr-interface.js', () => ({
-  FRInterface: mockFRInterface,
-}));
-jest.unstable_mockModule('@/integration/data-processor.js', () => ({
-  DataProcessor: mockDataProcessor,
 }));
 jest.unstable_mockModule('@/core/prompt-builder.js', () => ({
   PromptBuilder: mockPromptBuilder,
@@ -71,6 +63,9 @@ jest.unstable_mockModule('@/utils/logger.js', () => ({
 jest.unstable_mockModule('@/core/context-manager.js', () => ({
   ContextManager: mockContextManager,
 }));
+jest.unstable_mockModule('html2canvas', () => ({
+  default: mockHtml2canvas,
+}));
 
 
 // --- 测试套件 (Test Suite) ---
@@ -81,7 +76,6 @@ describe('AppController Orchestration', () => {
   let appControllerInstance;
   const mockSettings = {service: {url: 'http://fake-ai.com'}};
   const mockContainerSelector = '#test-container';
-  const mockFrInstance = {fake: 'fr-instance'};
 
   // ** SOLUTION: Step 2 **
   // 使用 beforeAll 在所有测试开始前，只导入一次被测试的模块。
@@ -106,16 +100,14 @@ describe('AppController Orchestration', () => {
   describe('init()', () => {
     it('should initialize all dependencies in the correct order and with correct parameters', () => {
       // Act: 调用初始化方法
-      appControllerInstance.init(mockContainerSelector, mockFrInstance);
+      appControllerInstance.init(mockContainerSelector);
 
       // Assert: 验证所有构造函数是否被正确调用
       expect(mockStateManager).toHaveBeenCalledWith({messages: [], isLoading: false});
-      expect(mockFRInterface).toHaveBeenCalledWith(mockFrInstance);
-      expect(mockDataProcessor).toHaveBeenCalledWith(expect.any(Object)); // 传入了 frInterface 实例
       expect(mockPromptBuilder).toHaveBeenCalledTimes(1);
       expect(mockAIEngine).toHaveBeenCalledWith(mockSettings.service);
       expect(mockContextManager).toHaveBeenCalledTimes(1);
-      expect(mockAnalysisPipeline).toHaveBeenCalledWith(expect.any(Object), expect.any(Object), expect.any(Object));
+      expect(mockAnalysisPipeline).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
       expect(mockUIManager).toHaveBeenCalledWith(mockContainerSelector, expect.any(Object), expect.any(Function));
       expect(mockUIManagerInit).toHaveBeenCalledTimes(1);
       expect(mockLoggerLog).toHaveBeenCalledWith("AppController Initialized and Ready");
@@ -124,10 +116,10 @@ describe('AppController Orchestration', () => {
 
   // 测试 2: 验证 handleUserQuery 的协调逻辑
   describe('handleUserQuery()', () => {
-    // 这个 beforeEach 保持不变，它在每个 handleUserQuery 测试前运行，
-    // 以确保 appController 实例已经被初始化。
     beforeEach(() => {
-      appControllerInstance.init(mockContainerSelector, mockFrInstance);
+      // Mock the report container element
+      document.body.innerHTML = `<div class="report-container">Report Content</div>`;
+      appControllerInstance.init(mockContainerSelector);
     });
 
     it('should not process an empty or whitespace-only query', async () => {
@@ -144,20 +136,21 @@ describe('AppController Orchestration', () => {
       const aiResponse = 'Hello User';
       const initialMessages = [{role: 'assistant', content: 'Welcome!'}];
       const history = 'formatted_history';
+      const mockCanvas = { toDataURL: () => 'data:image/png;base64,mock-base64-string' };
 
-      // 注意：由于 beforeEach 中清除了 Mocks，这里的 mockGetState 需要重新设置
       mockGetState
         .mockReturnValueOnce({messages: initialMessages})
         .mockReturnValueOnce({messages: [...initialMessages, {role: 'user', content: userQuery}]});
 
       mockGetFormattedHistory.mockReturnValue(history);
+      mockHtml2canvas.mockResolvedValue(mockCanvas);
       mockPipelineRun.mockResolvedValue(aiResponse);
-      global.window.FR = mockFrInstance;
 
       // Act
       await appControllerInstance.handleUserQuery(userQuery);
 
       // Assert
+      expect(mockHtml2canvas).toHaveBeenCalledWith(document.querySelector('.report-container'));
       expect(mockSetState).toHaveBeenCalledTimes(3);
       expect(mockSetState).toHaveBeenCalledWith({
         messages: [...initialMessages, {role: 'user', content: userQuery}], isLoading: true,
@@ -168,7 +161,7 @@ describe('AppController Orchestration', () => {
       expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
       expect(mockAddMessage).toHaveBeenCalledWith('user', userQuery);
       expect(mockAddMessage).toHaveBeenCalledWith('assistant', aiResponse);
-      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, mockFrInstance, history);
+      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, 'data:image/png;base64,mock-base64-string', history);
     });
 
     it('should handle an error from the analysis pipeline', async () => {
