@@ -109,8 +109,8 @@ describe('AIEngine', () => {
       expect(APIService.post).toHaveBeenCalledTimes(1);
       expect(APIService.post).toHaveBeenCalledWith(
         MOCK_URL,
-        JSON.parse(validMultiModalPrompt), // Body should be the parsed JSON object
-        {'Authorization': `Bearer ${MOCK_API_KEY}`} // Auth header
+        JSON.parse(validMultiModalPrompt),
+        {'Authorization': `Bearer ${MOCK_API_KEY}`}
       );
       expect(result).toBe('AI analysis result.');
       expect(Logger.log).toHaveBeenCalledWith('[AIEngine] Successfully processed response message.');

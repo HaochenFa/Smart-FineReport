@@ -20,7 +20,7 @@
 为了增强安全性，BFF (Backend for Frontend) 服务支持通过环境变量来配置 API KEY。您可以在 `bff/` 目录下创建一个 `.env`
 文件，并按以下格式添加您的 API KEY：
 
-```
+```plaintext
 LLM_API_KEYS=your_api_key_1,your_api_key_2
 LLM_FALLBACK_URLS=http://127.0.0.1:8080,http://127.0.0.1:8081
 ```
@@ -32,33 +32,33 @@ LLM_FALLBACK_URLS=http://127.0.0.1:8080,http://127.0.0.1:8081
 
 ### 架构设计
 
-[//]: # (```mermaid)
+[//]: # "```mermaid"
 
-[//]: # (flowchart BT)
+[//]: # "flowchart BT"
 
-[//]: # (    id0[BFF 后端代理服务])
+[//]: # "    id0[BFF 后端代理服务]"
 
-[//]: # (    id1[Utils 工具与配置])
+[//]: # "    id1[Utils 工具与配置]"
 
-[//]: # (    id2[Services 通用服务])
+[//]: # "    id2[Services 通用服务]"
 
-[//]: # (    id3[Integration 帆软集成])
+[//]: # "    id3[Integration 帆软集成]"
 
-[//]: # (    id4[Core 核心 AI 逻辑])
+[//]: # "    id4[Core 核心 AI 逻辑]"
 
-[//]: # (    id5[UI 界面])
+[//]: # "    id5[UI 界面]"
 
-[//]: # (    id6[App 应用控制])
+[//]: # "    id6[App 应用控制]"
 
-[//]: # (    id7[Entry Point 模块入口])
+[//]: # "    id7[Entry Point 模块入口]"
 
-[//]: # (    id0 --> id2)
+[//]: # "    id0 --> id2"
 
-[//]: # (    id1 --> id2)
+[//]: # "    id1 --> id2"
 
-[//]: # (    id2 --> id3 --> id4 --> id5 --> id6 --> id7)
+[//]: # "    id2 --> id3 --> id4 --> id5 --> id6 --> id7"
 
-[//]: # (```)
+[//]: # "```"
 
 ```mermaid
 flowchart BT
