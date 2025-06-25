@@ -38,6 +38,7 @@ export class AnalysisPipeline {
    * @param {string} userRequest - 用户的当前问题。
    * @param {string} imageBase64 - 报表截图的 Base64 编码字符串。
    * @param {object} contextProvider - 提供上下文信息的对象, 如对话历史。
+   * @param {boolean} isInitial - 判断是否是默认分析报告，或是用户后续交互
    * @returns {Promise<string>} - AI的最终分析结果。
    */
   async run(userRequest, imageBase64, contextProvider, isInitial) {

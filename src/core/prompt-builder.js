@@ -18,6 +18,7 @@ export class PromptBuilder {
    * @param {string} imageBase64 - 报表截图的 Base64 编码字符串。
    * @param {object} contextProvider - 一个遵循上下文提供者“契约”的对象。
    * @property {function(): string} contextProvider.getFormattedHistory - 该对象必须包含一个用于获取格式化历史记录的方法。
+   * @param {boolean} isInitial - 判断是否为初始化后的默认分析报告，抑或是后续的用户交互
    * @returns {string} - 准备发送给AI的、序列化为JSON字符串的完整Prompt。
    */
   build(userRequest, imageBase64, contextProvider, isInitial = true) {

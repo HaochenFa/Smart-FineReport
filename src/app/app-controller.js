@@ -120,6 +120,7 @@ export default class AppController {
   /**
    * @function runAnalysis() - 运行分析的核心逻辑
    * @param {string} text - 用于分析的文本提示
+   * @param {boolean} isInitial - 是否是初始化后的默认分析报告
    * @returns {Promise<string>} - AI的响应
    */
   async runAnalysis(text, isInitial = false) {
