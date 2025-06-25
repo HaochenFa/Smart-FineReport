@@ -15,9 +15,10 @@ export class UIManager {
    * @param {HTMLElement} container - UI 将被渲染到的根 DOM 元素。
    * @param {object} stateManager - 状态管理器实例，UI Manager 将订阅其状态更新。
    * @param {function(string): void} messageSubmitHandler - 当用户提交消息时要调用的处理函数。
+   * @param {function(): void} resetAnalysisHandler - 当用户点击重置按钮时要调用的处理函数。
    */
-  constructor(container, stateManager, messageSubmitHandler) {
-    if (!container || !stateManager || typeof messageSubmitHandler !== 'function') {
+  constructor(container, stateManager, messageSubmitHandler, resetAnalysisHandler) {
+    if (!container || !stateManager || typeof messageSubmitHandler !== 'function' || typeof resetAnalysisHandler !== 'function') {
       throw new Error('UIManager: 无效的构造函数参数。');
     }
 
@@ -25,9 +26,8 @@ export class UIManager {
     this.stateManager = stateManager;
     this.messageSubmitHandler = messageSubmitHandler;
 
-    // ChatView 是一个纯粹的视图组件，它接收一个提交回调函数。
-    // 当用户在视图中点击“发送”时，此回调将被触发。
-    this.view = new ChatView(this.container, this._handleUserSubmit.bind(this));
+    // ChatView 是一个纯粹的视图组件，它接收一个提交回调函数和一个重置回调函数。
+    this.view = new ChatView(this.container, this._handleUserSubmit.bind(this), resetAnalysisHandler);
 
     // 绑定状态更新的回调
     this._bindToStateChanges();
@@ -66,6 +66,16 @@ export class UIManager {
   _update(state) {
     this._updateMessages(state.messages);
     this._updateLoading(state.isLoading);
+    this._updateResetButton(state.isDataStale);
+  }
+
+  /**
+   * @private
+   * @description 更新重置按钮的状态。
+   * @param {boolean} isStale - 数据是否已过时。
+   */
+  _updateResetButton(isStale) {
+    this.view.updateResetButton(isStale);
   }
 
   /**

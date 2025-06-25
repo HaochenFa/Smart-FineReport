@@ -18,6 +18,7 @@ export class StateManager {
     this._state = {
       messages: [],   // 存放所有聊天消息。
       isLoading: false, // 如果应用正在等待响应，则为 true。
+      isDataStale: false, // 如果报表数据已更新，则为 true
       ...initialState, // 与传入的初始状态合并
     };
 

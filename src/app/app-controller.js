@@ -50,13 +50,94 @@ export default class AppController {
       containerSelector,
       this.stateManager,
       this.handleUserQuery.bind(this),
+      this.resetAnalysis.bind(this),
     );
 
     // 5. 启动 UI 渲染
     this.uiManager.init();
 
+    // 6. 触发初次分析
+    this.triggerInitialAnalysis();
+
+    // 7. 模拟监听帆软报表数据更新事件
+    // 在实际集成中，这里应该替换为真实的帆软 API 事件监听器
+    setTimeout(() => {
+      this.handleReportUpdate();
+    }, 30000); // 模拟30秒后数据更新
+
     Logger.log("AppController Initialized and Ready");
   }
+
+  /**
+   * @function triggerInitialAnalysis() - 触发首次自动分析
+   */
+  async triggerInitialAnalysis() {
+    // 1. 设置加载状态并显示欢迎消息
+    this.stateManager.setState({
+      isLoading: true,
+      messages: [{role: "assistant", content: "您好，我是您的AI分析助手，正在为您分析当前报表..."}]
+    });
+
+    try {
+      // 2. 运行分析
+      const defaultQuery = "请对当前报表进行全面分析";
+      this.contextManager.addMessage("user", defaultQuery);
+      const aiResponse = await this.runAnalysis(defaultQuery);
+
+      // 3. 更新UI，显示分析结果
+      this.stateManager.setState({
+        messages: [{role: "assistant", content: aiResponse}],
+      });
+      this.contextManager.addMessage("assistant", aiResponse);
+
+    } catch (error) {
+      Logger.error("Error during initial analysis:", error);
+      this.stateManager.setState({
+        messages: [{role: "assistant", content: "抱歉，初始化分析时遇到问题，请稍后重试。"}],
+      });
+    } finally {
+      this.stateManager.setState({isLoading: false});
+    }
+  }
+
+  /**
+   * @function resetAnalysis() - 重置分析流程
+   */
+  async resetAnalysis() {
+    this.contextManager.clear();
+    this.stateManager.setState({isDataStale: false});
+    await this.triggerInitialAnalysis();
+  }
+
+
+  /**
+   * @function handleReportUpdate() - 处理报表数据更新事件
+   */
+  handleReportUpdate() {
+    this.stateManager.setState({isDataStale: true});
+    Logger.log("Report data has been updated. Notifying user.");
+  }
+
+  /**
+   * @function runAnalysis() - 运行分析的核心逻辑
+   * @param {string} text - 用于分析的文本提示
+   * @returns {Promise<string>} - AI的响应
+   */
+  async runAnalysis(text) {
+    const history = this.contextManager.getFormattedHistory();
+
+    // 截取报表区域的图像
+    const reportContainer = document.querySelector('.report-container'); // 请将 '.report-container' 替换为实际的报表容器选择器
+    if (!reportContainer) {
+      throw new Error('无法找到报表容器，请检查选择器是否正确。');
+    }
+    const canvas = await html2canvas(reportContainer);
+    const imageBase64 = canvas.toDataURL('image/png');
+
+    // 调用核心分析逻辑
+    return await this.pipeline.run(text, imageBase64, history);
+  }
+
 
   /**
    * @function handleUserQuery() - 回调函数传递给 UIManager，当用户提交信息后，负责整合响应流程
@@ -78,19 +159,9 @@ export default class AppController {
 
       // 2. 更新对话上下文
       this.contextManager.addMessage("user", text);
-      const history = this.contextManager.getFormattedHistory();
 
       // 3. 调用核心分析逻辑
-      // 3.1. 截取报表区域的图像
-      const reportContainer = document.querySelector('.report-container'); // 请将 '.report-container' 替换为实际的报表容器选择器
-      if (!reportContainer) {
-        throw new Error('无法找到报表容器，请检查选择器是否正确。');
-      }
-      const canvas = await html2canvas(reportContainer);
-      const imageBase64 = canvas.toDataURL('image/png');
-
-      // 3.2. 调用核心分析逻辑，并传入截图数据
-      const aiResponse = await this.pipeline.run(text, imageBase64, history);
+      const aiResponse = await this.runAnalysis(text);
 
       // 4. 更新上下文和 UI 状态
       this.contextManager.addMessage("assistant", aiResponse);

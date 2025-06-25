@@ -8,10 +8,12 @@ export class ChatView {
   /**
    * @param {HTMLElement} container - UI将被渲染到的容器元素。
    * @param {function} onSubmit - 当用户提交输入时的回调函数。
+   * @param {function} onReset - 当用户点击重置按钮时的回调函数。
    */
-  constructor(container, onSubmit) {
+  constructor(container, onSubmit, onReset) {
     this.container = container;
     this.onSubmit = onSubmit; // 用户提交消息时的回调函数
+    this.onReset = onReset; // 用户点击重置时的回调函数
 
     // 创建UI元素
     this.chatWindow = document.createElement('div'); // 聊天窗口主容器
@@ -41,6 +43,11 @@ export class ChatView {
     this.sendButton.textContent = '发送';
     this.sendButton.addEventListener('click', this._handleSubmit.bind(this));
 
+    this.resetButton = document.createElement('button'); // 重置按钮
+    this.resetButton.className = 'ml-3 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-200 relative';
+    this.resetButton.innerHTML = '重置'; // 使用 innerHTML 以便可以添加提示点
+    this.resetButton.addEventListener('click', this._handleReset.bind(this));
+
     this.loadingIndicator = document.createElement('div'); // 加载指示器
     this.loadingIndicator.className = 'hidden absolute bottom-20 left-1/2 -translate-x-1/2 p-2 bg-blue-500 text-white rounded-full shadow-lg';
     this.loadingIndicator.innerHTML = '<svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>加载中...';
@@ -53,6 +60,7 @@ export class ChatView {
     // 将输入框和按钮添加到输入区域
     this.inputArea.appendChild(this.inputField);
     this.inputArea.appendChild(this.sendButton);
+    this.inputArea.appendChild(this.resetButton); // 添加重置按钮
 
     // 将消息容器和输入区域添加到聊天窗口
     this.chatWindow.appendChild(this.messageContainer);
@@ -102,6 +110,28 @@ export class ChatView {
     // 禁用/启用输入框和发送按钮，防止重复提交
     this.inputField.disabled = show;
     this.sendButton.disabled = show;
+    this.resetButton.disabled = show; // 加载时也禁用重置按钮
+  }
+
+  /**
+   * @description 更新重置按钮的视觉提示。
+   * @param {boolean} isStale - 数据是否已过时。
+   */
+  updateResetButton(isStale) {
+    let dot = this.resetButton.querySelector('.stale-dot');
+    if (isStale) {
+      if (!dot) {
+        dot = document.createElement('span');
+        dot.className = 'stale-dot absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white';
+        this.resetButton.appendChild(dot);
+        this.resetButton.title = '数据已更新，建议重置分析';
+      }
+    } else {
+      if (dot) {
+        dot.remove();
+        this.resetButton.title = '';
+      }
+    }
   }
 
   /**
@@ -121,6 +151,16 @@ export class ChatView {
     const message = this.inputField.value.trim();
     if (message && this.onSubmit) {
       this.onSubmit(message);
+    }
+  }
+
+  /**
+   * @private
+   * @description 处理用户点击重置按钮。
+   */
+  _handleReset() {
+    if (this.onReset) {
+      this.onReset();
     }
   }
 

@@ -3,6 +3,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
 import {terser} from 'rollup-plugin-terser';
 import pkg from './package.json';
+import serve from 'rollup-plugin-serve';
+import livereload from 'rollup-plugin-livereload';
 
 // 判断当前是否是生产环境
 const isProduction = process.env.NODE_ENV === 'production';
@@ -53,21 +55,39 @@ export default {
   plugins: [
     // 解析 node_modules 中的模块
     resolve(),
-
-    // 将 CommonJS 格式的模块转换为 ES6
+    // 转换 CommonJS 模块为 ES6
     commonjs(),
-
-    // 使用 Babel 进行代码转换 (ES6 -> ES5)
+    // Babel 转换
     babel({
-      // babelHelpers: 'bundled' 会将 babel 的辅助函数内联到代码中
       babelHelpers: 'bundled',
-      // 排除 node_modules 目录，因为它们通常已经是编译好的
       exclude: 'node_modules/**'
+    }),
+
+    // 开发服务器配置 (仅在开发环境下生效)
+    !isProduction && serve({
+      open: true, // 自动在浏览器中打开
+      contentBase: ['public'], // 静态文件目录
+      host: 'localhost',
+      port: 8080,
+      // 将 bundle.js 映射到正确的输出文件
+      onListening: function (server) {
+        console.log('Server listening at http://localhost:8080/');
+        const {address, port} = server.address();
+        const host = address === '0.0.0.0' ? 'localhost' : address;
+        const url = `http://${host}:${port}`;
+        console.log(`Open your browser and go to ${url}/index.html`);
+      }
+    }),
+
+    // 实时重新加载 (仅在开发环境下生效)
+    !isProduction && livereload({
+      watch: ['dist', 'public']
     })
   ],
 
-  // 监听模式下的配置
+  // 监视文件变化 (仅在开发环境下生效)
   watch: {
-    clearScreen: false
+    include: 'src/**',
+    exclude: 'node_modules/**'
   }
 };
