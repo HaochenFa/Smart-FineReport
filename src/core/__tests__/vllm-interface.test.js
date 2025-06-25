@@ -79,7 +79,7 @@ describe('AIEngine', () => {
   // --- getResponse Method Tests --- //
   describe('getResponse', () => {
     const validMultiModalPrompt = JSON.stringify({
-      model: 'llava-hf/llava-1.5-7b-hf',
+
       messages: [{
         role: 'user',
         content: [

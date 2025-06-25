@@ -76,7 +76,6 @@ export class PromptBuilder {
 
       // 步骤 3: 构建最终的请求体
       const finalPayload = {
-        model: "llava-hf/llava-1.5-7b-hf", // 与测试用例保持一致
         messages: messages,
       };
 

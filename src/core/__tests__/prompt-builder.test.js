@@ -41,7 +41,7 @@ describe('PromptBuilder', () => {
 
     expect(() => JSON.parse(resultString)).not.toThrow();
 
-    expect(resultJson.model).toBe('llava-hf/llava-1.5-7b-hf');
+
     // System + 历史记录 + 当前用户请求 = 4条消息
     expect(resultJson.messages).toHaveLength(4);
 

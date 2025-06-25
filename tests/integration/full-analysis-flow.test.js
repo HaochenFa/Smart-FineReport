@@ -61,7 +61,6 @@ describe("Full Analysis Flow Integration Test", () => {
 
     // 深入验证传递给APIService.post的请求体结构是否正确
     const requestBodySentToAI = apiServiceSpy.mock.calls[0][1];
-    expect(requestBodySentToAI.model).toBeDefined();
     expect(requestBodySentToAI.messages).toHaveLength(2);
 
     const systemMessage = requestBodySentToAI.messages[0];
