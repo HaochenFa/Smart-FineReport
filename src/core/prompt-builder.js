@@ -21,29 +21,34 @@ export class PromptBuilder {
    * @returns {string} - 准备发送给AI的、序列化为JSON字符串的完整Prompt。
    */
   build(userRequest, imageBase64, contextProvider) {
-    log.log("开始构建多模态Prompt", { userRequest });
+    log.log("开始构建多模态Prompt", {userRequest});
 
     try {
       // 步骤 1: 获取对话历史
       let history = [];
-      if (contextProvider && typeof contextProvider.getFormattedHistory === 'function') {
+      if (contextProvider && typeof contextProvider.getFormattedHistory === "function") {
         const formattedHistory = contextProvider.getFormattedHistory();
         if (Array.isArray(formattedHistory)) {
           history = formattedHistory;
         } else {
-          log.warn('上下文提供者返回的历史记录格式无效，期望是消息对象数组。');
+          log.warn("上下文提供者返回的历史记录格式无效，期望是消息对象数组。");
         }
       } else {
-        log.warn('未提供有效的上下文提供者 (contextProvider)，历史对话将为空。');
+        log.warn("未提供有效的上下文提供者 (contextProvider)，历史对话将为空。");
       }
 
       // 步骤 1.5: 验证 Base64 字符串
-      if (typeof imageBase64 !== 'string' || !imageBase64.startsWith('data:image/')) {
-          log.warn('提供的imageBase64字符串无效，可能无法被模型正确解析：', imageBase64);
+      if (typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/")) {
+        log.warn("提供的imageBase64字符串无效，可能无法被模型正确解析：", imageBase64);
       }
 
       // 步骤 2: 构建多模态消息结构
       const messages = [
+        // Add the system prompt first
+        {
+          role: "system",
+          content: DEFAULT_PROMPT_TEMPLATE.System,
+        },
         ...history,
         {
           role: "user",
@@ -73,7 +78,6 @@ export class PromptBuilder {
       log.log("成功构建多模态Prompt。", promptString);
 
       return promptString;
-
     } catch (error) {
       log.error("构建多模态Prompt时出错：", error);
       return "{}"; // 返回一个空的JSON对象字符串作为安全备用

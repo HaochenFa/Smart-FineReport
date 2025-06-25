@@ -14,9 +14,12 @@ describe('PromptBuilder', () => {
 
   beforeEach(() => {
     promptBuilder = new PromptBuilder();
-    jest.spyOn(log, 'log').mockImplementation(() => {});
-    jest.spyOn(log, 'warn').mockImplementation(() => {});
-    jest.spyOn(log, 'error').mockImplementation(() => {});
+    jest.spyOn(log, 'log').mockImplementation(() => {
+    });
+    jest.spyOn(log, 'warn').mockImplementation(() => {
+    });
+    jest.spyOn(log, 'error').mockImplementation(() => {
+    });
   });
 
   afterEach(() => {
@@ -28,8 +31,8 @@ describe('PromptBuilder', () => {
     const imageBase64 = 'data:image/png;base64,mock-base64-string';
     const contextProvider = {
       getFormattedHistory: () => [
-        { role: 'user', content: '上下文信息' },
-        { role: 'ai', content: '好的。' },
+        {role: 'user', content: '上下文信息'},
+        {role: 'ai', content: '好的。'},
       ],
     };
 

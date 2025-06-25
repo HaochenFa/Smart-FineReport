@@ -31,8 +31,7 @@ beforeAll(async () => {
 
   jest.unstable_mockModule("@/utils/logger.js", () => ({
     Logger: {
-      log: jest.fn(),
-      error: jest.fn(),
+      log: jest.fn(), error: jest.fn(),
     },
   }));
 

@@ -4,7 +4,7 @@
  * @description Organizer between chat-view.js and state-manager.js
  */
 
-import {ChatView} from './chat-view.js';
+import {ChatView} from "./chat-view.js";
 
 /**
  * UIManager 类负责管理UI的整体逻辑和生命周期。
@@ -18,8 +18,13 @@ export class UIManager {
    * @param {function(): void} resetAnalysisHandler - 当用户点击重置按钮时要调用的处理函数。
    */
   constructor(container, stateManager, messageSubmitHandler, resetAnalysisHandler) {
-    if (!container || !stateManager || typeof messageSubmitHandler !== 'function' || typeof resetAnalysisHandler !== 'function') {
-      throw new Error('UIManager: 无效的构造函数参数。');
+    if (
+      !container ||
+      !stateManager ||
+      typeof messageSubmitHandler !== "function" ||
+      typeof resetAnalysisHandler !== "function"
+    ) {
+      throw new Error("UIManager: 无效的构造函数参数。");
     }
 
     this.container = container;
@@ -27,7 +32,11 @@ export class UIManager {
     this.messageSubmitHandler = messageSubmitHandler;
 
     // ChatView 是一个纯粹的视图组件，它接收一个提交回调函数和一个重置回调函数。
-    this.view = new ChatView(this.container, this._handleUserSubmit.bind(this), resetAnalysisHandler);
+    this.view = new ChatView(
+      this.container,
+      this._handleUserSubmit.bind(this),
+      resetAnalysisHandler
+    );
 
     // 绑定状态更新的回调
     this._bindToStateChanges();
@@ -99,11 +108,11 @@ export class UIManager {
   _updateMessages(messages) {
     // 首先清空当前的消息容器
     // 直接操作 messageContainer 是因为 ChatView 没有提供清空消息的接口
-    this.view.messageContainer.innerHTML = '';
+    this.view.messageContainer.innerHTML = "";
 
     // 遍历所有消息并逐条添加到视图中
     if (messages && Array.isArray(messages)) {
-      messages.forEach(message => {
+      messages.forEach((message) => {
         this.view.addMessage(message);
       });
     }

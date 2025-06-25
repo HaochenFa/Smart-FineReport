@@ -136,7 +136,7 @@ describe('AppController Orchestration', () => {
       const aiResponse = 'Hello User';
       const initialMessages = [{role: 'assistant', content: 'Welcome!'}];
       const history = 'formatted_history';
-      const mockCanvas = { toDataURL: () => 'data:image/png;base64,mock-base64-string' };
+      const mockCanvas = {toDataURL: () => 'data:image/png;base64,mock-base64-string'};
 
       mockGetState
         .mockReturnValueOnce({messages: initialMessages})

@@ -16,7 +16,7 @@ export class StateManager {
      * @type {{messages: Array<{role: string, content: string}>, isLoading: boolean}}
      */
     this._state = {
-      messages: [],   // 存放所有聊天消息。
+      messages: [], // 存放所有聊天消息。
       isLoading: false, // 如果应用正在等待响应，则为 true。
       isDataStale: false, // 如果报表数据已更新，则为 true
       ...initialState, // 与传入的初始状态合并
@@ -65,7 +65,7 @@ export class StateManager {
     this._state = {...this._state, ...newState};
 
     // “发布”变更：通知所有注册的监听器
-    this._listeners.forEach(listener => listener(this.getState()));
+    this._listeners.forEach((listener) => listener(this.getState()));
   }
 
   /**

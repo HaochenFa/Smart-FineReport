@@ -1,20 +1,20 @@
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import babel from '@rollup/plugin-babel';
-import {terser} from 'rollup-plugin-terser';
-import pkg from './package.json';
-import serve from 'rollup-plugin-serve';
-import livereload from 'rollup-plugin-livereload';
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import babel from "@rollup/plugin-babel";
+import {terser} from "rollup-plugin-terser";
+import pkg from "./package.json";
+import serve from "rollup-plugin-serve";
+import livereload from "rollup-plugin-livereload";
 
 // 判断当前是否是生产环境
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 /**
  * Rollup 配置文件
  */
 export default {
   // 入口文件
-  input: 'src/main.js',
+  input: "src/main.js",
 
   // 输出配置
   output: [
@@ -22,33 +22,33 @@ export default {
     // 可以通过 <script> 标签直接引用
     {
       file: pkg.browser, // 'dist/smart-finereport.umd.js'
-      format: 'umd',
+      format: "umd",
       // UMD 模式下，需要指定一个全局变量名
       // 当在浏览器中引入时，模块内容会挂载到 window.SmartFineReport 上
-      name: 'SmartFineReport',
+      name: "SmartFineReport",
       // 'named' 可以同时处理 default export 和 named exports
-      exports: 'named',
+      exports: "named",
       sourcemap: true,
       plugins: [
         // 仅在生产环境下进行代码压缩
-        isProduction && terser()
-      ]
+        isProduction && terser(),
+      ],
     },
 
     // 2. CJS (CommonJS) - 用于 Node.js 环境
     {
       file: pkg.main, // 'dist/smart-finereport.cjs.js'
-      format: 'cjs',
-      exports: 'named',
-      sourcemap: true
+      format: "cjs",
+      exports: "named",
+      sourcemap: true,
     },
 
     // 3. ESM (ES Module) - 用于现代浏览器和打包工具 (如 Webpack, Vite)
     {
       file: pkg.module, // 'dist/smart-finereport.esm.js'
-      format: 'es',
-      sourcemap: true
-    }
+      format: "es",
+      sourcemap: true,
+    },
   ],
 
   // 插件列表
@@ -59,35 +59,37 @@ export default {
     commonjs(),
     // Babel 转换
     babel({
-      babelHelpers: 'bundled',
-      exclude: 'node_modules/**'
+      babelHelpers: "bundled",
+      exclude: "node_modules/**",
     }),
 
     // 开发服务器配置 (仅在开发环境下生效)
-    !isProduction && serve({
+    !isProduction &&
+    serve({
       open: true, // 自动在浏览器中打开
-      contentBase: ['public'], // 静态文件目录
-      host: 'localhost',
+      contentBase: ["public"], // 静态文件目录
+      host: "localhost",
       port: 8080,
       // 将 bundle.js 映射到正确的输出文件
       onListening: function (server) {
-        console.log('Server listening at http://localhost:8080/');
+        console.log("Server listening at http://localhost:8080/");
         const {address, port} = server.address();
-        const host = address === '0.0.0.0' ? 'localhost' : address;
+        const host = address === "0.0.0.0" ? "localhost" : address;
         const url = `http://${host}:${port}`;
         console.log(`Open your browser and go to ${url}/index.html`);
-      }
+      },
     }),
 
     // 实时重新加载 (仅在开发环境下生效)
-    !isProduction && livereload({
-      watch: ['dist', 'public']
-    })
+    !isProduction &&
+    livereload({
+      watch: ["dist", "public"],
+    }),
   ],
 
   // 监视文件变化 (仅在开发环境下生效)
   watch: {
-    include: 'src/**',
-    exclude: 'node_modules/**'
-  }
+    include: "src/**",
+    exclude: "node_modules/**",
+  },
 };

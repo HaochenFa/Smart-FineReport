@@ -12,9 +12,9 @@ import {UIManager} from "../ui/ui-manager.js";
 import {PromptBuilder} from "../core/prompt-builder.js";
 import {AIEngine} from "../core/vllm-interface.js";
 import {AnalysisPipeline} from "../core/ai-analysis-pipeline.js";
-import {Logger} from '../utils/logger.js';
+import {Logger} from "../utils/logger.js";
 import {ContextManager} from "@/core/context-manager.js";
-import html2canvas from 'html2canvas';
+import html2canvas from "html2canvas";
 
 export default class AppController {
   /**
@@ -27,9 +27,8 @@ export default class AppController {
   /**
    * @function init() - 初始化，按顺序实例化导入的组件
    * @param {string} containerSelector - UI 容器的 DOM 选择器
-   * @param {object} frInstance - 从帆软环境传入的全局实例
    */
-  init(containerSelector, frInstance) {
+  init(containerSelector) {
     // 1. 初始化状态管理器，确保 UI 反应
     this.stateManager = new StateManager({
       messages: [],
@@ -50,7 +49,7 @@ export default class AppController {
       containerSelector,
       this.stateManager,
       this.handleUserQuery.bind(this),
-      this.resetAnalysis.bind(this),
+      this.resetAnalysis.bind(this)
     );
 
     // 5. 启动 UI 渲染
@@ -75,7 +74,9 @@ export default class AppController {
     // 1. 设置加载状态并显示欢迎消息
     this.stateManager.setState({
       isLoading: true,
-      messages: [{role: "assistant", content: "您好，我是您的AI分析助手，正在为您分析当前报表..."}]
+      messages: [
+        {role: "assistant", content: "您好，我是您的AI分析助手，正在为您分析当前报表..."},
+      ],
     });
 
     try {
@@ -89,7 +90,6 @@ export default class AppController {
         messages: [{role: "assistant", content: aiResponse}],
       });
       this.contextManager.addMessage("assistant", aiResponse);
-
     } catch (error) {
       Logger.error("Error during initial analysis:", error);
       this.stateManager.setState({
@@ -109,7 +109,6 @@ export default class AppController {
     await this.triggerInitialAnalysis();
   }
 
-
   /**
    * @function handleReportUpdate() - 处理报表数据更新事件
    */
@@ -127,17 +126,16 @@ export default class AppController {
     const history = this.contextManager.getFormattedHistory();
 
     // 截取报表区域的图像
-    const reportContainer = document.querySelector('.report-container'); // 请将 '.report-container' 替换为实际的报表容器选择器
+    const reportContainer = document.querySelector(".report-container"); // 请将 '.report-container' 替换为实际的报表容器选择器
     if (!reportContainer) {
-      throw new Error('无法找到报表容器，请检查选择器是否正确。');
+      throw new Error("无法找到报表容器，请检查选择器是否正确。");
     }
     const canvas = await html2canvas(reportContainer);
-    const imageBase64 = canvas.toDataURL('image/png');
+    const imageBase64 = canvas.toDataURL("image/png");
 
     // 调用核心分析逻辑
     return await this.pipeline.run(text, imageBase64, history);
   }
-
 
   /**
    * @function handleUserQuery() - 回调函数传递给 UIManager，当用户提交信息后，负责整合响应流程
@@ -174,7 +172,10 @@ export default class AppController {
       Logger.error("Error occurred while handling user query:", error);
       const errorState = this.stateManager.getState();
       this.stateManager.setState({
-        messages: [...errorState.messages, {role: "assistant", content: "抱歉，分析时遇到问题，请稍后重试。"}],
+        messages: [
+          ...errorState.messages,
+          {role: "assistant", content: "抱歉，分析时遇到问题，请稍后重试。"},
+        ],
       });
     } finally {
       // 无论成功与否，取消加载状态，避免 UI 卡顿
