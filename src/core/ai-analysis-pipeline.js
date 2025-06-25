@@ -40,13 +40,13 @@ export class AnalysisPipeline {
    * @param {object} contextProvider - 提供上下文信息的对象, 如对话历史。
    * @returns {Promise<string>} - AI的最终分析结果。
    */
-  async run(userRequest, imageBase64, contextProvider) {
+  async run(userRequest, imageBase64, contextProvider, isInitial) {
     log.log(`[AnalysisPipeline] Starting analysis for: "${userRequest}"`);
 
     try {
       // 步骤 1: 构建最终的 Prompt
       log.log("[AnalysisPipeline] Step 1: Building final prompt with image...");
-      const finalPrompt = this.#promptBuilder.build(userRequest, imageBase64, contextProvider);
+      const finalPrompt = this.#promptBuilder.build(userRequest, imageBase64, contextProvider, isInitial);
       log.log("[AnalysisPipeline] Prompt built successfully.");
 
       // 步骤 3: 调用 AI 引擎获取响应

@@ -26,13 +26,13 @@ describe('StateManager', () => {
     it('should initialize with a default state if no initial state is provided', () => {
       const state = stateManager.getState();
       expect(state).toEqual({
-        messages: [], isLoading: false,
+        messages: [], isLoading: false, isDataStale: false,
       });
     });
 
     it('should initialize with the provided initial state', () => {
       const initialState = {
-        messages: [{role: 'user', content: 'Hello'}], isLoading: true,
+        messages: [{role: 'user', content: 'Hello'}], isLoading: true, isDataStale: false,
       };
       const customStateManager = new StateManager(initialState);
       const state = customStateManager.getState();
@@ -46,7 +46,7 @@ describe('StateManager', () => {
       const customStateManager = new StateManager(partialInitialState);
       const state = customStateManager.getState();
       expect(state).toEqual({
-        messages: [], isLoading: true,
+        messages: [], isLoading: true, isDataStale: false,
       });
     });
   });
@@ -54,7 +54,7 @@ describe('StateManager', () => {
   describe('getState', () => {
     it('should return a deep copy of the state, not a reference', () => {
       const initialState = {
-        messages: [{role: 'user', content: 'Test'}], isLoading: false,
+        messages: [{role: 'user', content: 'Test'}], isLoading: false, isDataStale: false,
       };
       const sm = new StateManager(initialState);
 

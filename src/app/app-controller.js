@@ -83,7 +83,7 @@ export default class AppController {
       // 2. 运行分析
       const defaultQuery = "请对当前报表进行全面分析";
       this.contextManager.addMessage("user", defaultQuery);
-      const aiResponse = await this.runAnalysis(defaultQuery);
+      const aiResponse = await this.runAnalysis(defaultQuery, true);
 
       // 3. 更新UI，显示分析结果
       this.stateManager.setState({
@@ -122,7 +122,7 @@ export default class AppController {
    * @param {string} text - 用于分析的文本提示
    * @returns {Promise<string>} - AI的响应
    */
-  async runAnalysis(text) {
+  async runAnalysis(text, isInitial = false) {
     const history = this.contextManager.getFormattedHistory();
 
     // 截取报表区域的图像
@@ -134,7 +134,7 @@ export default class AppController {
     const imageBase64 = canvas.toDataURL("image/png");
 
     // 调用核心分析逻辑
-    return await this.pipeline.run(text, imageBase64, history);
+    return await this.pipeline.run(text, imageBase64, history, isInitial);
   }
 
   /**
@@ -159,7 +159,7 @@ export default class AppController {
       this.contextManager.addMessage("user", text);
 
       // 3. 调用核心分析逻辑
-      const aiResponse = await this.runAnalysis(text);
+      const aiResponse = await this.runAnalysis(text, false);
 
       // 4. 更新上下文和 UI 状态
       this.contextManager.addMessage("assistant", aiResponse);

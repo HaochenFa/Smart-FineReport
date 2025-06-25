@@ -42,17 +42,22 @@ describe('PromptBuilder', () => {
     expect(() => JSON.parse(resultString)).not.toThrow();
 
     expect(resultJson.model).toBe('llava-hf/llava-1.5-7b-hf');
-    // 历史记录 + 当前用户请求 = 3条消息
-    expect(resultJson.messages).toHaveLength(3);
+    // System + 历史记录 + 当前用户请求 = 4条消息
+    expect(resultJson.messages).toHaveLength(4);
+
+    // 验证System Prompt
+    expect(resultJson.messages[0].role).toBe('system');
+    expect(resultJson.messages[0].content).toBeDefined();
+
 
     // 验证历史记录
-    expect(resultJson.messages[0].role).toBe('user');
-    expect(resultJson.messages[0].content).toBe('上下文信息');
-    expect(resultJson.messages[1].role).toBe('ai');
-    expect(resultJson.messages[1].content).toBe('好的。');
+    expect(resultJson.messages[1].role).toBe('user');
+    expect(resultJson.messages[1].content).toBe('上下文信息');
+    expect(resultJson.messages[2].role).toBe('ai');
+    expect(resultJson.messages[2].content).toBe('好的。');
 
     // 验证当前用户请求
-    const currentUserMessage = resultJson.messages[2];
+    const currentUserMessage = resultJson.messages[3];
     expect(currentUserMessage.role).toBe('user');
     expect(currentUserMessage.content).toHaveLength(2);
     expect(currentUserMessage.content[0].type).toBe('text');
@@ -70,7 +75,11 @@ describe('PromptBuilder', () => {
     const resultString = promptBuilder.build(userRequest, imageBase64, null);
     const resultJson = JSON.parse(resultString);
 
-    const messageContent = resultJson.messages[0].content[0].text;
+    // System + user request
+    expect(resultJson.messages).toHaveLength(2);
+    expect(resultJson.messages[0].role).toBe('system');
+
+    const messageContent = resultJson.messages[1].content[0].text;
     expect(messageContent).toContain(userRequest);
     expect(messageContent).not.toContain('历史对话');
     expect(log.warn).toHaveBeenCalledWith('未提供有效的上下文提供者 (contextProvider)，历史对话将为空。');

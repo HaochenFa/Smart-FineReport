@@ -84,6 +84,7 @@ describe('AppController Orchestration', () => {
     // 动态导入 AppController 以应用模拟
     const module = await import('@/app/app-controller.js');
     AppController = module.default;
+    jest.spyOn(AppController.prototype, 'triggerInitialAnalysis').mockImplementation(() => Promise.resolve());
   });
 
   // ** SOLUTION: Step 3 **
@@ -108,8 +109,9 @@ describe('AppController Orchestration', () => {
       expect(mockAIEngine).toHaveBeenCalledWith(mockSettings.service);
       expect(mockContextManager).toHaveBeenCalledTimes(1);
       expect(mockAnalysisPipeline).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
-      expect(mockUIManager).toHaveBeenCalledWith(mockContainerSelector, expect.any(Object), expect.any(Function));
+      expect(mockUIManager).toHaveBeenCalledWith(mockContainerSelector, expect.any(Object), expect.any(Function), expect.any(Function));
       expect(mockUIManagerInit).toHaveBeenCalledTimes(1);
+      expect(appControllerInstance.triggerInitialAnalysis).toHaveBeenCalledTimes(1);
       expect(mockLoggerLog).toHaveBeenCalledWith("AppController Initialized and Ready");
     });
   });
@@ -120,6 +122,7 @@ describe('AppController Orchestration', () => {
       // Mock the report container element
       document.body.innerHTML = `<div class="report-container">Report Content</div>`;
       appControllerInstance.init(mockContainerSelector);
+      appControllerInstance.triggerInitialAnalysis.mockClear();
     });
 
     it('should not process an empty or whitespace-only query', async () => {
@@ -135,12 +138,18 @@ describe('AppController Orchestration', () => {
       const userQuery = 'Hello AI';
       const aiResponse = 'Hello User';
       const initialMessages = [{role: 'assistant', content: 'Welcome!'}];
+      const stateBeforeQuery = {messages: initialMessages, isLoading: false, isDataStale: false};
+      const stateAfterUserMessage = {
+        messages: [...initialMessages, {role: 'user', content: userQuery}],
+        isLoading: true,
+        isDataStale: false
+      };
       const history = 'formatted_history';
       const mockCanvas = {toDataURL: () => 'data:image/png;base64,mock-base64-string'};
 
       mockGetState
-        .mockReturnValueOnce({messages: initialMessages})
-        .mockReturnValueOnce({messages: [...initialMessages, {role: 'user', content: userQuery}]});
+        .mockReturnValueOnce(stateBeforeQuery)
+        .mockReturnValueOnce(stateAfterUserMessage);
 
       mockGetFormattedHistory.mockReturnValue(history);
       mockHtml2canvas.mockResolvedValue(mockCanvas);
@@ -156,7 +165,7 @@ describe('AppController Orchestration', () => {
         messages: [...initialMessages, {role: 'user', content: userQuery}], isLoading: true,
       });
       expect(mockSetState).toHaveBeenCalledWith({
-        messages: [...initialMessages, {role: 'user', content: userQuery}, {role: 'assistant', content: aiResponse}],
+        messages: [...stateAfterUserMessage.messages, {role: 'assistant', content: aiResponse}],
       });
       expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
       expect(mockAddMessage).toHaveBeenCalledWith('user', userQuery);
@@ -170,10 +179,16 @@ describe('AppController Orchestration', () => {
       const errorMessage = '抱歉，分析时遇到问题，请稍后重试。';
       const error = new Error('Pipeline Failure');
       const initialMessages = [];
+      const stateBeforeQuery = {messages: initialMessages, isLoading: false, isDataStale: false};
+      const stateAfterUserMessage = {
+        messages: [...initialMessages, {role: 'user', content: userQuery}],
+        isLoading: true,
+        isDataStale: false
+      };
 
       mockGetState
-        .mockReturnValueOnce({messages: initialMessages})
-        .mockReturnValueOnce({messages: [...initialMessages, {role: 'user', content: userQuery}]});
+        .mockReturnValueOnce(stateBeforeQuery)
+        .mockReturnValueOnce(stateAfterUserMessage);
 
       mockPipelineRun.mockRejectedValue(error);
 
@@ -183,9 +198,12 @@ describe('AppController Orchestration', () => {
       // Assert
       expect(mockLoggerError).toHaveBeenCalledWith("Error occurred while handling user query:", error);
       expect(mockSetState).toHaveBeenCalledTimes(3);
-      expect(mockSetState).toHaveBeenCalledWith(expect.objectContaining({isLoading: true}));
       expect(mockSetState).toHaveBeenCalledWith({
-        messages: [...initialMessages, {role: 'user', content: userQuery}, {role: 'assistant', content: errorMessage}],
+        messages: [...initialMessages, {role: 'user', content: userQuery}],
+        isLoading: true
+      });
+      expect(mockSetState).toHaveBeenCalledWith({
+        messages: [...stateAfterUserMessage.messages, {role: 'assistant', content: errorMessage}],
       });
       expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
       expect(mockAddMessage).toHaveBeenCalledTimes(1);

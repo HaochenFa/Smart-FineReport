@@ -8,7 +8,7 @@
  * @import ../utils/logger.js
  */
 
-import {DEFAULT_PROMPT_TEMPLATE} from "../utils/default-prompt.js";
+import {INITIAL_ANALYSIS_TEMPLATE, FOLLOW_UP_TEMPLATE} from '../utils/default-prompt.js';
 import {Logger as log} from "../utils/logger.js";
 
 export class PromptBuilder {
@@ -20,7 +20,7 @@ export class PromptBuilder {
    * @property {function(): string} contextProvider.getFormattedHistory - 该对象必须包含一个用于获取格式化历史记录的方法。
    * @returns {string} - 准备发送给AI的、序列化为JSON字符串的完整Prompt。
    */
-  build(userRequest, imageBase64, contextProvider) {
+  build(userRequest, imageBase64, contextProvider, isInitial = true) {
     log.log("开始构建多模态Prompt", {userRequest});
 
     try {
@@ -42,12 +42,17 @@ export class PromptBuilder {
         log.warn("提供的imageBase64字符串无效，可能无法被模型正确解析：", imageBase64);
       }
 
+      // 根据 isInitial 标志选择系统预设
+      const systemPrompt = isInitial
+        ? INITIAL_ANALYSIS_TEMPLATE.System
+        : FOLLOW_UP_TEMPLATE.System;
+
       // 步骤 2: 构建多模态消息结构
       const messages = [
         // Add the system prompt first
         {
           role: "system",
-          content: DEFAULT_PROMPT_TEMPLATE.System,
+          content: systemPrompt,
         },
         ...history,
         {
@@ -66,6 +71,7 @@ export class PromptBuilder {
           ],
         },
       ];
+
 
       // 步骤 3: 构建最终的请求体
       const finalPayload = {

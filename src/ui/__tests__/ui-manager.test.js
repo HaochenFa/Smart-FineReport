@@ -19,16 +19,18 @@ beforeAll(async () => {
   // 1. Use jest.unstable_mockModule to mock the entire ChatView module BEFORE it's imported.
   jest.unstable_mockModule('@/ui/chat-view.js', () => ({
     // The factory must return an object representing the module's exports.
-    ChatView: jest.fn().mockImplementation((container, submitCallback) => {
+    ChatView: jest.fn().mockImplementation((container, submitCallback, resetCallback) => {
       // Create a fresh mock instance object for each `new ChatView()` call.
       const instance = {
         render: jest.fn(),
         addMessage: jest.fn(),
         clearInput: jest.fn(),
         toggleLoading: jest.fn(),
+        updateResetButton: jest.fn(),
         messageContainer: {innerHTML: ''},
         // We add a helper to our mock instance to simulate user actions from the view.
         _triggerSubmit: (text) => submitCallback(text),
+        _triggerReset: () => resetCallback(),
       };
       // Capture a reference to this specific instance so the test can access it.
       currentMockViewInstance = instance;
@@ -51,6 +53,7 @@ describe('UIManager', () => {
   let mockContainer;
   let mockStateManager;
   let mockMessageSubmitHandler;
+  let mockResetAnalysisHandler;
   let initialMockState;
 
   // beforeEach runs before each individual `it` block.
@@ -68,12 +71,14 @@ describe('UIManager', () => {
         {role: 'assistant', content: 'Hi there!'},
       ],
       isLoading: false,
+      isDataStale: false,
     };
     mockStateManager = {
       getState: jest.fn().mockReturnValue(initialMockState),
       onStateChange: null, // UIManager will assign its callback to this.
     };
     mockMessageSubmitHandler = jest.fn();
+    mockResetAnalysisHandler = jest.fn();
   });
 
   // --- Test Cases ---
@@ -81,19 +86,20 @@ describe('UIManager', () => {
   describe('Constructor and Initialization', () => {
     it('should throw an error if constructor arguments are invalid', () => {
       const errorMsg = 'UIManager: 无效的构造函数参数。';
-      expect(() => new UIManager(null, mockStateManager, mockMessageSubmitHandler)).toThrow(errorMsg);
-      expect(() => new UIManager(mockContainer, null, mockMessageSubmitHandler)).toThrow(errorMsg);
-      expect(() => new UIManager(mockContainer, mockStateManager, null)).toThrow(errorMsg);
+      expect(() => new UIManager(null, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler)).toThrow(errorMsg);
+      expect(() => new UIManager(mockContainer, null, mockMessageSubmitHandler, mockResetAnalysisHandler)).toThrow(errorMsg);
+      expect(() => new UIManager(mockContainer, mockStateManager, null, mockResetAnalysisHandler)).toThrow(errorMsg);
+      expect(() => new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, null)).toThrow(errorMsg);
     });
 
     it('should instantiate the (mocked) ChatView with the correct arguments', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler);
+      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
       expect(ChatView).toHaveBeenCalledTimes(1);
-      expect(ChatView).toHaveBeenCalledWith(mockContainer, expect.any(Function));
+      expect(ChatView).toHaveBeenCalledWith(mockContainer, expect.any(Function), mockResetAnalysisHandler);
     });
 
     it('should call init methods and render the initial state correctly', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler);
+      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
 
       // 1. Verify init flow
       expect(mockStateManager.getState).toHaveBeenCalledTimes(1);
@@ -109,14 +115,18 @@ describe('UIManager', () => {
       expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledTimes(1);
       expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledWith(initialMockState.isLoading);
 
-      // 4. Verify state binding
+      // 4. Verify initial reset button state
+      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledTimes(1);
+      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledWith(false);
+
+      // 5. Verify state binding
       expect(mockStateManager.onStateChange).toBeInstanceOf(Function);
     });
   });
 
   describe('State Updates', () => {
     it('should update the view correctly when state changes', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler);
+      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
 
       // Clear initial calls for a clean test of the update logic
       jest.clearAllMocks();
@@ -124,6 +134,7 @@ describe('UIManager', () => {
       const newState = {
         messages: [{role: 'user', content: 'New question'}],
         isLoading: true,
+        isDataStale: true,
       };
 
       // Manually trigger the state change handler that UIManager has subscribed to.
@@ -137,14 +148,18 @@ describe('UIManager', () => {
       // 2. Verify loading state update logic
       expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledTimes(1);
       expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledWith(true);
+
+      // 3. Verify reset button update logic
+      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledTimes(1);
+      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledWith(true);
     });
 
     it('should handle empty or null messages array gracefully', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler);
+      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
 
       jest.clearAllMocks(); // Clear initial calls
 
-      const newState = {messages: [], isLoading: false};
+      const newState = {messages: [], isLoading: false, isDataStale: false};
       mockStateManager.onStateChange(newState);
 
       // Verify container is cleared but addMessage is not called
@@ -152,7 +167,7 @@ describe('UIManager', () => {
       expect(currentMockViewInstance.addMessage).not.toHaveBeenCalled();
 
       // Test with null
-      const newStateNull = {messages: null, isLoading: false};
+      const newStateNull = {messages: null, isLoading: false, isDataStale: false};
       mockStateManager.onStateChange(newStateNull);
       expect(currentMockViewInstance.messageContainer.innerHTML).toBe('');
       expect(currentMockViewInstance.addMessage).not.toHaveBeenCalled();
@@ -161,7 +176,7 @@ describe('UIManager', () => {
 
   describe('User Interaction', () => {
     it('should handle user submit by calling the handler and clearing input', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler);
+      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
       const userMessage = 'This is a test message from the user.';
 
       // Use the helper on the mock instance to simulate the view firing an event.
