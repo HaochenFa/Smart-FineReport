@@ -17,6 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 // 读取逗号分隔的 URL 列表，并切分为一个数组
 const llmUrls = (process.env.LLM_FALLBACK_URLS || '').split(',').filter(url => url);
+const apiKeys = (process.env.LLM_API_KEYS || '').split(',').filter(key => key);
 
 // 4. 基本配置与前置检查
 if (llmUrls.length === 0) {
@@ -49,6 +50,9 @@ app.post('/api/v1/chat', async (req, res) => {
 
       // 8. 准备请求
       const headers = {'Content-Type': 'application/json'};
+      if (apiKeys[i]) {
+        headers['Authorization'] = `Bearer ${apiKeys[i]}`;
+      }
 
       // 9. 发起请求
       const llmResponse = await axios.post(targetUrl, requestBody, {

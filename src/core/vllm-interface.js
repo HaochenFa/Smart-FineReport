@@ -71,12 +71,7 @@ export class AIEngine {
 
     try {
       log.log('[AIEngine] Sending request to vLLM API...');
-      const headers = {};
-      if (this.apiKey) {
-        headers['Authorization'] = `Bearer ${this.apiKey}`;
-      }
-
-      const response = await APIService.post(this.url, body, headers);
+      const response = await APIService.post(this.url, body);
       log.log('[AIEngine] Received API response.');
 
       // Validate the structure of the response for chat completions and extract the message content

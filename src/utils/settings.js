@@ -9,6 +9,6 @@ export const SETTINGS = {
     url: "http://localhost:3001/api/v1/",
   },
   logger: {
-    level: "log"
+    level: "log",
   },
 };

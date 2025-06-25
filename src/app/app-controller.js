@@ -39,7 +39,7 @@ export default class AppController {
     // 2. 初始化所有后端的逻辑和 AI 模块
     // 注意实例化顺序
     const promptBuilder = new PromptBuilder();
-    const aiEngine = new AIEngine(this.settings.service);
+    const aiEngine = new AIEngine({url: this.settings.service.url});
     this.contextManager = new ContextManager();
 
     // 3. 整合核心分析管线 ai-analysis-pipeline

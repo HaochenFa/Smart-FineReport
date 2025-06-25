@@ -1,6 +1,7 @@
 # 🤖 智帆报表 (Smart FineReport Dashboard)
 
-一个集成 AI 分析功能的帆软报表 (FineReport) 框架。该项目当前版本为 v1.0.x-vision，其核心思想是：通过捕获报表界面的截图，并将其发送给多模态大语言模型（vLLM 部署），从而实现对报表数据的智能分析。
+一个集成 AI 分析功能的帆软报表 (FineReport) 框架。该项目当前版本为 v1.0.0-vision，其核心思想是：通过捕获报表界面的截图，并将其发送给多模态大语言模型（vLLM
+部署），从而实现对报表数据的智能分析。
 
 ## 核心功能
 
@@ -13,6 +14,19 @@
 - 在帆软 (FineReport) 中定义一个「按钮事件 Button Event」，或者在 HTML 框架中创建 `<scripts> </scripts>`
 - 使用 rollup 工具将项目文件打包成单一的 JS 文件
 - 在按钮事件或 `<script></script>` 代码块中导入 JS 文件
+
+### 环境变量配置
+
+为了增强安全性，BFF (Backend for Frontend) 服务支持通过环境变量来配置 API KEY。您可以在 `bff/` 目录下创建一个 `.env`
+文件，并按以下格式添加您的 API KEY：
+
+```
+LLM_API_KEYS=your_api_key_1,your_api_key_2
+LLM_FALLBACK_URLS=http://127.0.0.1:8080,http://127.0.0.1:8081
+```
+
+- `LLM_API_KEYS`：一个以逗号分隔的 API KEY 列表。BFF 服务会根据 `LLM_FALLBACK_URLS` 的顺序，为每个请求附加对应的 KEY。
+- `LLM_FALLBACK_URLS`：一个以逗号分隔的 vLLM 服务 URL 列表。BFF 服务会按顺序尝试连接，直到成功为止。
 
 ## 项目架构
 
@@ -130,8 +144,8 @@ flowchart BT
 13. [x] 编写入口文件
 14. [x] 集成测试：调试项目是否顺利运行
 15. [x] 编写 `rollup.config.js`
-16. [ ] BFF 代理服务：将 API KEY 等敏感信息存放在后端
-17. [ ] API KEY 健壮性：判断传入的配置是否含有 KEY，若不包含 KEY 则忽略该字段
+16. [x] BFF 代理服务：将 API KEY 等敏感信息存放在后端
+17. [x] API KEY 健壮性：判断传入的配置是否含有 KEY，若不包含 KEY 则忽略该字段
 18. [ ] 部署进入测试环境
 19. [ ] UI 适配：适配面板 UI 设计
 20. [ ] 部署进入预生产环境
