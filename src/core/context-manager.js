@@ -72,18 +72,14 @@ export class ContextManager {
   }
 
   /**
-   * @description 以格式化的字符串形式检索对话历史记录。
-   * Retrieves the conversation history as a formatted string.
-   * @returns {string} 格式化的对话历史记录，每条消息占一行。如果历史记录为空，则返回一个空字符串。
-   * The formatted conversation history, with each message on a new line. Returns an empty string if the history is empty.
+   * @description 以数组形式检索对话历史记录。
+   * Retrieves the conversation history as an array of objects.
+   * @returns {Array<Object>} 包含对话消息的数组。
+   * An array of conversation message objects.
    */
-  getFormattedHistory() {
-    if (this.history.length === 0) {
-      return ""; // 如果没有历史记录，返回空字符串
-    }
-    return this.history
-      .map(msg => `${msg.role}: ${msg.content}`)
-      .join("\n");
+  getHistory() {
+    log.log(`[ContextManager] Returning conversation history with ${this.history.length} messages.`);
+    return this.history;
   }
 
   /**
