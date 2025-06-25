@@ -170,7 +170,7 @@ describe('AppController Orchestration', () => {
       expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
       expect(mockAddMessage).toHaveBeenCalledWith('user', userQuery);
       expect(mockAddMessage).toHaveBeenCalledWith('assistant', aiResponse);
-      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, 'data:image/png;base64,mock-base64-string', history);
+      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, 'data:image/png;base64,mock-base64-string', history, false);
     });
 
     it('should handle an error from the analysis pipeline', async () => {

@@ -95,11 +95,11 @@ describe('AnalysisPipeline', () => {
 
       // --- Action ---
       const pipeline = new AnalysisPipeline(PromptBuilder, AiEngine);
-      const result = await pipeline.run(userRequest, imageBase64, contextProvider);
+      const result = await pipeline.run(userRequest, imageBase64, contextProvider, true);
 
       // --- Assertions ---
       expect(PromptBuilder.build).toHaveBeenCalledTimes(1);
-      expect(PromptBuilder.build).toHaveBeenCalledWith(userRequest, imageBase64, contextProvider);
+      expect(PromptBuilder.build).toHaveBeenCalledWith(userRequest, imageBase64, contextProvider, true);
 
       expect(AiEngine.getResponse).toHaveBeenCalledTimes(1);
       expect(AiEngine.getResponse).toHaveBeenCalledWith(mockFinalPrompt);
