@@ -21,18 +21,16 @@ window.initAIAssistant = (options) => {
 
   // 3. 对传入参数进行校验，确保能正常启动
   if (!options || !options.containerSelector || !options.fineReportInstance) {
-    Logger.error("AI Assistant Initialization Failed: Invalid arguments.");
+    Logger.error("AI Assistant Initialization Failed: `containerSelector` and `fineReportInstance` must be provided.");
     return;
   }
 
   try {
     Logger.log("Initializing AI Assistant...");
 
-    // 实例化应用控制器，注入配置
     const app = new AppController(SETTINGS);
 
-    // 调用 init 方法，传入 UI 挂载点和帆软实例
-    app.init(options.containerSelector, options.fineReportInstance);
+    app.init(options.containerSelector);
     Logger.log("AI Assistant Initialized Successfully.");
   } catch (error) {
     Logger.error("A critical error occurred during initialization:", error);

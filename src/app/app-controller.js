@@ -125,12 +125,14 @@ export default class AppController {
    */
   async runAnalysis(text, isInitial = false) {
     const history = this.contextManager.getFormattedHistory();
+    const reportContainer = this._findReportContainer();
 
-    // 截取报表区域的图像
-    const reportContainer = document.querySelector(".report-container"); // 请将 '.report-container' 替换为实际的报表容器选择器
     if (!reportContainer) {
-      throw new Error("无法找到报表容器，请检查选择器是否正确。");
+      const errorMsg = "Auto-detection failed: Could not find a suitable report container to screenshot.";
+      Logger.error(errorMsg);
+      throw new Error(errorMsg);
     }
+
     const canvas = await html2canvas(reportContainer);
     const imageBase64 = canvas.toDataURL("image/png");
 
@@ -182,5 +184,63 @@ export default class AppController {
       // 无论成功与否，取消加载状态，避免 UI 卡顿
       this.stateManager.setState({isLoading: false});
     }
+  }
+
+  /**
+   * @private
+   * @description 启发式查找最大容器的私有方法
+   * @return {HTMLElement | null} - 返回找到的元素
+   */
+  _findReportContainer() {
+    Logger.log("`reportSelector` not provided. Attempting to auto-detect the main report container.");
+
+    // 规则1：基于帆软常见的CSS类名或ID进行探寻
+    const candidateSelectors = [
+      'body[id="body"]',
+      'div[id="wrapper"]',
+      'div[class*="fr-quick-border-layout"]',
+      'div[id*="fr"]',
+      'div[id^="content-pane"]',
+    ];
+
+    for (const selector of candidateSelectors) {
+      const element = document.querySelector(selector);
+      if (element) {
+        Logger.log(`Found container via candidate selector: "${selector}"`);
+        return element;
+      }
+    }
+
+    // 规则2：如果基于选择器未找到，则基于“最大面积”规则进行探寻
+    // 这个规则假设报表主体是页面上占据面积最大的可见块级元素
+    Logger.log("Candidate selectors failed. Switching to largest-area heuristic.");
+    let largestElement = null;
+    let maxArea = 0;
+
+    // 我们只检查body下的直接子div，以提高效率和准确性
+    const allDivs = document.body.getElementsByTagName('div');
+
+    for (const div of allDivs) {
+      // 检查元素是否可见
+      if (div.offsetWidth > 0 && div.offsetHeight > 0 && div.checkVisibility()) {
+        const area = div.offsetWidth * div.offsetHeight;
+        if (area > maxArea) {
+          // 增加一个过滤条件，避免选择到AI助手自身的容器
+          if (div.contains(this.uiManager.container)) {
+            continue;
+          }
+          maxArea = area;
+          largestElement = div;
+        }
+      }
+    }
+
+    if (largestElement) {
+      Logger.log('Found container via largest-area heuristic:', largestElement);
+    } else {
+      Logger.warn('Auto-detection failed to find a suitable container.');
+    }
+
+    return largestElement;
   }
 }
