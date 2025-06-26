@@ -6,14 +6,14 @@
 
 // Polyfill for structuredClone in older Node.js environments used by Jest
 // Jest 测试环境中较旧的 Node.js 可能没有 structuredClone，在此处添加 Polyfill
-if (typeof global.structuredClone === 'undefined') {
+if (typeof global.structuredClone === "undefined") {
   global.structuredClone = (val) => JSON.parse(JSON.stringify(val));
 }
 
-import {StateManager} from '@/app/state-manager';
-import {describe, it, expect, beforeEach, jest} from '@jest/globals';
+import {StateManager} from "@/app/state-manager";
+import {describe, it, expect, beforeEach, jest} from "@jest/globals";
 
-describe('StateManager', () => {
+describe("StateManager", () => {
   let stateManager;
 
   // 在每个测试用例运行前，创建一个新的 StateManager 实例
@@ -22,24 +22,24 @@ describe('StateManager', () => {
     stateManager = new StateManager();
   });
 
-  describe('Initialization', () => {
-    it('should initialize with a default state if no initial state is provided', () => {
+  describe("Initialization", () => {
+    it("should initialize with a default state if no initial state is provided", () => {
       const state = stateManager.getState();
       expect(state).toEqual({
         messages: [], isLoading: false, isDataStale: false,
       });
     });
 
-    it('should initialize with the provided initial state', () => {
+    it("should initialize with the provided initial state", () => {
       const initialState = {
-        messages: [{role: 'user', content: 'Hello'}], isLoading: true, isDataStale: false,
+        messages: [{role: "user", content: "Hello"}], isLoading: true, isDataStale: false,
       };
       const customStateManager = new StateManager(initialState);
       const state = customStateManager.getState();
       expect(state).toEqual(initialState);
     });
 
-    it('should merge the provided initial state with defaults', () => {
+    it("should merge the provided initial state with defaults", () => {
       const partialInitialState = {
         isLoading: true,
       };
@@ -51,10 +51,10 @@ describe('StateManager', () => {
     });
   });
 
-  describe('getState', () => {
-    it('should return a deep copy of the state, not a reference', () => {
+  describe("getState", () => {
+    it("should return a deep copy of the state, not a reference", () => {
       const initialState = {
-        messages: [{role: 'user', content: 'Test'}], isLoading: false, isDataStale: false,
+        messages: [{role: "user", content: "Test"}], isLoading: false, isDataStale: false,
       };
       const sm = new StateManager(initialState);
 
@@ -62,7 +62,7 @@ describe('StateManager', () => {
 
       // 修改获取到的状态副本
       stateCopy1.isLoading = true;
-      stateCopy1.messages.push({role: 'assistant', content: 'Modified'});
+      stateCopy1.messages.push({role: "assistant", content: "Modified"});
 
       const stateCopy2 = sm.getState();
 
@@ -72,15 +72,15 @@ describe('StateManager', () => {
     });
   });
 
-  describe('setState', () => {
-    it('should update the state by merging the new state object', () => {
+  describe("setState", () => {
+    it("should update the state by merging the new state object", () => {
       stateManager.setState({isLoading: true});
       const state = stateManager.getState();
       expect(state.isLoading).toBe(true);
       expect(state.messages).toEqual([]); // 其他状态应保持不变
     });
 
-    it('should overwrite existing properties correctly', () => {
+    it("should overwrite existing properties correctly", () => {
       const sm = new StateManager({isLoading: false});
       sm.setState({isLoading: true});
       const state = sm.getState();
@@ -88,8 +88,8 @@ describe('StateManager', () => {
     });
   });
 
-  describe('Pub/Sub (subscribe and notify)', () => {
-    it('should call a subscribed listener when state changes', () => {
+  describe("Pub/Sub (subscribe and notify)", () => {
+    it("should call a subscribed listener when state changes", () => {
       // jest.fn() 创建一个模拟函数，让我们可以追踪它的调用情况
       const listener = jest.fn();
 
@@ -100,7 +100,7 @@ describe('StateManager', () => {
       expect(listener).toHaveBeenCalledTimes(1);
     });
 
-    it('should provide the new state to the subscribed listener', () => {
+    it("should provide the new state to the subscribed listener", () => {
       const listener = jest.fn();
       const newState = {isLoading: true};
 
@@ -111,7 +111,7 @@ describe('StateManager', () => {
       expect(listener).toHaveBeenCalledWith(expect.objectContaining(newState));
     });
 
-    it('should call all subscribed listeners on a state change', () => {
+    it("should call all subscribed listeners on a state change", () => {
       const listener1 = jest.fn();
       const listener2 = jest.fn();
 
@@ -124,7 +124,7 @@ describe('StateManager', () => {
       expect(listener2).toHaveBeenCalledTimes(1);
     });
 
-    it('should not call a listener after it has been unsubscribed', () => {
+    it("should not call a listener after it has been unsubscribed", () => {
       const listener = jest.fn();
 
       // subscribe 方法返回一个取消订阅的函数
@@ -142,7 +142,7 @@ describe('StateManager', () => {
       expect(listener).toHaveBeenCalledTimes(1); // 调用次数仍为 1
     });
 
-    it('should handle subscribing the same listener multiple times gracefully', () => {
+    it("should handle subscribing the same listener multiple times gracefully", () => {
       // 由于内部使用 Set，重复订阅同一个函数引用应该只被添加一次
       const listener = jest.fn();
 
@@ -156,12 +156,12 @@ describe('StateManager', () => {
     });
   });
 
-  describe('Convenience Methods', () => {
-    it('addMessage() should add a message and notify listeners', () => {
+  describe("Convenience Methods", () => {
+    it("addMessage() should add a message and notify listeners", () => {
       const listener = jest.fn();
       stateManager.subscribe(listener);
 
-      const newMessage = {role: 'user', content: 'Can you help?'};
+      const newMessage = {role: "user", content: "Can you help?"};
       stateManager.addMessage(newMessage);
 
       const state = stateManager.getState();
@@ -175,7 +175,7 @@ describe('StateManager', () => {
       }));
     });
 
-    it('setLoading() should update the loading state and notify listeners', () => {
+    it("setLoading() should update the loading state and notify listeners", () => {
       const listener = jest.fn();
       stateManager.subscribe(listener);
 

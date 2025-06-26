@@ -50,44 +50,44 @@ beforeAll(async () => {
 });
 
 
-describe('AnalysisPipeline', () => {
+describe("AnalysisPipeline", () => {
 
   // Before each test, clear all mock history to ensure a clean state.
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('constructor', () => {
-    it('should initialize successfully when all dependencies are valid', () => {
+  describe("constructor", () => {
+    it("should initialize successfully when all dependencies are valid", () => {
       // Action: Instantiate the pipeline with the mocked dependency objects.
       const pipeline = new AnalysisPipeline(PromptBuilder, AiEngine);
 
       expect(pipeline).toBeInstanceOf(AnalysisPipeline);
-      expect(Logger.log).toHaveBeenCalledWith('[AnalysisPipeline] Pipeline initialized successfully with all dependencies.');
+      expect(Logger.log).toHaveBeenCalledWith("[AnalysisPipeline] Pipeline initialized successfully with all dependencies.");
     });
 
-    it('should throw an error if a dependency is missing its required method', () => {
+    it("should throw an error if a dependency is missing its required method", () => {
       // Setup: Use a plain object that doesn't conform to the contract.
       const invalidPromptBuilder = {};
 
       // Action & Assertion:
       expect(() => new AnalysisPipeline(invalidPromptBuilder, AiEngine))
-        .toThrow('[AnalysisPipeline] A dependency is missing or does not implement its required method.');
+        .toThrow("[AnalysisPipeline] A dependency is missing or does not implement its required method.");
       expect(Logger.error).toHaveBeenCalled();
     });
   });
 
-  describe('run', () => {
-    it('should execute the pipeline in the correct order on a successful run', async () => {
+  describe("run", () => {
+    it("should execute the pipeline in the correct order on a successful run", async () => {
       // --- Setup ---
-      const userRequest = '分析这张图表。';
-      const imageBase64 = 'data:image/png;base64,mock-base64-string';
+      const userRequest = "分析这张图表。";
+      const imageBase64 = "data:image/png;base64,mock-base64-string";
       const contextProvider = {
         getFormattedHistory: jest.fn().mockReturnValue("User: 之前销售额如何？\nAI: 很好。")
       };
 
-      const mockFinalPrompt = '{"type": "multi_modal", "content": [{"type": "text", "text": "..."}, {"type": "image_url", "image_url": {"url": "..."}}]}';
-      const mockAiResponse = '这张图表显示了销售额的显著增长。';
+      const mockFinalPrompt = "{\"type\": \"multi_modal\", \"content\": [{\"type\": \"text\", \"text\": \"...\"}, {\"type\": \"image_url\", \"image_url\": {\"url\": \"...\"}}]}";
+      const mockAiResponse = "这张图表显示了销售额的显著增长。";
 
       // Configure the mock methods on the imported mock objects.
       PromptBuilder.build.mockReturnValue(mockFinalPrompt);
@@ -106,13 +106,13 @@ describe('AnalysisPipeline', () => {
 
       expect(result).toBe(mockAiResponse);
 
-      expect(Logger.log).toHaveBeenCalledWith(expect.stringContaining('Starting analysis'));
-      expect(Logger.log).toHaveBeenCalledWith(expect.stringContaining('Analysis finished successfully'));
+      expect(Logger.log).toHaveBeenCalledWith(expect.stringContaining("Starting analysis"));
+      expect(Logger.log).toHaveBeenCalledWith(expect.stringContaining("Analysis finished successfully"));
     });
 
-    it('should throw an error and stop execution if build fails', async () => {
+    it("should throw an error and stop execution if build fails", async () => {
       // --- Setup ---
-      const errorMessage = 'Invalid prompt template.';
+      const errorMessage = "Invalid prompt template.";
       const expectedError = new Error(errorMessage);
       PromptBuilder.build.mockImplementation(() => {
         throw expectedError;
@@ -120,25 +120,25 @@ describe('AnalysisPipeline', () => {
 
       // --- Action & Assertion ---
       const pipeline = new AnalysisPipeline(PromptBuilder, AiEngine);
-      await expect(pipeline.run('any request', 'any-base64', {}))
+      await expect(pipeline.run("any request", "any-base64", {}))
         .rejects.toThrow(`Analysis failed: ${errorMessage}`);
 
       expect(AiEngine.getResponse).not.toHaveBeenCalled();
-      expect(Logger.error).toHaveBeenCalledWith(expect.stringContaining('An error occurred'), expectedError);
+      expect(Logger.error).toHaveBeenCalledWith(expect.stringContaining("An error occurred"), expectedError);
     });
 
-    it('should throw an error if getResponse fails', async () => {
+    it("should throw an error if getResponse fails", async () => {
       // --- Setup ---
-      const errorMessage = 'AI model timeout.';
+      const errorMessage = "AI model timeout.";
       const expectedError = new Error(errorMessage);
-      PromptBuilder.build.mockReturnValue('a valid prompt');
+      PromptBuilder.build.mockReturnValue("a valid prompt");
       AiEngine.getResponse.mockRejectedValue(expectedError);
 
       // --- Action & Assertion ---
       const pipeline = new AnalysisPipeline(PromptBuilder, AiEngine);
-      await expect(pipeline.run('any request', 'any-base64', {}))
+      await expect(pipeline.run("any request", "any-base64", {}))
         .rejects.toThrow(`Analysis failed: ${errorMessage}`);
-      expect(Logger.error).toHaveBeenCalledWith(expect.stringContaining('An error occurred'), expectedError);
+      expect(Logger.error).toHaveBeenCalledWith(expect.stringContaining("An error occurred"), expectedError);
     });
   });
 });

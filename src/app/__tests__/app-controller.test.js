@@ -69,7 +69,7 @@ describe("AppController Orchestration", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    document.body.innerHTML = `<div id="app"></div>`; // Reset DOM for each test
+    document.body.innerHTML = "<div id=\"app\"></div>"; // Reset DOM for each test
     mockHtml2canvas.mockResolvedValue({toDataURL: () => "fake_image_data"});
     appController = new AppController("http://fake.url");
     // Reset the container for each test to ensure isolation
@@ -89,7 +89,7 @@ describe("AppController Orchestration", () => {
 
     it("should log an error and return if the container is not found", () => {
       appController.init("#non-existent-container");
-      expect(Logger.error).toHaveBeenCalledWith('Initialization failed: Container with selector "#non-existent-container" not found.');
+      expect(Logger.error).toHaveBeenCalledWith("Initialization failed: Container with selector \"#non-existent-container\" not found.");
       expect(mockUiManagerInstance.init).not.toHaveBeenCalled();
     });
   });
@@ -118,7 +118,7 @@ describe("AppController Orchestration", () => {
 
   describe("_findReportContainer Heuristics", () => {
     it("should find the container using candidate selectors", () => {
-      document.body.innerHTML = `<div id="wrapper">Report Content</div><div id="app"></div>`;
+      document.body.innerHTML = "<div id=\"wrapper\">Report Content</div><div id=\"app\"></div>";
       const wrapperElement = document.getElementById("wrapper");
       makeVisible(wrapperElement, 200, 200); // Make the element visible
 
@@ -160,7 +160,7 @@ describe("AppController Orchestration", () => {
     });
 
     it("should return null if no suitable visible container is found", () => {
-      document.body.innerHTML = `<div id="app"></div>`;
+      document.body.innerHTML = "<div id=\"app\"></div>";
       appController.init("#app");
       makeVisible(document.getElementById("app"), 0, 0); // Make it invisible
 

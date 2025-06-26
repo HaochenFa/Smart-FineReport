@@ -43,9 +43,9 @@ const mockChartWidget = {
 const mockTableWidget = {
   data: {
     data: [
-      {'Product': 'Laptop', 'Region': 'East', 'Sales': 1000},
-      {'Product': 'Mouse', 'Region': 'West', 'Sales': 1500},
-      {'Product': 'Keyboard', 'Region': 'East', 'Sales': undefined},
+      {"Product": "Laptop", "Region": "East", "Sales": 1000},
+      {"Product": "Mouse", "Region": "West", "Sales": 1500},
+      {"Product": "Keyboard", "Region": "East", "Sales": undefined},
     ],
   },
 };
@@ -59,7 +59,7 @@ const createMockFrInstance = (widgets = {}) => ({
 });
 
 // Test Suite 测试组件
-describe('FRInterface', () => {
+describe("FRInterface", () => {
 
   // Clear all mocks before each test to ensure a clean state.
   // 在每次测试前清除所有模拟，以确保测试环境的纯净。
@@ -68,8 +68,8 @@ describe('FRInterface', () => {
   });
 
   // --- Constructor Tests --- //
-  describe('Constructor', () => {
-    it('should initialize successfully with a valid frInstance', () => {
+  describe("Constructor", () => {
+    it("should initialize successfully with a valid frInstance", () => {
       const mockFr = createMockFrInstance();
       const frInterface = new FRInterface(mockFr);
       expect(frInterface).toBeInstanceOf(FRInterface);
@@ -77,14 +77,14 @@ describe('FRInterface', () => {
       expect(log.log).toHaveBeenCalledWith("FRInterface initialized successfully.");
     });
 
-    it('should throw an error if frInstance is null or undefined', () => {
+    it("should throw an error if frInstance is null or undefined", () => {
       const errorMsg = "Invalid or missing FineReport instance. Please provide the global 'FR' object from your dashboard environment.";
       expect(() => new FRInterface(null)).toThrow(errorMsg);
       expect(() => new FRInterface(undefined)).toThrow(errorMsg);
       expect(log.error).toHaveBeenCalledWith(errorMsg);
     });
 
-    it('should throw an error if frInstance is missing the "Report" property', () => {
+    it("should throw an error if frInstance is missing the \"Report\" property", () => {
       const invalidFr = {SomeOtherProp: {}};
       const errorMsg = "Invalid or missing FineReport instance. Please provide the global 'FR' object from your dashboard environment.";
       expect(() => new FRInterface(invalidFr)).toThrow(errorMsg);
@@ -94,66 +94,66 @@ describe('FRInterface', () => {
 
 
   // --- getData Method Tests --- //
-  describe('getData', () => {
+  describe("getData", () => {
     const mockWidgets = {
-      'myChart': mockChartWidget,
-      'myTable': mockTableWidget,
-      'unsupportedWidget': mockEmptyWidget,
+      "myChart": mockChartWidget,
+      "myTable": mockTableWidget,
+      "unsupportedWidget": mockEmptyWidget,
     };
     const mockFr = createMockFrInstance(mockWidgets);
 
-    it('should correctly extract and format data from a chart widget', async () => {
+    it("should correctly extract and format data from a chart widget", async () => {
       const frInterface = new FRInterface(mockFr);
-      const data = await frInterface.getData('myChart');
+      const data = await frInterface.getData("myChart");
 
       const expectedData = [
-        ['Category', 'Sales', 'Profit'],
-        ['Jan', '100', '40'],
-        ['Feb', '120', '50'],
-        ['Mar', '150', ''], // null should be converted to an empty string
+        ["Category", "Sales", "Profit"],
+        ["Jan", "100", "40"],
+        ["Feb", "120", "50"],
+        ["Mar", "150", ""], // null should be converted to an empty string
       ];
 
       expect(data).toEqual(expectedData);
-      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith('myChart');
-      expect(log.log).toHaveBeenCalledWith('Widget "myChart" identified as a chart. Using getChartData().');
+      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith("myChart");
+      expect(log.log).toHaveBeenCalledWith("Widget \"myChart\" identified as a chart. Using getChartData().");
     });
 
-    it('should correctly extract and format data from a table widget', async () => {
+    it("should correctly extract and format data from a table widget", async () => {
       const frInterface = new FRInterface(mockFr);
-      const data = await frInterface.getData('myTable');
+      const data = await frInterface.getData("myTable");
 
       const expectedData = [
-        ['Product', 'Region', 'Sales'],
-        ['Laptop', 'East', '1000'],
-        ['Mouse', 'West', '1500'],
-        ['Keyboard', 'East', ''], // undefined should be converted to an empty string
+        ["Product", "Region", "Sales"],
+        ["Laptop", "East", "1000"],
+        ["Mouse", "West", "1500"],
+        ["Keyboard", "East", ""], // undefined should be converted to an empty string
       ];
 
       expect(data).toEqual(expectedData);
-      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith('myTable');
-      expect(log.log).toHaveBeenCalledWith('Widget "myTable" identified as a table/report block.');
+      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith("myTable");
+      expect(log.log).toHaveBeenCalledWith("Widget \"myTable\" identified as a table/report block.");
     });
 
-    it('should return an empty array for a non-existent widget', async () => {
+    it("should return an empty array for a non-existent widget", async () => {
       const frInterface = new FRInterface(mockFr);
-      const data = await frInterface.getData('nonExistentWidget');
+      const data = await frInterface.getData("nonExistentWidget");
 
       expect(data).toEqual([]);
-      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith('nonExistentWidget');
-      expect(log.warn).toHaveBeenCalledWith('Widget "nonExistentWidget" could not be found in the dashboard.');
+      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith("nonExistentWidget");
+      expect(log.warn).toHaveBeenCalledWith("Widget \"nonExistentWidget\" could not be found in the dashboard.");
     });
 
-    it('should return an empty array for an unsupported widget type', async () => {
+    it("should return an empty array for an unsupported widget type", async () => {
       const frInterface = new FRInterface(mockFr);
-      const data = await frInterface.getData('unsupportedWidget');
+      const data = await frInterface.getData("unsupportedWidget");
 
       expect(data).toEqual([]);
-      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith('unsupportedWidget');
-      expect(log.warn).toHaveBeenCalledWith('Could not automatically determine data structure for widget "unsupportedWidget". It might be empty or of an unsupported type.');
+      expect(mockFr.Report.getWidgetByName).toHaveBeenCalledWith("unsupportedWidget");
+      expect(log.warn).toHaveBeenCalledWith("Could not automatically determine data structure for widget \"unsupportedWidget\". It might be empty or of an unsupported type.");
     });
 
-    it('should reject the promise if a critical error occurs during execution', async () => {
-      const error = new Error('Internal FR Engine Error');
+    it("should reject the promise if a critical error occurs during execution", async () => {
+      const error = new Error("Internal FR Engine Error");
       const errorMockFr = {
         Report: {
           getWidgetByName: jest.fn().mockImplementation(() => {
@@ -165,18 +165,18 @@ describe('FRInterface', () => {
       const frInterface = new FRInterface(errorMockFr);
 
       // We expect the promise to be rejected with a new, more descriptive error.
-      await expect(frInterface.getData('anyWidget')).rejects.toThrow('A critical error occurred while getting data for widget "anyWidget": Internal FR Engine Error');
-      expect(log.error).toHaveBeenCalledWith(expect.stringContaining('A critical error occurred'), error);
+      await expect(frInterface.getData("anyWidget")).rejects.toThrow("A critical error occurred while getting data for widget \"anyWidget\": Internal FR Engine Error");
+      expect(log.error).toHaveBeenCalledWith(expect.stringContaining("A critical error occurred"), error);
     });
 
-    it('should reject the promise if fr.Report API is not available at call time', async () => {
+    it("should reject the promise if fr.Report API is not available at call time", async () => {
       const frInterface = new FRInterface(createMockFrInstance());
       // Manually simulate a scenario where the FR object becomes invalid after initialization
       frInterface.fr = {};
 
       const errorMsg = "FR.Report API is not available. This function must be run within a FineReport dashboard (cpt) environment.";
 
-      await expect(frInterface.getData('anyWidget')).rejects.toThrow(errorMsg);
+      await expect(frInterface.getData("anyWidget")).rejects.toThrow(errorMsg);
       expect(log.error).toHaveBeenCalledWith(errorMsg);
     });
   });

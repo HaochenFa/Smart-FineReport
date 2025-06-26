@@ -14,7 +14,7 @@ describe("ChatView", () => {
   let onResetMock;
 
   beforeEach(() => {
-    document.body.innerHTML = '<div id="chat-container"></div>';
+    document.body.innerHTML = "<div id=\"chat-container\"></div>";
     container = document.getElementById("chat-container");
     onSubmitMock = jest.fn();
     onResetMock = jest.fn();
