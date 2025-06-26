@@ -4,6 +4,7 @@
  * @description 主入口文件，将整个项目暴露给帆软
  */
 
+import "./styles/main.css";
 import AppController from "@/app/app-controller.js";
 import {SETTINGS} from "@/utils/settings.js";
 import {Logger} from "@/utils/logger.js";
@@ -13,6 +14,7 @@ import {Logger} from "@/utils/logger.js";
  * @function window.initAIAssistant - 全局初始化函数
  * @param {object} options - 初始化配置
  * @param {string} options.containerSelector - 一个CSS选择器，指向用于挂载AI助手UI的DOM容器
+ * @param {string} options.bffUrl - (可选) 后端 BFF 服务的 URL
  * @param {object} options.fineReportInstance - 帆软环境传入的全局实例 (例如 _finereport 或 FR)
  */
 window.initAIAssistant = (options) => {
@@ -25,10 +27,13 @@ window.initAIAssistant = (options) => {
     return;
   }
 
+  // 将传入的 bffUrl 或默认的 settings.service.url 传递给控制器
+  const serviceUrl = options.bffUrl || SETTINGS.service.url;
+
   try {
     Logger.log("Initializing AI Assistant...");
 
-    const app = new AppController(SETTINGS);
+    const app = new AppController(serviceUrl);
 
     app.init(options.containerSelector);
     Logger.log("AI Assistant Initialized Successfully.");

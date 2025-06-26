@@ -25,6 +25,8 @@ export default {
     // Creates an alias. Now, "@/path/to/file" will resolve to "<rootDir>/src/path/to/file".
     // 创建一个别名。现在, "@/path/to/file" 将会解析到 "<rootDir>/src/path/to/file"。
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Mock CSS imports to prevent Jest from trying to parse them
+    '\\.css$': '<rootDir>/src/utils/__mocks__/styleMock.js',
   },
 
   // 4. 设置文件转换器

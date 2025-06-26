@@ -98,8 +98,8 @@ flowchart BT
 
 ```plaintext
 /SmartFineReport
-├── main.js             # The Main Entrance
 ├── src/                # Source files
+│   ├── main.js             # The Main Entrance
 │   ├── app/            # Application control and initialization
 │   │    ├── app-controller.js        # Core service
 │   │    └── state-manager.js         # UI <-> Backend bridging
@@ -129,30 +129,102 @@ flowchart BT
 
 ## 开发计划
 
-1. [x] 工具配置：日志记录、静态配置、默认提示词模版
-2. [x] 通用服务：API 服务的封装（POST）
-3. [x] ~~帆软集成：帆软 JS API 的封装~~ (v1.5.x 规划)
-4. [x] ~~数据清理：清理并结构化获取的原始数据~~ (v1.5.x 规划)
-5. [x] AI 服务：vLLM API 封装
-6. [x] 提示词整理：根据模版规范填充数据
-7. [x] 上下文管理：整理对话历史，自动清理旧对话
-8. [x] AI 核心服务管理：AI 服务协调器
-9. [x] 单元测试：编写底层核心服务单元测试
-10. [x] UI 界面：编写基础 UI 界面
-11. [x] APP 控制：创建整体核心控件
-12. [x] 单元测试：编写顶层组件单元测试
-13. [x] 编写入口文件
-14. [x] 集成测试：调试项目是否顺利运行
-15. [x] 编写 `rollup.config.js`
-16. [x] BFF 代理服务：将 API KEY 等敏感信息存放在后端
-17. [x] API KEY 健壮性：判断传入的配置是否含有 KEY，若不包含 KEY 则忽略该字段
-18. [ ] 部署进入测试环境
-19. [ ] UI 适配：适配面板 UI 设计
-20. [ ] 部署进入预生产环境
-21. [ ] E2E 端到端测试
-22. [ ] 正式上线
+项目当前处于 `v1.0.0-vision-alpha` 阶段，核心的视觉分析功能已开发完成。后续计划将聚焦于稳定性和用户体验提升，直至正式上线。
 
-## 部署调试
+### v1.0: 视觉分析核心 (已完成)
+
+-   [x] **核心框架**: 完成了基于截图和多模态模型的 AI 分析流程。
+-   [x] **前端界面**: 开发了可嵌入的、由状态驱动的聊天 UI 组件。
+-   [x] **后端代理 (BFF)**: 建立了用于 API 密钥管理和安全请求转发的 BFF 服务。
+-   [x] **构建与样式**: 集成了 Rollup 打包流程和 Tailwind CSS，并解决了样式隔离问题。
+-   [x] **核心逻辑测试**: 编写了覆盖核心模块的单元测试和集成测试。
+
+### 后续计划
+
+-   [ ] **环境部署与测试**:
+    -   [ ] 部署到内部测试环境，进行全面的功能验证。
+    -   [ ] 部署到预生产环境，与真实的帆软看板进行集成测试。
+-   [x] **UI/UX 优化**:
+    -   [x] 根据测试反馈，进一步优化 UI 布局和交互细节，提升用户体验。
+    -   [x] 增强 UI 对不同尺寸看板和屏幕的响应式适配能力。
+-   [ ] **端到端 (E2E) 测试**: 编写自动化 E2E 测试用例，模拟用户从点击按钮到获取分析结果的完整流程。
+-   [ ] **文档完善**: 更新和完善最终用户使用手册和开发者文档。
+-   [ ] **正式上线**: 在完成所有测试和优化后，正式发布 v1.0.0 版本。
+
+## 生产环境部署
+
+项目的部署包含三个核心步骤：部署后端 BFF 服务、构建前端脚本、在帆软中集成。
+
+### 步骤 1: 部署 BFF 后端服务
+
+BFF (Backend for Frontend) 是一个独立的 Node.js 服务，负责安全地管理 API 密钥和代理请求。**必须将其部署在服务器环境中**。
+
+1. **上传文件**: 将项目根目录下的 `bff/` 文件夹完整上传到您的服务器。
+2. **配置环境变量**: 进入服务器的 `bff/` 目录，创建一个 `.env` 文件，并配置以下变量：
+   ```plaintext
+   # .env
+   LLM_API_KEYS=your_api_key_1,your_api_key_2
+   LLM_FALLBACK_URLS=http://vllm-service-1.com,http://vllm-service-2.com
+   ```
+3. **安装依赖**: 在服务器的 `bff/` 目录中执行：
+   ```bash
+   npm install
+   ```
+4. **启动服务**: 为了保证服务稳定性，推荐使用进程守护工具 `pm2`。
+   ```bash
+   # 全局安装 pm2 (如果尚未安装)
+   npm install -g pm2
+
+   # 使用 pm2 启动服务
+   pm2 start index.js --name "smart-finereport-bff"
+   ```
+   请确保 BFF 服务所在的端口（默认为 3000）已在防火墙中开放，并记录下其访问地址，例如 `http://your-server-ip:3000`。
+
+### 步骤 2: 构建前端脚本
+
+在您的**本地开发环境**中执行以下操作。
+
+1. **配置 BFF 地址**: 打开 `src/utils/settings.js` 文件，修改 `api.baseUrl` 的值，使其指向您在上一步中部署的 BFF 服务地址。
+2. **执行构建**: 在项目根目录下运行打包命令：
+   ```bash
+   npm run build
+   ```
+3. **获取产物**: 构建成功后，在 `dist/` 目录下找到 `smart-finereport.js` 文件。将此文件上传到 CDN 或帆软服务器的静态资源目录，确保能通过
+   URL 公开访问。
+
+### 步骤 3: 在帆软中集成
+
+1. **添加容器**: 在帆软看板设计器中，拖入一个 HTML 组件，并写入以下内容以创建挂载点。聊天窗口将在此渲染。
+   ```html
+   <div id="smartfine-chat-container"></div>
+   ```
+2. **添加按钮**: 在看板上添加一个按钮，用于触发 AI 分析助手。
+3. **配置按钮点击事件**: 为该按钮添加点击事件，并粘贴以下 JavaScript 代码。这是推荐的动态加载方式，可以避免不必要的性能开销。
+
+   ```javascript
+   // 请将 scriptUrl 替换为您在步骤 2 中上传的 JS 文件地址
+   const scriptUrl = 'https://your-cdn.com/path/to/smart-finereport.umd.js';
+
+   // 检查脚本是否已加载，防止重复执行
+   if (window.initAIAssistant) {
+     window.initAIAssistant({
+       containerSelector: '#smartfine-chat-container',
+       fineReportInstance: _g() // _g() 或 FR 是帆软的全局对象，请按需传入
+     });
+   } else {
+     const script = document.createElement('script');
+     script.src = scriptUrl;
+     script.onload = function() {
+       window.initAIAssistant({
+         containerSelector: '#smartfine-chat-container',
+         fineReportInstance: _g()
+       });
+     };
+     document.head.appendChild(script);
+   }
+   ```
+
+## 开发调试
 
 - 安装依赖：
 
@@ -161,7 +233,7 @@ cd SmartFineReport/ &&
 npm install
 ```
 
-- 测试：
+- 运行测试：
 
 ```bash
 npm test

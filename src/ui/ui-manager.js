@@ -63,8 +63,8 @@ export class UIManager {
    * 当状态发生变化时，StateManager 将调用此处设置的回调函数。
    */
   _bindToStateChanges() {
-    // 当状态改变时，调用 _update 方法来刷新整个UI
-    this.stateManager.onStateChange = (state) => this._update(state);
+    // 通过 subscribe 方法订阅状态变更
+    this.stateManager.subscribe((state) => this._update(state));
   }
 
   /**

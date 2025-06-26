@@ -5,6 +5,7 @@ import {terser} from "rollup-plugin-terser";
 import pkg from "./package.json";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
+import postcss from "rollup-plugin-postcss";
 
 // 判断当前是否是生产环境
 const isProduction = process.env.NODE_ENV === "production";
@@ -61,6 +62,13 @@ export default {
     babel({
       babelHelpers: "bundled",
       exclude: "node_modules/**",
+    }),
+
+    // PostCSS plugin to handle Tailwind CSS
+    postcss({
+      extract: true, // Extracts CSS to a separate file
+      minimize: isProduction, // Minimize CSS in production
+      sourceMap: !isProduction,
     }),
 
     // 开发服务器配置 (仅在开发环境下生效)

@@ -75,7 +75,8 @@ describe('UIManager', () => {
     };
     mockStateManager = {
       getState: jest.fn().mockReturnValue(initialMockState),
-      onStateChange: null, // UIManager will assign its callback to this.
+      // The subscribe method is the new contract for state listening.
+      subscribe: jest.fn(),
     };
     mockMessageSubmitHandler = jest.fn();
     mockResetAnalysisHandler = jest.fn();
@@ -119,14 +120,16 @@ describe('UIManager', () => {
       expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledTimes(1);
       expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledWith(false);
 
-      // 5. Verify state binding
-      expect(mockStateManager.onStateChange).toBeInstanceOf(Function);
+      // 5. Verify state binding via subscribe
+      expect(mockStateManager.subscribe).toHaveBeenCalledTimes(1);
+      expect(mockStateManager.subscribe).toHaveBeenCalledWith(expect.any(Function));
     });
   });
 
   describe('State Updates', () => {
     it('should update the view correctly when state changes', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
+      const uiManager = new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
+      const stateUpdateListener = mockStateManager.subscribe.mock.calls[0][0];
 
       // Clear initial calls for a clean test of the update logic
       jest.clearAllMocks();
@@ -138,7 +141,7 @@ describe('UIManager', () => {
       };
 
       // Manually trigger the state change handler that UIManager has subscribed to.
-      mockStateManager.onStateChange(newState);
+      stateUpdateListener(newState);
 
       // 1. Verify message update logic
       expect(currentMockViewInstance.messageContainer.innerHTML).toBe(''); // Should be cleared
@@ -155,12 +158,13 @@ describe('UIManager', () => {
     });
 
     it('should handle empty or null messages array gracefully', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
+      const uiManager = new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
+      const stateUpdateListener = mockStateManager.subscribe.mock.calls[0][0];
 
       jest.clearAllMocks(); // Clear initial calls
 
       const newState = {messages: [], isLoading: false, isDataStale: false};
-      mockStateManager.onStateChange(newState);
+      stateUpdateListener(newState);
 
       // Verify container is cleared but addMessage is not called
       expect(currentMockViewInstance.messageContainer.innerHTML).toBe('');
@@ -168,7 +172,7 @@ describe('UIManager', () => {
 
       // Test with null
       const newStateNull = {messages: null, isLoading: false, isDataStale: false};
-      mockStateManager.onStateChange(newStateNull);
+      stateUpdateListener(newStateNull);
       expect(currentMockViewInstance.messageContainer.innerHTML).toBe('');
       expect(currentMockViewInstance.addMessage).not.toHaveBeenCalled();
     });

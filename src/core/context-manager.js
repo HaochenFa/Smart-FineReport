@@ -83,6 +83,19 @@ export class ContextManager {
   }
 
   /**
+   * @description 以格式化的字符串形式检索对话历史记录，每条消息占一行。
+   * Retrieves the conversation history as a formatted string, with each message on a new line.
+   * @returns {string} 格式化的对话历史字符串，例如 "user: 你好\nassistant: 我有什么可以帮助你的吗？"
+   * A formatted string of the conversation history.
+   */
+  getFormattedHistory() {
+    log.log(`[ContextManager] Formatting conversation history with ${this.history.length} messages.`);
+    return this.history
+      .map(msg => `${msg.role}: ${msg.content}`)
+      .join('\n');
+  }
+
+  /**
    * @description 清空整个对话历史记录。
    * Clears the entire conversation history.
    * @returns {void}

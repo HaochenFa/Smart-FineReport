@@ -27,15 +27,16 @@ export class PromptBuilder {
     try {
       // 步骤 1: 获取对话历史
       let history = [];
-      if (contextProvider && typeof contextProvider.getFormattedHistory === "function") {
-        const formattedHistory = contextProvider.getFormattedHistory();
-        if (Array.isArray(formattedHistory)) {
-          history = formattedHistory;
+      if (contextProvider && typeof contextProvider.getHistory === "function") {
+        // 调用 getHistory() 获取原始消息数组
+        const rawHistory = contextProvider.getHistory();
+        if (Array.isArray(rawHistory)) {
+          history = rawHistory;
         } else {
-          log.warn("上下文提供者返回的历史记录格式无效，期望是消息对象数组。");
+          log.warn("Context provider returned invalid history format, expected an array of message objects.");
         }
       } else {
-        log.warn("未提供有效的上下文提供者 (contextProvider)，历史对话将为空。");
+        log.warn("No valid contextProvider was provided, conversation history will be empty.");
       }
 
       // 步骤 1.5: 验证 Base64 字符串

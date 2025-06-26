@@ -20,8 +20,8 @@ export default class AppController {
   /**
    * @constructor 导入全局静态配置
    */
-  constructor(settings) {
-    this.settings = settings; // 保存导入的配置
+  constructor(serviceUrl) {
+    this.serviceUrl = serviceUrl; // 保存 BFF 服务 URL
   }
 
   /**
@@ -38,15 +38,21 @@ export default class AppController {
     // 2. 初始化所有后端的逻辑和 AI 模块
     // 注意实例化顺序
     const promptBuilder = new PromptBuilder();
-    const aiEngine = new AIEngine({url: this.settings.service.url});
+    const aiEngine = new AIEngine({url: this.serviceUrl});
     this.contextManager = new ContextManager();
 
     // 3. 整合核心分析管线 ai-analysis-pipeline
     this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine);
 
+    const containerElement = document.querySelector(containerSelector);
+    if (!containerElement) {
+      Logger.error(`Initialization failed: Container with selector "${containerSelector}" not found.`);
+      return;
+    }
+
     // 4. 初始化 UI 管理器
     this.uiManager = new UIManager(
-      containerSelector,
+      containerElement, // 传递 DOM 元素而非选择器字符串
       this.stateManager,
       this.handleUserQuery.bind(this),
       this.resetAnalysis.bind(this)
@@ -124,7 +130,7 @@ export default class AppController {
    * @returns {Promise<string>} - AI的响应
    */
   async runAnalysis(text, isInitial = false) {
-    const history = this.contextManager.getFormattedHistory();
+    // 直接将 contextManager 实例作为 contextProvider 传递
     const reportContainer = this._findReportContainer();
 
     if (!reportContainer) {
@@ -136,8 +142,8 @@ export default class AppController {
     const canvas = await html2canvas(reportContainer);
     const imageBase64 = canvas.toDataURL("image/png");
 
-    // 调用核心分析逻辑
-    return await this.pipeline.run(text, imageBase64, history, isInitial);
+    // 调用核心分析逻辑，传入 this.contextManager 作为 contextProvider
+    return await this.pipeline.run(text, imageBase64, this.contextManager, isInitial);
   }
 
   /**
@@ -151,10 +157,11 @@ export default class AppController {
     }
 
     try {
-      // 1. 更新 UI 状态，显示用户的消息，并进入加载状态
+      // 1. 更新 UI 状态，立即显示用户的消息，并进入加载状态
       const currentState = this.stateManager.getState();
+      const userMessage = {role: "user", content: text};
       this.stateManager.setState({
-        messages: [...currentState.messages, {role: "user", content: text}],
+        messages: [...currentState.messages, userMessage],
         isLoading: true,
       });
 
@@ -164,11 +171,12 @@ export default class AppController {
       // 3. 调用核心分析逻辑
       const aiResponse = await this.runAnalysis(text, false);
 
-      // 4. 更新上下文和 UI 状态
+      // 4. 更新上下文和 UI 状态，添加 AI 的回复
       this.contextManager.addMessage("assistant", aiResponse);
-      const finalState = this.stateManager.getState();
+      const updatedState = this.stateManager.getState();
+      const assistantMessage = {role: "assistant", content: aiResponse};
       this.stateManager.setState({
-        messages: [...finalState.messages, {role: "assistant", content: aiResponse}],
+        messages: [...updatedState.messages, assistantMessage],
       });
     } catch (error) {
       // 错误处理：如果 pipeline 分析失败，应当告知用户
@@ -221,8 +229,8 @@ export default class AppController {
     const allDivs = document.body.getElementsByTagName('div');
 
     for (const div of allDivs) {
-      // 检查元素是否可见
-      if (div.offsetWidth > 0 && div.offsetHeight > 0 && div.checkVisibility()) {
+      // 检查元素是否可见 (跨浏览器兼容方式)
+      if (div.offsetWidth > 0 && div.offsetHeight > 0 && div.offsetParent !== null) {
         const area = div.offsetWidth * div.offsetHeight;
         if (area > maxArea) {
           // 增加一个过滤条件，避免选择到AI助手自身的容器

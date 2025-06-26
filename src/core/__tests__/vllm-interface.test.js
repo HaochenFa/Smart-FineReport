@@ -7,16 +7,12 @@
 import {beforeAll, beforeEach, describe, expect, it, jest} from "@jest/globals";
 
 // Module-level variables to hold the imported modules after mocking.
-// 模块级变量，用于在模拟后持有导入的模块。
 let AIEngine;
 let APIService;
 let Logger;
 
-// ESM-compatible mocking setup. This runs once before all tests in this file.
-// 兼容ESM的模拟设置。此代码块在本文件所有测试运行前执行一次。
+// ESM-compatible mocking setup.
 beforeAll(async () => {
-  // 1. Mock the dependencies using Jest's API for ES Modules.
-  //    使用Jest的ESM API来模拟依赖项。
   jest.unstable_mockModule("@/services/api-service.js", () => ({
     APIService: {
       post: jest.fn(),
@@ -30,9 +26,8 @@ beforeAll(async () => {
     },
   }));
 
-  // 2. Dynamically import the modules *after* the mocks have been configured.
-  //    在模拟配置完成*之后*，动态导入模块。
-  const vllmInterfaceModule = await import("@//core/vllm-interface.js");
+  // FIX: Corrected the import path from "@//core/..." to "@/core/...".
+  const vllmInterfaceModule = await import("@/core/vllm-interface.js");
   AIEngine = vllmInterfaceModule.AIEngine;
 
   const apiServiceModule = await import("@/services/api-service.js");
@@ -48,8 +43,6 @@ describe('AIEngine', () => {
   const MOCK_URL = 'http://fake-vllm-server.com/generate';
   const MOCK_API_KEY = 'test-api-key-123';
 
-  // Before each test, clear all mock history to ensure a clean state.
-  // 在每次测试前清除所有模拟历史，以确保一个纯净的测试环境。
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -79,7 +72,6 @@ describe('AIEngine', () => {
   // --- getResponse Method Tests --- //
   describe('getResponse', () => {
     const validMultiModalPrompt = JSON.stringify({
-
       messages: [{
         role: 'user',
         content: [
@@ -87,6 +79,20 @@ describe('AIEngine', () => {
           {type: 'image_url', image_url: {url: 'data:image/png;base64,mock-base64'}}
         ]
       }]
+    });
+
+    // ADDED: Test cases for prompt validation logic.
+    it.each([
+      ['null', null],
+      ['undefined', undefined],
+      ['an empty string', ''],
+      ['a whitespace string', '   '],
+    ])('should throw an error if the prompt is %s', async (scenario, invalidPrompt) => {
+      const engine = new AIEngine({url: MOCK_URL});
+      const errorMsg = "[AIEngine] Error: Prompt cannot be null, empty, or invalid.";
+      await expect(engine.getResponse(invalidPrompt)).rejects.toThrow(errorMsg);
+      expect(Logger.error).toHaveBeenCalledWith(errorMsg);
+      expect(APIService.post).not.toHaveBeenCalled();
     });
 
     it('should throw an error for an invalid JSON prompt', async () => {

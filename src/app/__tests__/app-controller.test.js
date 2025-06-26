@@ -22,9 +22,9 @@ const mockPromptBuilder = jest.fn();
 const mockAIEngine = jest.fn();
 
 const mockAddMessage = jest.fn();
-const mockGetFormattedHistory = jest.fn();
+const mockGetHistory = jest.fn();
 const mockContextManager = jest.fn(() => ({
-  addMessage: mockAddMessage, getFormattedHistory: mockGetFormattedHistory,
+  addMessage: mockAddMessage, getHistory: mockGetHistory,
 }));
 
 const mockPipelineRun = jest.fn();
@@ -74,8 +74,9 @@ describe('AppController Orchestration', () => {
   // 声明一个变量来持有 AppController 类，它将在 beforeAll 中被赋值
   let AppController;
   let appControllerInstance;
-  const mockSettings = {service: {url: 'http://fake-ai.com'}};
+  const mockServiceUrl = 'http://fake-ai.com';
   const mockContainerSelector = '#test-container';
+  let mockContainerElement;
 
   // ** SOLUTION: Step 2 **
   // 使用 beforeAll 在所有测试开始前，只导入一次被测试的模块。
@@ -93,8 +94,13 @@ describe('AppController Orchestration', () => {
   beforeEach(() => {
     // 每个测试后清理所有模拟，确保测试隔离
     jest.clearAllMocks();
+    // 创建一个模拟的 DOM 容器
+    document.body.innerHTML = `<div id="test-container"></div>`;
+    mockContainerElement = document.querySelector(mockContainerSelector);
     // 使用已经加载的 AppController 类创建新实例
-    appControllerInstance = new AppController(mockSettings);
+    appControllerInstance = new AppController(mockServiceUrl);
+    // 模拟 querySelector 以返回我们的模拟容器
+    jest.spyOn(document, 'querySelector').mockReturnValue(mockContainerElement);
   });
 
   // 测试 1: 验证 init 方法的协调逻辑
@@ -106,10 +112,11 @@ describe('AppController Orchestration', () => {
       // Assert: 验证所有构造函数是否被正确调用
       expect(mockStateManager).toHaveBeenCalledWith({messages: [], isLoading: false});
       expect(mockPromptBuilder).toHaveBeenCalledTimes(1);
-      expect(mockAIEngine).toHaveBeenCalledWith(mockSettings.service);
+      expect(mockAIEngine).toHaveBeenCalledWith({url: mockServiceUrl});
       expect(mockContextManager).toHaveBeenCalledTimes(1);
       expect(mockAnalysisPipeline).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
-      expect(mockUIManager).toHaveBeenCalledWith(mockContainerSelector, expect.any(Object), expect.any(Function), expect.any(Function));
+      expect(document.querySelector).toHaveBeenCalledWith(mockContainerSelector);
+      expect(mockUIManager).toHaveBeenCalledWith(mockContainerElement, expect.any(Object), expect.any(Function), expect.any(Function));
       expect(mockUIManagerInit).toHaveBeenCalledTimes(1);
       expect(appControllerInstance.triggerInitialAnalysis).toHaveBeenCalledTimes(1);
       expect(mockLoggerLog).toHaveBeenCalledWith("AppController Initialized and Ready");
@@ -144,14 +151,17 @@ describe('AppController Orchestration', () => {
         isLoading: true,
         isDataStale: false
       };
-      const history = 'formatted_history';
+      const stateAfterAIMessage = {
+        messages: [...stateAfterUserMessage.messages, {role: 'assistant', content: aiResponse}],
+        isLoading: true, // It's still true before the finally block
+        isDataStale: false
+      };
       const mockCanvas = {toDataURL: () => 'data:image/png;base64,mock-base64-string'};
 
       mockGetState
-        .mockReturnValueOnce(stateBeforeQuery)
-        .mockReturnValueOnce(stateAfterUserMessage);
+        .mockReturnValueOnce(stateBeforeQuery)      // First call in handleUserQuery
+        .mockReturnValueOnce(stateAfterUserMessage); // Second call for AI message update
 
-      mockGetFormattedHistory.mockReturnValue(history);
       mockHtml2canvas.mockResolvedValue(mockCanvas);
       mockPipelineRun.mockResolvedValue(aiResponse);
 
@@ -160,6 +170,7 @@ describe('AppController Orchestration', () => {
 
       // Assert
       expect(mockHtml2canvas).toHaveBeenCalledWith(document.querySelector('.report-container'));
+      // 1. Set user message and loading:true, 2. Add AI message, 3. Set loading:false
       expect(mockSetState).toHaveBeenCalledTimes(3);
       expect(mockSetState).toHaveBeenCalledWith({
         messages: [...initialMessages, {role: 'user', content: userQuery}], isLoading: true,
@@ -170,7 +181,8 @@ describe('AppController Orchestration', () => {
       expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
       expect(mockAddMessage).toHaveBeenCalledWith('user', userQuery);
       expect(mockAddMessage).toHaveBeenCalledWith('assistant', aiResponse);
-      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, 'data:image/png;base64,mock-base64-string', history, false);
+      // 验证 runAnalysis 的调用，确保传入的是 contextManager 实例
+      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, 'data:image/png;base64,mock-base64-string', appControllerInstance.contextManager, false);
     });
 
     it('should handle an error from the analysis pipeline', async () => {

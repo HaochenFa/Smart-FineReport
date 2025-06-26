@@ -25,8 +25,11 @@ const mockLogger = {
 // 模拟 Settings 常量
 const MOCK_SETTINGS = {
   logger: {
-    level: 'debug' // 提供一个具体的测试值
-  }, // 可以根据需要添加其他配置
+    level: 'debug'
+  },
+  service: { // Add the missing service property
+    url: 'http://fake-service.com'
+  }
 };
 
 // 使用 jest.unstable_mockModule 来模拟 ESM 模块
@@ -98,11 +101,11 @@ describe('initializeAIAssistant', () => {
 
     // 验证 AppController 构造函数被调用，并传入了正确的配置
     expect(mockAppControllerConstructor).toHaveBeenCalledTimes(1);
-    expect(mockAppControllerConstructor).toHaveBeenCalledWith(MOCK_SETTINGS);
+    expect(mockAppControllerConstructor).toHaveBeenCalledWith(MOCK_SETTINGS.service.url);
 
     // 验证 app.init 方法被调用，并传入了正确的参数
     expect(mockInit).toHaveBeenCalledTimes(1);
-    expect(mockInit).toHaveBeenCalledWith(validOptions.containerSelector, validOptions.fineReportInstance);
+    expect(mockInit).toHaveBeenCalledWith(validOptions.containerSelector);
 
     // 验证记录了成功日志
     expect(mockLogger.log).toHaveBeenCalledWith('AI Assistant Initialized Successfully.');
@@ -117,7 +120,7 @@ describe('initializeAIAssistant', () => {
 
       // 验证记录了错误日志
       expect(mockLogger.error).toHaveBeenCalledTimes(1);
-      expect(mockLogger.error).toHaveBeenCalledWith('AI Assistant Initialization Failed: Invalid arguments.');
+      expect(mockLogger.error).toHaveBeenCalledWith('AI Assistant Initialization Failed: `containerSelector` and `fineReportInstance` must be provided.');
 
       // 验证核心逻辑未被执行
       expect(mockAppControllerConstructor).not.toHaveBeenCalled();

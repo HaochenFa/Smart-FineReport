@@ -78,7 +78,7 @@ describe('ChatView', () => {
       const messageElement = chatView.messageContainer.querySelector('.justify-end');
       expect(messageElement).not.toBeNull(); // The message bubble container should be right-aligned.
 
-      const bubble = messageElement.querySelector('.bg-blue-500.text-white');
+      const bubble = messageElement.querySelector('.bg-gray-700.text-white');
       expect(bubble).not.toBeNull(); // The bubble should have user-specific styling.
       expect(bubble.textContent).toBe(userMessage.content); // The content should match.
     });

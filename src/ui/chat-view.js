@@ -29,7 +29,7 @@ export class ChatView {
 
     this.inputField = document.createElement("textarea"); // 文本输入框
     this.inputField.className =
-      "flex-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none h-12 overflow-hidden";
+      "flex-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none h-12 overflow-hidden";
     this.inputField.placeholder = "输入你的消息...";
     this.inputField.rows = 1;
     this.inputField.addEventListener("input", this._autoResizeInput.bind(this)); // 自动调整输入框高度
@@ -43,7 +43,7 @@ export class ChatView {
 
     this.sendButton = document.createElement("button"); // 发送按钮
     this.sendButton.className =
-      "ml-3 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200";
+      "ml-3 px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200";
     this.sendButton.textContent = "发送";
     this.sendButton.addEventListener("click", this._handleSubmit.bind(this));
 
@@ -55,7 +55,7 @@ export class ChatView {
 
     this.loadingIndicator = document.createElement("div"); // 加载指示器
     this.loadingIndicator.className =
-      "hidden absolute bottom-20 left-1/2 -translate-x-1/2 p-2 bg-blue-500 text-white rounded-full shadow-lg";
+      "hidden absolute bottom-20 left-1/2 -translate-x-1/2 p-2 bg-gray-800 text-white rounded-full shadow-lg";
     this.loadingIndicator.innerHTML =
       '<svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>加载中...';
   }
@@ -74,11 +74,12 @@ export class ChatView {
     this.chatWindow.appendChild(this.inputArea);
 
     // 将聊天窗口和加载指示器添加到主容器
+    this.container.id = 'smartfine-chat-container'; // Add unique ID
     this.container.appendChild(this.chatWindow);
     this.container.appendChild(this.loadingIndicator);
 
     // 确保容器占据可用高度，并使用 flex 布局
-    this.container.className += " h-screen flex flex-col p-4 font-inter"; // 添加 Tailwind CSS 类
+    this.container.className += " h-screen flex flex-col p-4"; // 添加 Tailwind CSS 类
   }
 
   /**
@@ -94,7 +95,7 @@ export class ChatView {
     const bubble = document.createElement("div");
     bubble.className = `max-w-xl p-3 rounded-xl shadow-sm ${
       isUser
-        ? "bg-blue-500 text-white rounded-br-none"
+        ? "bg-gray-700 text-white rounded-br-none"
         : "bg-gray-200 text-gray-800 rounded-bl-none"
     }`;
     bubble.textContent = message.content;
