@@ -35,7 +35,7 @@ app.use(cors());
 app.use(express.json());
 
 // 6. 定义统一的 API 端点
-app.post('/api/v1/chat', async (req, res) => {
+app.post('/api/v1/', async (req, res) => {
   const requestBody = req.body;
   console.log('[BFF] Received request from client. Starting fallback chain.');
   console.log('[BFF] Request body:', JSON.stringify(requestBody, null, 2));
