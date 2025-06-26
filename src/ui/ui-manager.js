@@ -124,6 +124,11 @@ export class UIManager {
    * @param {object} state - 最新的应用状态对象。
    */
   _update(state) {
+    if (state.isLoading) {
+      this.disableInputs();
+    } else {
+      this.enableInputs();
+    }
     this._updateMessages(state.messages);
     this._updateResetButton(state.isDataStale);
   }

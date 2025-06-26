@@ -11,7 +11,7 @@ describe("ContextManager", () => {
   let contextManager;
 
   beforeEach(() => {
-    contextManager = new ContextManager(5); // Set capacity to 5 for testing
+    contextManager = new ContextManager(11); // Set capacity to 11 for testing
   });
 
   describe("addMessage", () => {
@@ -28,17 +28,31 @@ describe("ContextManager", () => {
       expect(history).toHaveLength(0);
     });
 
-    it("should truncate history when it exceeds capacity", () => {
-      contextManager.addMessage("user", "1");
-      contextManager.addMessage("assistant", "2");
-      contextManager.addMessage("user", "3");
-      contextManager.addMessage("assistant", "4");
-      contextManager.addMessage("user", "5");
-      contextManager.addMessage("assistant", "6"); // This should cause truncation
+    it("should remove the third message (index 2) when history exceeds capacity", () => {
+      // Fill the history to capacity (11 messages)
+      contextManager.addMessage("user", "Initial Analysis Request"); // Index 0
+      contextManager.addMessage("assistant", "Initial Analysis Report"); // Index 1
+      contextManager.addMessage("user", "Follow-up 1"); // Index 2 - This one should be removed
+      for (let i = 3; i < 11; i++) {
+        contextManager.addMessage("user", `Message ${i}`);
+      }
 
-      const history = contextManager.getHistory();
-      expect(history).toHaveLength(5);
-      expect(history[0].content).toBe("2"); // The first message ("1") should be gone
+      let history = contextManager.getHistory();
+      expect(history).toHaveLength(11);
+      expect(history[2].content).toBe("Follow-up 1");
+
+      // Add one more message to trigger truncation
+      contextManager.addMessage("assistant", "Final Message");
+
+      history = contextManager.getHistory();
+      expect(history).toHaveLength(11); // Should remain at capacity
+
+      // Verify the correct messages are preserved
+      expect(history[0].content).toBe("Initial Analysis Request"); // Should be preserved
+      expect(history[1].content).toBe("Initial Analysis Report"); // Should be preserved
+      expect(history[2].content).not.toBe("Follow-up 1"); // The original third message should be gone
+      expect(history[2].content).toBe("Message 3"); // The new third message
+      expect(history[10].content).toBe("Final Message"); // The latest message should be at the end
     });
   });
 

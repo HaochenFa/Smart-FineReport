@@ -78,20 +78,30 @@ describe("UIManager", () => {
       expect(mockStateManager.subscribe).toHaveBeenCalledTimes(1);
     });
 
-    it("should update messages and reset button on state change, ignoring isLoading", () => {
+    it("should call disableInputs when state.isLoading is true", () => {
       const stateUpdateListener = mockStateManager.subscribe.mock.calls[0][0];
-      const newState = {
-        messages: [{role: "user", content: "New Message"}],
-        isDataStale: true,
-        isLoading: true, // This property should be ignored by the new logic
-      };
+      const newState = {messages: [], isDataStale: false, isLoading: true};
+
+      const disableSpy = jest.spyOn(uiManager, "disableInputs");
+      const enableSpy = jest.spyOn(uiManager, "enableInputs");
 
       stateUpdateListener(newState);
 
-      expect(currentMockViewInstance.addMessage).toHaveBeenCalledWith(newState.messages[0]);
-      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledWith(true);
-      // Ensure old loading logic is not called
-      expect(currentMockViewInstance.toggleLoading).not.toHaveBeenCalled();
+      expect(disableSpy).toHaveBeenCalledTimes(1);
+      expect(enableSpy).not.toHaveBeenCalled();
+    });
+
+    it("should call enableInputs when state.isLoading is false", () => {
+      const stateUpdateListener = mockStateManager.subscribe.mock.calls[0][0];
+      const newState = {messages: [], isDataStale: false, isLoading: false};
+
+      const disableSpy = jest.spyOn(uiManager, "disableInputs");
+      const enableSpy = jest.spyOn(uiManager, "enableInputs");
+
+      stateUpdateListener(newState);
+
+      expect(enableSpy).toHaveBeenCalledTimes(1);
+      expect(disableSpy).not.toHaveBeenCalled();
     });
   });
 

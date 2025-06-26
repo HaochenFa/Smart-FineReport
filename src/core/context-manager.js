@@ -5,7 +5,7 @@
  */
 import {Logger} from "../utils/logger.js";
 
-const DEFAULT_MAX_MESSAGES = 10; // Default number of messages to keep in history
+const DEFAULT_MAX_MESSAGES = 11; // Default number of messages to keep in history
 
 export class ContextManager {
   /**
@@ -34,8 +34,11 @@ export class ContextManager {
 
     // Truncate history if it exceeds the maximum size
     if (this.history.length > this.maxMessages) {
-      this.history.shift(); // Remove the oldest message
-      Logger.log("[ContextManager] History exceeded max size. Oldest message removed.");
+      // If the history is too long, remove the third message (index 2),
+      // which is the first user follow-up question after the initial analysis.
+      // This preserves the initial analysis (index 0 and 1) and recent conversations.
+      this.history.splice(2, 1);
+      Logger.log("[ContextManager] History exceeded max size. Oldest non-initial message removed.");
     }
   }
 
