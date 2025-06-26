@@ -25,7 +25,7 @@ export class APIService {
       "Accept": "application/json",
     };
     const requestOptions = {
-      method: 'POST',
+      method: "POST",
       headers: new Headers({...defaultHeader, ...headers}),
       body: JSON.stringify(body),
     };
@@ -42,7 +42,7 @@ export class APIService {
         try {
           errorData.body = await response.json();
         } catch (e) {
-          errorData.body = 'Could not parse error response body as JSON.';
+          errorData.body = "Could not parse error response body as JSON.";
         }
         throw new Error(`HTTP error: ${response.status}. Details: ${JSON.stringify(errorData)}`);
       }
@@ -50,7 +50,7 @@ export class APIService {
       return await response.json();
 
     } catch (error) {
-      log.error('APIService POST Error:', error.message);
+      log.error("APIService POST Error:", error.message);
       throw error;
     }
   }

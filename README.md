@@ -178,18 +178,19 @@ BFF (Backend for Frontend) 是一个独立的 Node.js 服务，负责安全地�
    # 使用 pm2 启动服务
    pm2 start index.js --name "smart-finereport-bff"
    ```
-   请确保 BFF 服务所在的端口（默认为 3000）已在防火墙中开放，并记录下其访问地址，例如 `http://your-server-ip:3000`。
+   请确保 BFF 服务所在的端口（默认为 3001）已在防火墙中开放，并记录下其访问地址，例如 `http://your-server-ip:3001`。
 
 ### 步骤 2: 构建前端脚本
 
 在您的**本地开发环境**中执行以下操作。
 
-1. **配置 BFF 地址**: 打开 `src/utils/settings.js` 文件，修改 `api.baseUrl` 的值，使其指向您在上一步中部署的 BFF 服务地址。
+1. **配置 BFF 地址**: 打开 `src/utils/settings.js` 文件，修改 `SETTINGS.service.url` 的值，使其指向您在上一步中部署的 BFF
+   服务地址。
 2. **执行构建**: 在项目根目录下运行打包命令：
    ```bash
    npm run build
    ```
-3. **获取产物**: 构建成功后，在 `dist/` 目录下找到 `smart-finereport.js` 文件。将此文件上传到 CDN 或帆软服务器的静态资源目录，确保能通过
+3. **获取产物**: 构建成功后，在 `dist/` 目录下找到 `smart-finereport.umd.js` 文件。将此文件上传到 CDN 或帆软服务器的静态资源目录，确保能通过
    URL 公开访问。
 
 ### 步骤 3: 在帆软中集成

@@ -1,201 +1,132 @@
 /**
  * @file chat-view.test.js
  * @author Haochen (Billy) Fa
- * @description Unit test for chat-view.js
+ * @description Unit test for chat-view.js, updated for progress-tracking functionality.
  */
 
-import {describe, beforeEach, it, jest, expect} from "@jest/globals";
+import {describe, beforeEach, it, expect, jest} from "@jest/globals";
+import {ChatView} from "@/ui/chat-view.js";
 
-import {ChatView} from '@/ui/chat-view.js';
+describe("ChatView", () => {
+  let container;
+  let chatView;
+  let onSubmitMock;
+  let onResetMock;
 
-// Test suite for the ChatView class
-describe('ChatView', () => {
-  let container; // The DOM element where the chat UI will be rendered
-  let chatView; // The instance of the ChatView class
-  let mockOnSubmit; // A mock function to simulate the onSubmit callback
-
-  /**
-   * This function runs before each test case.
-   * It sets up a clean DOM environment and initializes a new ChatView instance.
-   */
   beforeEach(() => {
-    // 1. Create a clean container in the document body for each test to ensure isolation.
     document.body.innerHTML = '<div id="chat-container"></div>';
-    container = document.getElementById('chat-container');
-
-    // 2. Create a Jest mock function to spy on the onSubmit callback.
-    // This allows us to verify if it's called correctly without implementing its actual logic.
-    mockOnSubmit = jest.fn();
-
-    // 3. Instantiate the ChatView class with the container and the mock callback.
-    chatView = new ChatView(container, mockOnSubmit);
+    container = document.getElementById("chat-container");
+    onSubmitMock = jest.fn();
+    onResetMock = jest.fn();
+    chatView = new ChatView(container, onSubmitMock, onResetMock);
+    chatView.render();
   });
 
-  // Test case group for rendering logic
-  describe('Rendering', () => {
-    it('should render the initial chat interface correctly', () => {
-      // Act: Render the UI
-      chatView.render();
-
-      // Assert: Verify that all essential UI elements are created and appended to the DOM.
-      const chatWindow = container.querySelector('.flex.flex-col.h-full');
-      expect(chatWindow).not.toBeNull(); // The main chat window should exist.
-
-      const messageContainer = container.querySelector('#message-container');
-      expect(messageContainer).not.toBeNull(); // The message display area should exist.
-
-      const inputArea = container.querySelector('.flex.items-center.p-4');
-      expect(inputArea).not.toBeNull(); // The input area should exist.
-
-      const inputField = container.querySelector('textarea');
-      expect(inputField).not.toBeNull(); // The text input field should exist.
-      expect(inputField.placeholder).toBe('输入你的消息...'); // Check placeholder text.
-
-      const sendButton = container.querySelector('button');
-      expect(sendButton).not.toBeNull(); // The send button should exist.
-      expect(sendButton.textContent).toBe('发送'); // Check button text.
-
-      const loadingIndicator = container.querySelector('.hidden.absolute');
-      expect(loadingIndicator).not.toBeNull(); // The loading indicator should exist.
-      expect(loadingIndicator.classList.contains('hidden')).toBe(true); // It should be hidden by default.
+  describe("Initial Rendering", () => {
+    it("should render the basic structure correctly", () => {
+      expect(container.querySelector("#message-container")).not.toBeNull();
+      expect(container.querySelector("textarea")).not.toBeNull();
+      expect(container.querySelector("button").textContent).toBe("发送");
     });
   });
 
-  // Test case group for message handling
-  describe('Message Handling', () => {
-    beforeEach(() => {
-      chatView.render(); // Ensure the UI is rendered before each message test
+  describe("User Interaction", () => {
+    it("should call onSubmit when the send button is clicked", () => {
+      const textarea = container.querySelector("textarea");
+      textarea.value = "Hello, world!";
+      container.querySelector("button.bg-gray-800").click();
+      expect(onSubmitMock).toHaveBeenCalledWith("Hello, world!");
     });
 
-    it('should add a user message to the message container', () => {
-      // Arrange: Define a user message object
-      const userMessage = {role: 'user', content: 'Hello, World!'};
-
-      // Act: Add the message to the view
-      chatView.addMessage(userMessage);
-
-      // Assert: Verify the message element is created with the correct content and classes
-      const messageElement = chatView.messageContainer.querySelector('.justify-end');
-      expect(messageElement).not.toBeNull(); // The message bubble container should be right-aligned.
-
-      const bubble = messageElement.querySelector('.bg-gray-700.text-white');
-      expect(bubble).not.toBeNull(); // The bubble should have user-specific styling.
-      expect(bubble.textContent).toBe(userMessage.content); // The content should match.
+    it("should call onReset when the reset button is clicked", () => {
+      container.querySelector("button.bg-gray-200").click();
+      expect(onResetMock).toHaveBeenCalled();
     });
 
-    it('should add an assistant message to the message container', () => {
-      // Arrange: Define an assistant message object
-      const assistantMessage = {role: 'assistant', content: 'How can I help you?'};
+    it("should call onSubmit when Enter is pressed without Shift", () => {
+      const textarea = container.querySelector("textarea");
+      textarea.value = "Test message";
+      const event = new KeyboardEvent("keypress", {key: "Enter", bubbles: true});
+      textarea.dispatchEvent(event);
+      expect(onSubmitMock).toHaveBeenCalledWith("Test message");
+    });
 
-      // Act: Add the message to the view
-      chatView.addMessage(assistantMessage);
+    it("should not call onSubmit when Enter is pressed with Shift", () => {
+      const textarea = container.querySelector("textarea");
+      textarea.value = "Test message";
+      const event = new KeyboardEvent("keypress", {key: "Enter", shiftKey: true, bubbles: true});
+      textarea.dispatchEvent(event);
+      expect(onSubmitMock).not.toHaveBeenCalled();
+    });
 
-      // Assert: Verify the message element is created with the correct content and classes
-      const messageElement = chatView.messageContainer.querySelector('.justify-start');
-      expect(messageElement).not.toBeNull(); // The message bubble container should be left-aligned.
-
-      const bubble = messageElement.querySelector('.bg-gray-200.text-gray-800');
-      expect(bubble).not.toBeNull(); // The bubble should have assistant-specific styling.
-      expect(bubble.textContent).toBe(assistantMessage.content); // The content should match.
+    it("should auto-resize the textarea on input", () => {
+      const textarea = container.querySelector("textarea");
+      const initialHeight = textarea.style.height;
+      textarea.value = "This is a long message that should cause the textarea to resize.";
+      textarea.dispatchEvent(new Event("input", {bubbles: true}));
+      expect(textarea.style.height).not.toBe(initialHeight);
     });
   });
 
-  // Test case group for user interactions
-  describe('User Interaction', () => {
-    beforeEach(() => {
-      chatView.render(); // Ensure the UI is rendered before each interaction test
+  describe("Message Handling", () => {
+    it("addMessage should add a user message to the container", () => {
+      chatView.addMessage({role: "user", content: "User message"});
+      const messageElement = container.querySelector(".justify-end");
+      expect(messageElement).not.toBeNull();
+      expect(messageElement.textContent).toBe("User message");
     });
 
-    it('should call onSubmit with the input value when send button is clicked', () => {
-      // Arrange: Set a value in the input field
-      const inputText = 'This is a test message.';
-      chatView.inputField.value = inputText;
-
-      // Act: Simulate a click on the send button
-      chatView.sendButton.click();
-
-      // Assert: Check if the mock callback was called correctly
-      expect(mockOnSubmit).toHaveBeenCalledTimes(1); // It should be called exactly once.
-      expect(mockOnSubmit).toHaveBeenCalledWith(inputText); // It should be called with the trimmed input text.
+    it("addMessage should add an assistant message to the container", () => {
+      chatView.addMessage({role: "assistant", content: "Assistant message"});
+      const messageElement = container.querySelector(".justify-start");
+      expect(messageElement).not.toBeNull();
+      expect(messageElement.textContent).toBe("Assistant message");
     });
 
-    it('should call onSubmit when Enter key is pressed without Shift key', () => {
-      // Arrange: Set a value in the input field
-      const inputText = 'Another test message.';
-      chatView.inputField.value = inputText;
-
-      // Act: Simulate a 'Enter' key press event
-      const enterEvent = new KeyboardEvent('keypress', {key: 'Enter', bubbles: true});
-      chatView.inputField.dispatchEvent(enterEvent);
-
-      // Assert: Check if the mock callback was called correctly
-      expect(mockOnSubmit).toHaveBeenCalledTimes(1);
-      expect(mockOnSubmit).toHaveBeenCalledWith(inputText);
+    it("createProgressMessage should create and return a new message bubble", () => {
+      const progressBubble = chatView.createProgressMessage();
+      expect(progressBubble).not.toBeNull();
+      expect(progressBubble.classList.contains("bg-gray-200")).toBe(true);
+      expect(chatView.messageContainer.contains(progressBubble)).toBe(true);
     });
 
-    it('should NOT call onSubmit when Enter key is pressed with Shift key', () => {
-      // Arrange: Set a value and simulate a key press with Shift
-      chatView.inputField.value = 'A message with a newline.';
-      const shiftEnterEvent = new KeyboardEvent('keypress', {key: 'Enter', shiftKey: true, bubbles: true});
-
-      // Act: Dispatch the event
-      chatView.inputField.dispatchEvent(shiftEnterEvent);
-
-      // Assert: The callback should not have been triggered
-      expect(mockOnSubmit).not.toHaveBeenCalled();
+    it("updateMessage should set the innerHTML of a given element", () => {
+      const progressBubble = chatView.createProgressMessage();
+      const newHtml = "<p>Loading...</p>";
+      chatView.updateMessage(progressBubble, newHtml);
+      expect(progressBubble.innerHTML).toBe(newHtml);
     });
 
-    it('should NOT call onSubmit if the input is empty or just whitespace', () => {
-      // Arrange: Set the input value to spaces
-      chatView.inputField.value = '   ';
+    it("removeMessage should remove the entire message element from the DOM", () => {
+      const progressBubble = chatView.createProgressMessage();
+      const messageElementWrapper = progressBubble.parentElement;
+      expect(chatView.messageContainer.contains(messageElementWrapper)).toBe(true);
+      chatView.removeMessage(progressBubble);
+      expect(chatView.messageContainer.contains(messageElementWrapper)).toBe(false);
+    });
+  });
 
-      // Act: Simulate a click
-      chatView.sendButton.click();
-
-      // Assert: The callback should not have been triggered
-      expect(mockOnSubmit).not.toHaveBeenCalled();
+  describe("UI Updates", () => {
+    it("updateResetButton should add a stale dot when isStale is true", () => {
+      chatView.updateResetButton(true);
+      const dot = container.querySelector(".stale-dot");
+      expect(dot).not.toBeNull();
     });
 
-    it('should clear the input field after a message is submitted', () => {
-      // This test checks the clearInput method, which is typically called by a controller after submission.
-      // Arrange
-      chatView.inputField.value = 'Some text to be cleared.';
+    it("updateResetButton should remove the stale dot when isStale is false", () => {
+      chatView.updateResetButton(true); // First add it
+      chatView.updateResetButton(false); // Then remove it
+      const dot = container.querySelector(".stale-dot");
+      expect(dot).toBeNull();
+    });
 
-      // Act
+    it("clearInput should clear the textarea and reset its height", () => {
+      const textarea = container.querySelector("textarea");
+      textarea.value = "Some text";
+      textarea.style.height = "100px";
       chatView.clearInput();
-
-      // Assert
-      expect(chatView.inputField.value).toBe('');
-    });
-  });
-
-  // Test case group for UI state changes
-  describe('UI State', () => {
-    beforeEach(() => {
-      chatView.render(); // Ensure the UI is rendered first
-    });
-
-    it('toggleLoading(true) should show loading indicator and disable inputs', () => {
-      // Act
-      chatView.toggleLoading(true);
-
-      // Assert
-      expect(chatView.loadingIndicator.classList.contains('hidden')).toBe(false);
-      expect(chatView.inputField.disabled).toBe(true);
-      expect(chatView.sendButton.disabled).toBe(true);
-    });
-
-    it('toggleLoading(false) should hide loading indicator and enable inputs', () => {
-      // Arrange: First, show the loading state
-      chatView.toggleLoading(true);
-
-      // Act: Then, hide it
-      chatView.toggleLoading(false);
-
-      // Assert
-      expect(chatView.loadingIndicator.classList.contains('hidden')).toBe(true);
-      expect(chatView.inputField.disabled).toBe(false);
-      expect(chatView.sendButton.disabled).toBe(false);
+      expect(textarea.value).toBe("");
+      expect(textarea.style.height).toBe("auto");
     });
   });
 });

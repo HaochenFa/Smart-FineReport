@@ -97,27 +97,27 @@ export class DataProcessor {
         // Process data based on widget type.
         // 根据组件类型差异化处理数据。
         switch (item.type) {
-          case 'Table':
+          case "Table":
             // Tables are best represented as an array of objects.
             processedData = this._convertTableToObjectArray(rawDataArray);
             break;
 
-          case 'Chart':
+          case "Chart":
             // For charts, an array of objects is also a reasonable flat structure.
             // Advanced implementation could try to reconstruct {categories, series}.
             // 对于图表，对象数组也是合理的扁平结构。高级实现可以尝试重建 {categories, series}。
             processedData = this._convertTableToObjectArray(rawDataArray);
             break;
 
-          case 'CrossTable':
+          case "CrossTable":
             // For Cross Tables, preserving the 2D array structure is crucial as it retains row/column relationships.
             // The LLM is better at parsing this structure than a flattened list.
             // 对于交叉表，保留二维数组结构至关重要，因为它保留了行列关系。LLM 更擅长解析这种结构。
             processedData = rawDataArray;
             break;
 
-          case 'Map':
-          case 'DashBoard':
+          case "Map":
+          case "DashBoard":
           default:
             // For other or unknown types, we default to a simple object array representation.
             // 对于其他或未知类型，我们默认使用简单的对象数组表示。

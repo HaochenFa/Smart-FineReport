@@ -10,7 +10,7 @@ export class Logger {
     WARN: 2,
     ERROR: 1,
     NONE: 0,
-  }
+  };
 
   static #currentLevel = Logger.LEVELS.LOG;
 

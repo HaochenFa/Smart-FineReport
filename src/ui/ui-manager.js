@@ -57,6 +57,57 @@ export class UIManager {
     this._update(initialState);
   }
 
+  disableInputs() {
+    this.view.inputField.disabled = true;
+    this.view.sendButton.disabled = true;
+    this.view.resetButton.disabled = true;
+  }
+
+  enableInputs() {
+    this.view.inputField.disabled = false;
+    this.view.sendButton.disabled = false;
+    this.view.resetButton.disabled = false;
+  }
+
+  addUserMessage(userInput) {
+    this.stateManager.addMessage({role: "user", content: userInput});
+  }
+
+  showProgressTracker() {
+    return this.view.createProgressMessage();
+  }
+
+  updateProgress(progressElement, allStages, currentStageId) {
+    const stagesWithStatus = allStages.map((stage, index) => {
+      const currentStageIndex = allStages.findIndex(s => s.id === currentStageId);
+      let status = "pending";
+      if (index < currentStageIndex) {
+        status = "completed";
+      } else if (index === currentStageIndex) {
+        status = "inprogress";
+      }
+      return {...stage, status};
+    });
+    const html = this.view._renderProgressSteps(stagesWithStatus);
+    this.view.updateMessage(progressElement, html);
+  }
+
+  renderError(progressElement, allStages, error, failedStageId) {
+    const stagesWithStatus = allStages.map((stage, index) => {
+      const failedIndex = allStages.findIndex(s => s.id === failedStageId);
+      let status = "pending";
+      if (index < failedIndex) {
+        status = "completed";
+      } else if (index === failedIndex) {
+        status = "failed";
+      }
+      return {...stage, status};
+    });
+    const html = this.view._renderProgressSteps(stagesWithStatus);
+    const errorHtml = `<div class="text-red-500 mt-2"><p class="font-bold">分析失败:</p><p>${error.message}</p></div>`;
+    this.view.updateMessage(progressElement, html + errorHtml);
+  }
+
   /**
    * @private
    * @description 将 UIManager 绑定到 StateManager 的状态更新事件。
@@ -74,7 +125,6 @@ export class UIManager {
    */
   _update(state) {
     this._updateMessages(state.messages);
-    this._updateLoading(state.isLoading);
     this._updateResetButton(state.isDataStale);
   }
 
@@ -116,14 +166,5 @@ export class UIManager {
         this.view.addMessage(message);
       });
     }
-  }
-
-  /**
-   * @private
-   * @description 根据加载状态更新UI。
-   * @param {boolean} isLoading - 当前是否处于加载中。
-   */
-  _updateLoading(isLoading) {
-    this.view.toggleLoading(isLoading);
   }
 }

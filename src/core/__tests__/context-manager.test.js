@@ -1,75 +1,65 @@
 /**
  * @file context-manager.test.js
  * @author Haochen (Billy) Fa
- * @description Unit test for src/core/context-manager.js
+ * @description Unit test for context-manager.js.
  */
 
-import {afterEach, beforeEach, describe, expect, it, jest} from '@jest/globals';
+import {describe, it, expect, beforeEach} from "@jest/globals";
+import {ContextManager} from "@/core/context-manager.js";
 
-import {ContextManager} from '@/core/context-manager.js';
-import {Logger as log} from '@/utils/logger.js';
-
-/**
- * @describe Test suite for the ContextManager class.
- */
-describe('ContextManager', () => {
+describe("ContextManager", () => {
   let contextManager;
-  let logSpy;
 
   beforeEach(() => {
-    contextManager = new ContextManager();
-    // Create a spy on log.log to track calls without printing to console
-    logSpy = jest.spyOn(log, 'log').mockImplementation(() => {
+    contextManager = new ContextManager(5); // Set capacity to 5 for testing
+  });
+
+  describe("addMessage", () => {
+    it("should add a message to the history", () => {
+      contextManager.addMessage("user", "Hello");
+      const history = contextManager.getHistory();
+      expect(history).toHaveLength(1);
+      expect(history[0]).toEqual({role: "user", content: "Hello"});
+    });
+
+    it("should not add a system message to the history", () => {
+      contextManager.addMessage("system", "You are a helpful assistant.");
+      const history = contextManager.getHistory();
+      expect(history).toHaveLength(0);
+    });
+
+    it("should truncate history when it exceeds capacity", () => {
+      contextManager.addMessage("user", "1");
+      contextManager.addMessage("assistant", "2");
+      contextManager.addMessage("user", "3");
+      contextManager.addMessage("assistant", "4");
+      contextManager.addMessage("user", "5");
+      contextManager.addMessage("assistant", "6"); // This should cause truncation
+
+      const history = contextManager.getHistory();
+      expect(history).toHaveLength(5);
+      expect(history[0].content).toBe("2"); // The first message ("1") should be gone
     });
   });
 
-  afterEach(() => {
-    // Restore all mocks after each test
-    jest.restoreAllMocks();
+  describe("getHistory", () => {
+    it("should return a copy of the history, not a reference", () => {
+      contextManager.addMessage("user", "Original");
+      const history1 = contextManager.getHistory();
+      history1.push({role: "user", content: "Modified"});
+      const history2 = contextManager.getHistory();
+      expect(history2).toHaveLength(1);
+      expect(history2[0].content).toBe("Original");
+    });
   });
 
-  it('should initialize with an empty history', () => {
-    expect(contextManager.getHistory()).toEqual([]);
-  });
-
-  it('should add a message to the history', () => {
-    const message = {role: 'user', content: 'Hello, AI!'};
-    contextManager.addMessage(message.role, message.content);
-    expect(contextManager.getHistory()).toEqual([message]);
-    expect(logSpy).toHaveBeenCalledWith(`[ContextManager] Message added: { role: '${message.role}' }`);
-  });
-
-  it('should add multiple messages to the history', () => {
-    const message1 = {role: 'user', content: 'Hello, AI!'};
-    const message2 = {role: 'assistant', content: 'Hello, user!'};
-    contextManager.addMessage(message1.role, message1.content);
-    contextManager.addMessage(message2.role, message2.content);
-    expect(contextManager.getHistory()).toEqual([message1, message2]);
-  });
-
-  it('should clear the history', () => {
-    const message = {role: 'user', content: 'Some message'};
-    contextManager.addMessage(message.role, message.content);
-    contextManager.clear();
-    expect(contextManager.getHistory()).toEqual([]);
-    expect(logSpy).toHaveBeenCalledWith('[ContextManager] Conversation history has been cleared.');
-  });
-
-  it('getHistory should return an empty array for an empty history', () => {
-    expect(contextManager.getHistory()).toEqual([]);
-  });
-
-  it('getHistory should return a correctly formatted array for a single message', () => {
-    const message = {role: 'user', content: 'Test message'};
-    contextManager.addMessage(message.role, message.content);
-    expect(contextManager.getHistory()).toEqual([message]);
-  });
-
-  it('getHistory should return a correctly formatted array for multiple messages', () => {
-    const message1 = {role: 'user', content: 'First message'};
-    const message2 = {role: 'assistant', content: 'Second message'};
-    contextManager.addMessage(message1.role, message1.content);
-    contextManager.addMessage(message2.role, message2.content);
-    expect(contextManager.getHistory()).toEqual([message1, message2]);
+  describe("clear", () => {
+    it("should clear the entire message history", () => {
+      contextManager.addMessage("user", "Message 1");
+      contextManager.addMessage("assistant", "Message 2");
+      contextManager.clear();
+      const history = contextManager.getHistory();
+      expect(history).toHaveLength(0);
+    });
   });
 });

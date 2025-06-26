@@ -52,12 +52,6 @@ export class ChatView {
       "ml-3 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-200 relative";
     this.resetButton.innerHTML = "重置"; // 使用 innerHTML 以便可以添加提示点
     this.resetButton.addEventListener("click", this._handleReset.bind(this));
-
-    this.loadingIndicator = document.createElement("div"); // 加载指示器
-    this.loadingIndicator.className =
-      "hidden absolute bottom-20 left-1/2 -translate-x-1/2 p-2 bg-gray-800 text-white rounded-full shadow-lg";
-    this.loadingIndicator.innerHTML =
-      '<svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>加载中...';
   }
 
   /**
@@ -67,23 +61,22 @@ export class ChatView {
     // 将输入框和按钮添加到输入区域
     this.inputArea.appendChild(this.inputField);
     this.inputArea.appendChild(this.sendButton);
-    this.inputArea.appendChild(this.resetButton); // 添加重置按钮
+    this.inputArea.appendChild(this.resetButton);
 
     // 将消息容器和输入区域添加到聊天窗口
     this.chatWindow.appendChild(this.messageContainer);
     this.chatWindow.appendChild(this.inputArea);
 
-    // 将聊天窗口和加载指示器添加到主容器
-    this.container.id = 'smartfine-chat-container'; // Add unique ID
+    // 将聊天窗口添加到主容器
+    this.container.id = "smartfine-chat-container"; // Add unique ID
     this.container.appendChild(this.chatWindow);
-    this.container.appendChild(this.loadingIndicator);
 
     // 确保容器占据可用高度，并使用 flex 布局
     this.container.className += " h-screen flex flex-col p-4"; // 添加 Tailwind CSS 类
   }
 
   /**
-   * @description 在聊天记录中添加一条新消息。
+   * @description 在聊天记录中添加一条用户消息。
    * @param {{role: string, content: string}} message - 消息对象。
    */
   addMessage(message) {
@@ -108,19 +101,82 @@ export class ChatView {
   }
 
   /**
-   * @description 控制加载指示器的显示与隐藏。
-   * @param {boolean} show - 是否显示。
+   * @description 创建一个用于显示进度的AI消息气泡
+   * @returns {HTMLElement} 创建的消息元素
    */
-  toggleLoading(show) {
-    if (show) {
-      this.loadingIndicator.classList.remove("hidden");
-    } else {
-      this.loadingIndicator.classList.add("hidden");
+  createProgressMessage() {
+    const messageElement = document.createElement("div");
+    messageElement.className = "flex justify-start";
+
+    const bubble = document.createElement("div");
+    bubble.className = "max-w-xl p-3 rounded-xl shadow-sm bg-gray-200 text-gray-800 rounded-bl-none";
+
+    messageElement.appendChild(bubble);
+    this.messageContainer.appendChild(messageElement);
+    this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+
+    return bubble; // 返回气泡本身，以便更新其内容
+  }
+
+  /**
+   * @description 更新指定消息元素的内容
+   * @param {HTMLElement} element - 要更新的DOM元素 (消息气泡)
+   * @param {string} htmlContent - 新的HTML内容
+   */
+  updateMessage(element, htmlContent) {
+    element.innerHTML = htmlContent;
+    this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+  }
+
+  /**
+   * @description 从DOM中移除一个消息元素
+   * @param {HTMLElement} element - 要移除的DOM元素 (消息气泡)
+   */
+  removeMessage(element) {
+    // The element to remove is the bubble, its parent is the flex container
+    if (element && element.parentElement) {
+      element.parentElement.remove();
     }
-    // 禁用/启用输入框和发送按钮，防止重复提交
-    this.inputField.disabled = show;
-    this.sendButton.disabled = show;
-    this.resetButton.disabled = show; // 加载时也禁用重置按钮
+  }
+
+  /**
+   * @description 根据阶段状态生成进度阶梯的HTML
+   * @param {Array<Object>} stages - 阶段对象数组
+   * @returns {string} - 进度阶梯的HTML字符串
+   * @private
+   */
+  _renderProgressSteps(stages) {
+    const icon_inprogress = "<svg class=\"animate-spin h-5 w-5 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\"><circle class=\"opacity-25\" cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"4\"></circle><path class=\"opacity-75\" fill=\"currentColor\" d=\"M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z\"></path></svg>";
+    const icon_completed = "<svg class=\"h-5 w-5 text-green-500\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\" /></svg>";
+    const icon_pending = "<svg class=\"h-5 w-5 text-gray-400\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" /></svg>";
+    const icon_failed = "<svg class=\"h-5 w-5 text-red-500\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z\" clip-rule=\"evenodd\" /></svg>";
+
+    return stages.map(stage => {
+      let icon, textClass;
+      switch (stage.status) {
+        case "completed":
+          icon = icon_completed;
+          textClass = "text-gray-500 line-through";
+          break;
+        case "inprogress":
+          icon = icon_inprogress;
+          textClass = "text-blue-600 font-semibold";
+          break;
+        case "failed":
+          icon = icon_failed;
+          textClass = "text-red-600 font-semibold";
+          break;
+        case "pending":
+        default:
+          icon = icon_pending;
+          textClass = "text-gray-500";
+          break;
+      }
+      return `<div class="flex items-center space-x-3 py-1">
+          ${icon}
+          <span class="${textClass}">${stage.text}</span>
+        </div>`;
+    }).join("");
   }
 
   /**

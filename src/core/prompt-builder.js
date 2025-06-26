@@ -8,7 +8,7 @@
  * @import ../utils/logger.js
  */
 
-import {INITIAL_ANALYSIS_TEMPLATE, FOLLOW_UP_TEMPLATE} from '../utils/default-prompt.js';
+import {INITIAL_ANALYSIS_TEMPLATE, FOLLOW_UP_TEMPLATE} from "../utils/default-prompt.js";
 import {Logger as log} from "../utils/logger.js";
 
 export class PromptBuilder {

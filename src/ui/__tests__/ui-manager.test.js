@@ -1,197 +1,158 @@
 /**
  * @file ui-manager.test.js
  * @author Haochen (Billy) Fa
- *  @description Unit test for ui-manager
+ * @description Unit test for UIManager, updated for progress-tracking functionality.
  */
 
 import {jest, describe, it, expect, beforeEach, beforeAll} from '@jest/globals';
 
 // --- Module-Level Variables ---
-// These will be populated after the mocks are set up.
 let UIManager;
-let ChatView; // This will hold our mocked ChatView constructor.
-// This variable will hold a direct reference to the mock instance created during each test.
-let currentMockViewInstance;
+let ChatView; // Mocked ChatView constructor
+let currentMockViewInstance; // Direct reference to the mock instance
 
 // --- ESM Mocking Setup ---
-// This block runs once before all tests in the file.
 beforeAll(async () => {
-  // 1. Use jest.unstable_mockModule to mock the entire ChatView module BEFORE it's imported.
   jest.unstable_mockModule('@/ui/chat-view.js', () => ({
-    // The factory must return an object representing the module's exports.
-    ChatView: jest.fn().mockImplementation((container, submitCallback, resetCallback) => {
-      // Create a fresh mock instance object for each `new ChatView()` call.
+    ChatView: jest.fn().mockImplementation(() => {
       const instance = {
         render: jest.fn(),
         addMessage: jest.fn(),
         clearInput: jest.fn(),
-        toggleLoading: jest.fn(),
         updateResetButton: jest.fn(),
+        // New methods for progress tracking
+        createProgressMessage: jest.fn(() => document.createElement('div')), // Return a mock DOM element
+        updateMessage: jest.fn(),
+        removeMessage: jest.fn(),
+        _renderProgressSteps: jest.fn(stages => `<p>${stages.length} stages</p>`), // Return mock HTML
+        // Add a mock for the old function to ensure it's NOT called.
+        toggleLoading: jest.fn(),
+        // DOM element properties for input control
+        inputField: {disabled: false},
+        sendButton: {disabled: false},
+        resetButton: {disabled: false},
         messageContainer: {innerHTML: ''},
-        // We add a helper to our mock instance to simulate user actions from the view.
-        _triggerSubmit: (text) => submitCallback(text),
-        _triggerReset: () => resetCallback(),
       };
-      // Capture a reference to this specific instance so the test can access it.
       currentMockViewInstance = instance;
       return instance;
     }),
   }));
 
-  // 2. Dynamically import the modules ONLY AFTER the mocks have been defined.
   const uiManagerModule = await import('@/ui/ui-manager.js');
   UIManager = uiManagerModule.UIManager;
 
   const chatViewModule = await import('@/ui/chat-view.js');
-  ChatView = chatViewModule.ChatView; // Capture the mocked ChatView constructor for assertions.
+  ChatView = chatViewModule.ChatView;
 });
-
 
 // --- Test Suite ---
 describe('UIManager', () => {
-  // --- Test Setup ---
   let mockContainer;
   let mockStateManager;
   let mockMessageSubmitHandler;
   let mockResetAnalysisHandler;
-  let initialMockState;
+  let uiManager;
 
-  // beforeEach runs before each individual `it` block.
   beforeEach(() => {
-    // Clear mock history to ensure test isolation.
     jest.clearAllMocks();
-    // Reset the instance holder before each test.
     currentMockViewInstance = null;
 
-    // Re-create mock data for each test.
     mockContainer = document.createElement('div');
-    initialMockState = {
-      messages: [
-        {role: 'user', content: 'Hello'},
-        {role: 'assistant', content: 'Hi there!'},
-      ],
-      isLoading: false,
-      isDataStale: false,
-    };
+    const initialMockState = {messages: [], isDataStale: false};
     mockStateManager = {
       getState: jest.fn().mockReturnValue(initialMockState),
-      // The subscribe method is the new contract for state listening.
       subscribe: jest.fn(),
+      addMessage: jest.fn(), // Mock addMessage for user messages
     };
     mockMessageSubmitHandler = jest.fn();
     mockResetAnalysisHandler = jest.fn();
+
+    // Instantiate UIManager for each test
+    uiManager = new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
   });
 
-  // --- Test Cases ---
-
-  describe('Constructor and Initialization', () => {
-    it('should throw an error if constructor arguments are invalid', () => {
-      const errorMsg = 'UIManager: 无效的构造函数参数。';
-      expect(() => new UIManager(null, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler)).toThrow(errorMsg);
-      expect(() => new UIManager(mockContainer, null, mockMessageSubmitHandler, mockResetAnalysisHandler)).toThrow(errorMsg);
-      expect(() => new UIManager(mockContainer, mockStateManager, null, mockResetAnalysisHandler)).toThrow(errorMsg);
-      expect(() => new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, null)).toThrow(errorMsg);
-    });
-
-    it('should instantiate the (mocked) ChatView with the correct arguments', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
+  describe('Initialization and State Updates', () => {
+    it('should initialize ChatView and subscribe to state changes', () => {
       expect(ChatView).toHaveBeenCalledTimes(1);
-      expect(ChatView).toHaveBeenCalledWith(mockContainer, expect.any(Function), mockResetAnalysisHandler);
-    });
-
-    it('should call init methods and render the initial state correctly', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
-
-      // 1. Verify init flow
-      expect(mockStateManager.getState).toHaveBeenCalledTimes(1);
       expect(currentMockViewInstance.render).toHaveBeenCalledTimes(1);
-
-      // 2. Verify initial message rendering
-      expect(currentMockViewInstance.messageContainer.innerHTML).toBe(''); // Cleared first
-      expect(currentMockViewInstance.addMessage).toHaveBeenCalledTimes(initialMockState.messages.length);
-      expect(currentMockViewInstance.addMessage).toHaveBeenCalledWith(initialMockState.messages[0]);
-      expect(currentMockViewInstance.addMessage).toHaveBeenCalledWith(initialMockState.messages[1]);
-
-      // 3. Verify initial loading state
-      expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledTimes(1);
-      expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledWith(initialMockState.isLoading);
-
-      // 4. Verify initial reset button state
-      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledTimes(1);
-      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledWith(false);
-
-      // 5. Verify state binding via subscribe
       expect(mockStateManager.subscribe).toHaveBeenCalledTimes(1);
-      expect(mockStateManager.subscribe).toHaveBeenCalledWith(expect.any(Function));
     });
-  });
 
-  describe('State Updates', () => {
-    it('should update the view correctly when state changes', () => {
-      const uiManager = new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
+    it('should update messages and reset button on state change, ignoring isLoading', () => {
       const stateUpdateListener = mockStateManager.subscribe.mock.calls[0][0];
-
-      // Clear initial calls for a clean test of the update logic
-      jest.clearAllMocks();
-
       const newState = {
-        messages: [{role: 'user', content: 'New question'}],
-        isLoading: true,
+        messages: [{role: 'user', content: 'New Message'}],
         isDataStale: true,
+        isLoading: true, // This property should be ignored by the new logic
       };
 
-      // Manually trigger the state change handler that UIManager has subscribed to.
       stateUpdateListener(newState);
 
-      // 1. Verify message update logic
-      expect(currentMockViewInstance.messageContainer.innerHTML).toBe(''); // Should be cleared
-      expect(currentMockViewInstance.addMessage).toHaveBeenCalledTimes(1);
       expect(currentMockViewInstance.addMessage).toHaveBeenCalledWith(newState.messages[0]);
-
-      // 2. Verify loading state update logic
-      expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledTimes(1);
-      expect(currentMockViewInstance.toggleLoading).toHaveBeenCalledWith(true);
-
-      // 3. Verify reset button update logic
-      expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledTimes(1);
       expect(currentMockViewInstance.updateResetButton).toHaveBeenCalledWith(true);
-    });
-
-    it('should handle empty or null messages array gracefully', () => {
-      const uiManager = new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
-      const stateUpdateListener = mockStateManager.subscribe.mock.calls[0][0];
-
-      jest.clearAllMocks(); // Clear initial calls
-
-      const newState = {messages: [], isLoading: false, isDataStale: false};
-      stateUpdateListener(newState);
-
-      // Verify container is cleared but addMessage is not called
-      expect(currentMockViewInstance.messageContainer.innerHTML).toBe('');
-      expect(currentMockViewInstance.addMessage).not.toHaveBeenCalled();
-
-      // Test with null
-      const newStateNull = {messages: null, isLoading: false, isDataStale: false};
-      stateUpdateListener(newStateNull);
-      expect(currentMockViewInstance.messageContainer.innerHTML).toBe('');
-      expect(currentMockViewInstance.addMessage).not.toHaveBeenCalled();
+      // Ensure old loading logic is not called
+      expect(currentMockViewInstance.toggleLoading).not.toHaveBeenCalled();
     });
   });
 
-  describe('User Interaction', () => {
-    it('should handle user submit by calling the handler and clearing input', () => {
-      new UIManager(mockContainer, mockStateManager, mockMessageSubmitHandler, mockResetAnalysisHandler);
-      const userMessage = 'This is a test message from the user.';
+  describe('Input and Progress Control', () => {
+    it('disableInputs should disable all relevant view inputs', () => {
+      uiManager.disableInputs();
+      expect(currentMockViewInstance.inputField.disabled).toBe(true);
+      expect(currentMockViewInstance.sendButton.disabled).toBe(true);
+      expect(currentMockViewInstance.resetButton.disabled).toBe(true);
+    });
 
-      // Use the helper on the mock instance to simulate the view firing an event.
-      currentMockViewInstance._triggerSubmit(userMessage);
+    it('enableInputs should enable all relevant view inputs', () => {
+      uiManager.disableInputs(); // First disable
+      uiManager.enableInputs(); // Then enable
+      expect(currentMockViewInstance.inputField.disabled).toBe(false);
+      expect(currentMockViewInstance.sendButton.disabled).toBe(false);
+      expect(currentMockViewInstance.resetButton.disabled).toBe(false);
+    });
 
-      // 1. Verify the external handler was called with the correct message
-      expect(mockMessageSubmitHandler).toHaveBeenCalledTimes(1);
-      expect(mockMessageSubmitHandler).toHaveBeenCalledWith(userMessage);
+    it('addUserMessage should add a message to the state manager', () => {
+      const userInput = "Hello there";
+      uiManager.addUserMessage(userInput);
+      expect(mockStateManager.addMessage).toHaveBeenCalledWith({role: 'user', content: userInput});
+    });
 
-      // 2. Verify the view's input was cleared
-      expect(currentMockViewInstance.clearInput).toHaveBeenCalledTimes(1);
+    it('showProgressTracker should call the view to create a progress message element', () => {
+      const progressElement = uiManager.showProgressTracker();
+      expect(currentMockViewInstance.createProgressMessage).toHaveBeenCalledTimes(1);
+      expect(progressElement).toBeDefined();
+    });
+
+    it('updateProgress should correctly calculate statuses and update the view', () => {
+      const progressElement = document.createElement('div');
+      const stages = [{id: 'A'}, {id: 'B'}, {id: 'C'}];
+      uiManager.updateProgress(progressElement, stages, 'B');
+
+      const expectedStages = [
+        {id: 'A', status: 'completed'},
+        {id: 'B', status: 'inprogress'},
+        {id: 'C', status: 'pending'},
+      ];
+
+      expect(currentMockViewInstance._renderProgressSteps).toHaveBeenCalledWith(expectedStages);
+      expect(currentMockViewInstance.updateMessage).toHaveBeenCalledWith(progressElement, expect.any(String));
+    });
+
+    it('renderError should correctly calculate failure status and update the view', () => {
+      const progressElement = document.createElement('div');
+      const stages = [{id: 'A'}, {id: 'B'}, {id: 'C'}];
+      const error = new Error('Test Error');
+      uiManager.renderError(progressElement, stages, error, 'B');
+
+      const expectedStages = [
+        {id: 'A', status: 'completed'},
+        {id: 'B', status: 'failed'},
+        {id: 'C', status: 'pending'},
+      ];
+
+      expect(currentMockViewInstance._renderProgressSteps).toHaveBeenCalledWith(expectedStages);
+      const expectedHtml = `${currentMockViewInstance._renderProgressSteps(expectedStages)}<div class="text-red-500 mt-2"><p class="font-bold">分析失败:</p><p>Test Error</p></div>`;
+      expect(currentMockViewInstance.updateMessage).toHaveBeenCalledWith(progressElement, expectedHtml);
     });
   });
 });

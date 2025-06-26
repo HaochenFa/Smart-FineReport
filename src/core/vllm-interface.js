@@ -51,9 +51,9 @@ export class AIEngine {
    * @return {Promise<string>} - Processed return text from the AI.
    */
   async getResponse(prompt) {
-    log.log(`[AIEngine] Preparing to send prompt...`);
+    log.log("[AIEngine] Preparing to send prompt...");
 
-    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
+    if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
       const errorMsg = "[AIEngine] Error: Prompt cannot be null, empty, or invalid.";
       log.error(errorMsg);
       throw new Error(errorMsg);
@@ -70,20 +70,20 @@ export class AIEngine {
     }
 
     try {
-      log.log('[AIEngine] Sending request to vLLM API...');
+      log.log("[AIEngine] Sending request to vLLM API...");
 
       const headers = {};
       if (this.apiKey) {
-        headers['Authorization'] = `Bearer ${this.apiKey}`;
+        headers["Authorization"] = `Bearer ${this.apiKey}`;
       }
 
       const response = await APIService.post(this.url, body, headers);
-      log.log('[AIEngine] Received API response.');
+      log.log("[AIEngine] Received API response.");
 
       // Validate the structure of the response for chat completions and extract the message content
-      if (response && Array.isArray(response.choices) && response.choices.length > 0 && response.choices[0].message && typeof response.choices[0].message.content === 'string') {
+      if (response && Array.isArray(response.choices) && response.choices.length > 0 && response.choices[0].message && typeof response.choices[0].message.content === "string") {
         const processedText = response.choices[0].message.content.trim();
-        log.log('[AIEngine] Successfully processed response message.');
+        log.log("[AIEngine] Successfully processed response message.");
         return processedText;
       } else {
         const errorMsg = "[AIEngine] Error: Invalid or unexpected response structure from ChatCompletion API.";
@@ -92,7 +92,7 @@ export class AIEngine {
       }
     } catch (error) {
       // The APIService already logs the initial error, we can add context here.
-      log.error('[AIEngine] An error occurred during the getResponse process.');
+      log.error("[AIEngine] An error occurred during the getResponse process.");
       // Re-throw the error to allow the caller to handle it.
       throw error;
     }

@@ -49,7 +49,7 @@ export class FRInterface {
   constructor(frInstance) {
     // Check if the provided instance is a valid FineReport object.
     // It should at least have the 'Report' property for dashboard operations.
-    if (!frInstance || typeof frInstance.Report === 'undefined') {
+    if (!frInstance || typeof frInstance.Report === "undefined") {
       const errorMsg = "Invalid or missing FineReport instance. Please provide the global 'FR' object from your dashboard environment.";
       log.error(errorMsg);
       throw new Error(errorMsg);
@@ -94,14 +94,14 @@ export class FRInterface {
         // 情况1：处理图表类组件（例如，柱形图、折线图、饼图、地图等）。
         // The most reliable way to identify a chart is by its `getChartData` method.
         // 识别图表最可靠的方法是检查其是否拥有 `getChartData` 方法。
-        if (typeof widget.getChartData === 'function') {
+        if (typeof widget.getChartData === "function") {
           log.log(`Widget "${widgetName}" identified as a chart. Using getChartData().`);
           const chartData = widget.getChartData();
 
           // Normalize the common chart data structure (categories/series) into a 2D array.
           // 将常见的图表数据结构（categories/series）规范化为二维数组。
           if (chartData && Array.isArray(chartData.series) && Array.isArray(chartData.categories)) {
-            const headers = ['Category', ...chartData.series.map(s => s.name || 'Series')];
+            const headers = ["Category", ...chartData.series.map(s => s.name || "Series")];
             const categoryCount = chartData.categories.length;
 
             const dataRows = [];
@@ -147,7 +147,7 @@ export class FRInterface {
         // 将所有提取的数据单元格转换为字符串，以匹配返回类型提示。
         const stringifiedData = extractedData.map(row =>
           row.map(cell =>
-            (cell === null || cell === undefined) ? '' : String(cell)
+            (cell === null || cell === undefined) ? "" : String(cell)
           )
         );
 

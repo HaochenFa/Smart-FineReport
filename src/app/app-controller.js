@@ -32,7 +32,7 @@ export default class AppController {
     // 1. 初始化状态管理器，确保 UI 反应
     this.stateManager = new StateManager({
       messages: [],
-      isLoading: false,
+      isLoading: false, // isLoading is now deprecated but kept for safety
     });
 
     // 2. 初始化所有后端的逻辑和 AI 模块
@@ -202,7 +202,7 @@ export default class AppController {
   _findReportContainer() {
     Logger.log("`reportSelector` not provided. Attempting to auto-detect the main report container.");
 
-    // 规则1：基于帆软常见的CSS类名或ID进行探寻
+    // Rule 1: Search based on common FineReport CSS class names or IDs.
     const candidateSelectors = [
       'body[id="body"]',
       'div[id="wrapper"]',
@@ -213,30 +213,31 @@ export default class AppController {
 
     for (const selector of candidateSelectors) {
       const element = document.querySelector(selector);
-      if (element) {
-        Logger.log(`Found container via candidate selector: "${selector}"`);
+      // If a valid, visible element is found, return it immediately.
+      if (element && element.offsetWidth > 0 && element.offsetHeight > 0 && element.offsetParent !== null) {
+        Logger.log(`Found container via candidate selector: '${selector}'`);
         return element;
       }
     }
 
-    // 规则2：如果基于选择器未找到，则基于“最大面积”规则进行探寻
-    // 这个规则假设报表主体是页面上占据面积最大的可见块级元素
+    // Rule 2: If not found by selector, switch to the "largest area" heuristic.
+    // This rule assumes the report body is the largest visible block-level element.
     Logger.log("Candidate selectors failed. Switching to largest-area heuristic.");
+
     let largestElement = null;
     let maxArea = 0;
-
-    // 我们只检查body下的直接子div，以提高效率和准确性
-    const allDivs = document.body.getElementsByTagName('div');
+    const allDivs = document.body.getElementsByTagName("div");
 
     for (const div of allDivs) {
-      // 检查元素是否可见 (跨浏览器兼容方式)
+      // Check if the element is visible (cross-browser compatible way).
       if (div.offsetWidth > 0 && div.offsetHeight > 0 && div.offsetParent !== null) {
+        // Exclude the AI container itself from the search.
+        if (this.uiManager && this.uiManager.container && div === this.uiManager.container) {
+          continue;
+        }
+
         const area = div.offsetWidth * div.offsetHeight;
         if (area > maxArea) {
-          // 增加一个过滤条件，避免选择到AI助手自身的容器
-          if (div.contains(this.uiManager.container)) {
-            continue;
-          }
           maxArea = area;
           largestElement = div;
         }
@@ -244,9 +245,9 @@ export default class AppController {
     }
 
     if (largestElement) {
-      Logger.log('Found container via largest-area heuristic:', largestElement);
+      Logger.log("Found container via largest-area heuristic:", largestElement);
     } else {
-      Logger.warn('Auto-detection failed to find a suitable container.');
+      Logger.warn("Auto-detection failed to find a suitable container.");
     }
 
     return largestElement;

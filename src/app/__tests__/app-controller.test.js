@@ -1,226 +1,171 @@
 /**
  * @file app-controller.test.js
  * @author Haochen (Billy) Fa
- * @description Unit test for app-controller.js
+ * @description Unit test for app-controller.js, focusing on orchestration logic.
  */
 
-import {jest, describe, it, expect, beforeAll, beforeEach} from '@jest/globals';
+import {jest, describe, it, expect, beforeAll, beforeEach, afterEach} from "@jest/globals";
 
-// --- 模拟所有依赖项 (Mocking all dependencies) ---
-const mockSetState = jest.fn();
-const mockGetState = jest.fn();
-const mockStateManager = jest.fn(() => ({
-  setState: mockSetState, getState: mockGetState,
-}));
+// --- Mocking all dependencies ---
+const mockStateManager = {
+  setState: jest.fn(),
+  getState: jest.fn(() => ({messages: []})),
+};
 
-const mockUIManagerInit = jest.fn();
-const mockUIManager = jest.fn(() => ({
-  init: mockUIManagerInit,
-}));
+// A more flexible mock for UIManager that correctly captures the container
+const mockUiManagerInstance = {
+  init: jest.fn(),
+  container: null,
+};
 
-const mockPromptBuilder = jest.fn();
-const mockAIEngine = jest.fn();
+const mockPipeline = {
+  run: jest.fn(),
+};
 
-const mockAddMessage = jest.fn();
-const mockGetHistory = jest.fn();
-const mockContextManager = jest.fn(() => ({
-  addMessage: mockAddMessage, getHistory: mockGetHistory,
-}));
-
-const mockPipelineRun = jest.fn();
-const mockAnalysisPipeline = jest.fn(() => ({
-  run: mockPipelineRun,
-}));
+const mockContextManager = {
+  addMessage: jest.fn(),
+  clear: jest.fn(),
+};
 
 const mockHtml2canvas = jest.fn();
+const mockLogger = {
+  log: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
 
-const mockLoggerLog = jest.spyOn(console, 'log').mockImplementation(() => {
-});
-const mockLoggerError = jest.spyOn(console, 'error').mockImplementation(() => {
-});
+jest.unstable_mockModule("@/app/state-manager.js", () => ({StateManager: jest.fn(() => mockStateManager)}));
+jest.unstable_mockModule("@/ui/ui-manager.js", () => ({
+  UIManager: jest.fn((containerElement) => {
+    mockUiManagerInstance.container = containerElement;
+    return mockUiManagerInstance;
+  }),
+}));
+jest.unstable_mockModule("@/core/ai-analysis-pipeline.js", () => ({AnalysisPipeline: jest.fn(() => mockPipeline)}));
+jest.unstable_mockModule("@/core/context-manager.js", () => ({ContextManager: jest.fn(() => mockContextManager)}));
+jest.unstable_mockModule("html2canvas", () => ({default: mockHtml2canvas}));
+jest.unstable_mockModule("@/utils/logger.js", () => ({Logger: mockLogger}));
 
-// 使用 jest.unstable_mockModule 进行 ESM 模块模拟
-jest.unstable_mockModule('@/app/state-manager.js', () => ({
-  StateManager: mockStateManager,
-}));
-jest.unstable_mockModule('@/ui/ui-manager.js', () => ({
-  UIManager: mockUIManager,
-}));
-jest.unstable_mockModule('@/core/prompt-builder.js', () => ({
-  PromptBuilder: mockPromptBuilder,
-}));
-jest.unstable_mockModule('@/core/vllm-interface.js', () => ({
-  AIEngine: mockAIEngine,
-}));
-jest.unstable_mockModule('@/core/ai-analysis-pipeline.js', () => ({
-  AnalysisPipeline: mockAnalysisPipeline,
-}));
-jest.unstable_mockModule('@/utils/logger.js', () => ({
-  Logger: {
-    log: mockLoggerLog, error: mockLoggerError,
-  }
-}));
-jest.unstable_mockModule('@/core/context-manager.js', () => ({
-  ContextManager: mockContextManager,
-}));
-jest.unstable_mockModule('html2canvas', () => ({
-  default: mockHtml2canvas,
-}));
-
-
-// --- 测试套件 (Test Suite) ---
-describe('AppController Orchestration', () => {
-  // ** SOLUTION: Step 1 **
-  // 声明一个变量来持有 AppController 类，它将在 beforeAll 中被赋值
+// --- Test Suite ---
+describe("AppController Orchestration", () => {
   let AppController;
-  let appControllerInstance;
-  const mockServiceUrl = 'http://fake-ai.com';
-  const mockContainerSelector = '#test-container';
-  let mockContainerElement;
+  let appController;
+  let Logger;
 
-  // ** SOLUTION: Step 2 **
-  // 使用 beforeAll 在所有测试开始前，只导入一次被测试的模块。
-  // 这确保了所有 mock 都已生效，且避免了模块缓存问题。
+  // Helper to make an element "visible" in JSDOM for area calculations
+  const makeVisible = (element, width, height) => {
+    if (!element) return;
+    Object.defineProperty(element, "offsetWidth", {configurable: true, value: width});
+    Object.defineProperty(element, "offsetHeight", {configurable: true, value: height});
+    Object.defineProperty(element, "offsetParent", {configurable: true, value: document.body});
+  };
+
   beforeAll(async () => {
-    // 动态导入 AppController 以应用模拟
-    const module = await import('@/app/app-controller.js');
-    AppController = module.default;
-    jest.spyOn(AppController.prototype, 'triggerInitialAnalysis').mockImplementation(() => Promise.resolve());
+    const appControllerModule = await import("@/app/app-controller.js");
+    AppController = appControllerModule.default;
+    const loggerModule = await import("@/utils/logger.js");
+    Logger = loggerModule.Logger;
   });
 
-  // ** SOLUTION: Step 3 **
-  // beforeEach 现在只负责创建新的实例，不再执行导入操作。
-  // 这使得设置过程更快、更稳定。
   beforeEach(() => {
-    // 每个测试后清理所有模拟，确保测试隔离
     jest.clearAllMocks();
-    // 创建一个模拟的 DOM 容器
-    document.body.innerHTML = `<div id="test-container"></div>`;
-    mockContainerElement = document.querySelector(mockContainerSelector);
-    // 使用已经加载的 AppController 类创建新实例
-    appControllerInstance = new AppController(mockServiceUrl);
-    // 模拟 querySelector 以返回我们的模拟容器
-    jest.spyOn(document, 'querySelector').mockReturnValue(mockContainerElement);
+    document.body.innerHTML = `<div id="app"></div>`; // Reset DOM for each test
+    mockHtml2canvas.mockResolvedValue({toDataURL: () => "fake_image_data"});
+    appController = new AppController("http://fake.url");
+    // Reset the container for each test to ensure isolation
+    mockUiManagerInstance.container = null;
   });
 
-  // 测试 1: 验证 init 方法的协调逻辑
-  describe('init()', () => {
-    it('should initialize all dependencies in the correct order and with correct parameters', () => {
-      // Act: 调用初始化方法
-      appControllerInstance.init(mockContainerSelector);
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
-      // Assert: 验证所有构造函数是否被正确调用
-      expect(mockStateManager).toHaveBeenCalledWith({messages: [], isLoading: false});
-      expect(mockPromptBuilder).toHaveBeenCalledTimes(1);
-      expect(mockAIEngine).toHaveBeenCalledWith({url: mockServiceUrl});
-      expect(mockContextManager).toHaveBeenCalledTimes(1);
-      expect(mockAnalysisPipeline).toHaveBeenCalledWith(expect.any(Object), expect.any(Object));
-      expect(document.querySelector).toHaveBeenCalledWith(mockContainerSelector);
-      expect(mockUIManager).toHaveBeenCalledWith(mockContainerElement, expect.any(Object), expect.any(Function), expect.any(Function));
-      expect(mockUIManagerInit).toHaveBeenCalledTimes(1);
-      expect(appControllerInstance.triggerInitialAnalysis).toHaveBeenCalledTimes(1);
-      expect(mockLoggerLog).toHaveBeenCalledWith("AppController Initialized and Ready");
+  describe("Initialization", () => {
+    it("should call triggerInitialAnalysis on init", () => {
+      const triggerSpy = jest.spyOn(appController, "triggerInitialAnalysis").mockResolvedValue();
+      appController.init("#app");
+      expect(triggerSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should log an error and return if the container is not found", () => {
+      appController.init("#non-existent-container");
+      expect(Logger.error).toHaveBeenCalledWith('Initialization failed: Container with selector "#non-existent-container" not found.');
+      expect(mockUiManagerInstance.init).not.toHaveBeenCalled();
     });
   });
 
-  // 测试 2: 验证 handleUserQuery 的协调逻辑
-  describe('handleUserQuery()', () => {
+  describe("User-Triggered Analysis (handleUserQuery)", () => {
     beforeEach(() => {
-      // Mock the report container element
-      document.body.innerHTML = `<div class="report-container">Report Content</div>`;
-      appControllerInstance.init(mockContainerSelector);
-      appControllerInstance.triggerInitialAnalysis.mockClear();
+      jest.spyOn(appController, "triggerInitialAnalysis").mockResolvedValue();
+      appController.init("#app");
     });
 
-    it('should not process an empty or whitespace-only query', async () => {
-      await appControllerInstance.handleUserQuery('');
-      await appControllerInstance.handleUserQuery('   ');
+    it("should not run analysis for empty or whitespace-only queries", async () => {
+      await appController.handleUserQuery("");
+      await appController.handleUserQuery("   ");
+      expect(mockPipeline.run).not.toHaveBeenCalled();
+    });
+  });
 
-      expect(mockSetState).not.toHaveBeenCalled();
-      expect(mockPipelineRun).not.toHaveBeenCalled();
+  describe("runAnalysis", () => {
+    it("should throw an error if the report container cannot be found", async () => {
+      jest.spyOn(appController, "_findReportContainer").mockReturnValue(null);
+      appController.init("#app");
+
+      await expect(appController.runAnalysis("test")).rejects.toThrow("Auto-detection failed: Could not find a suitable report container to screenshot.");
+    });
+  });
+
+  describe("_findReportContainer Heuristics", () => {
+    it("should find the container using candidate selectors", () => {
+      document.body.innerHTML = `<div id="wrapper">Report Content</div><div id="app"></div>`;
+      const wrapperElement = document.getElementById("wrapper");
+      makeVisible(wrapperElement, 200, 200); // Make the element visible
+
+      appController.init("#app");
+      const foundElement = appController._findReportContainer();
+      expect(foundElement).not.toBeNull();
+      expect(foundElement.id).toBe("wrapper");
     });
 
-    it('should handle a successful query flow correctly', async () => {
-      // Arrange
-      const userQuery = 'Hello AI';
-      const aiResponse = 'Hello User';
-      const initialMessages = [{role: 'assistant', content: 'Welcome!'}];
-      const stateBeforeQuery = {messages: initialMessages, isLoading: false, isDataStale: false};
-      const stateAfterUserMessage = {
-        messages: [...initialMessages, {role: 'user', content: userQuery}],
-        isLoading: true,
-        isDataStale: false
-      };
-      const stateAfterAIMessage = {
-        messages: [...stateAfterUserMessage.messages, {role: 'assistant', content: aiResponse}],
-        isLoading: true, // It's still true before the finally block
-        isDataStale: false
-      };
-      const mockCanvas = {toDataURL: () => 'data:image/png;base64,mock-base64-string'};
+    it("should find the largest element by area if selectors fail", () => {
+      document.body.innerHTML = `
+            <div id="app"></div>
+            <div id="small">Small</div>
+            <div id="largest">Large</div>
+        `;
+      appController.init("#app"); // Initialize to set uiManager
+      makeVisible(document.getElementById("app"), 10, 10);
+      makeVisible(document.getElementById("small"), 100, 100);
+      makeVisible(document.getElementById("largest"), 200, 200);
 
-      mockGetState
-        .mockReturnValueOnce(stateBeforeQuery)      // First call in handleUserQuery
-        .mockReturnValueOnce(stateAfterUserMessage); // Second call for AI message update
-
-      mockHtml2canvas.mockResolvedValue(mockCanvas);
-      mockPipelineRun.mockResolvedValue(aiResponse);
-
-      // Act
-      await appControllerInstance.handleUserQuery(userQuery);
-
-      // Assert
-      expect(mockHtml2canvas).toHaveBeenCalledWith(document.querySelector('.report-container'));
-      // 1. Set user message and loading:true, 2. Add AI message, 3. Set loading:false
-      expect(mockSetState).toHaveBeenCalledTimes(3);
-      expect(mockSetState).toHaveBeenCalledWith({
-        messages: [...initialMessages, {role: 'user', content: userQuery}], isLoading: true,
-      });
-      expect(mockSetState).toHaveBeenCalledWith({
-        messages: [...stateAfterUserMessage.messages, {role: 'assistant', content: aiResponse}],
-      });
-      expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
-      expect(mockAddMessage).toHaveBeenCalledWith('user', userQuery);
-      expect(mockAddMessage).toHaveBeenCalledWith('assistant', aiResponse);
-      // 验证 runAnalysis 的调用，确保传入的是 contextManager 实例
-      expect(mockPipelineRun).toHaveBeenCalledWith(userQuery, 'data:image/png;base64,mock-base64-string', appControllerInstance.contextManager, false);
+      const foundElement = appController._findReportContainer();
+      expect(foundElement.id).toBe("largest");
     });
 
-    it('should handle an error from the analysis pipeline', async () => {
-      // Arrange
-      const userQuery = 'This will fail';
-      const errorMessage = '抱歉，分析时遇到问题，请稍后重试。';
-      const error = new Error('Pipeline Failure');
-      const initialMessages = [];
-      const stateBeforeQuery = {messages: initialMessages, isLoading: false, isDataStale: false};
-      const stateAfterUserMessage = {
-        messages: [...initialMessages, {role: 'user', content: userQuery}],
-        isLoading: true,
-        isDataStale: false
-      };
+    it("should ignore the AI container when finding the largest element", () => {
+      document.body.innerHTML = `
+            <div id="app"></div>
+            <div id="second-largest">Report</div>
+            <div id="small">Small</div>
+        `;
+      appController.init("#app"); // Initialize to set uiManager and its container
 
-      mockGetState
-        .mockReturnValueOnce(stateBeforeQuery)
-        .mockReturnValueOnce(stateAfterUserMessage);
+      makeVisible(document.getElementById("app"), 300, 300);
+      makeVisible(document.getElementById("second-largest"), 200, 200);
+      makeVisible(document.getElementById("small"), 100, 100);
 
-      mockPipelineRun.mockRejectedValue(error);
+      const foundElement = appController._findReportContainer();
+      expect(foundElement.id).toBe("second-largest");
+    });
 
-      // Act
-      await appControllerInstance.handleUserQuery(userQuery);
+    it("should return null if no suitable visible container is found", () => {
+      document.body.innerHTML = `<div id="app"></div>`;
+      appController.init("#app");
+      makeVisible(document.getElementById("app"), 0, 0); // Make it invisible
 
-      // Assert
-      expect(mockLoggerError).toHaveBeenCalledWith("Error occurred while handling user query:", error);
-      expect(mockSetState).toHaveBeenCalledTimes(3);
-      expect(mockSetState).toHaveBeenCalledWith({
-        messages: [...initialMessages, {role: 'user', content: userQuery}],
-        isLoading: true
-      });
-      expect(mockSetState).toHaveBeenCalledWith({
-        messages: [...stateAfterUserMessage.messages, {role: 'assistant', content: errorMessage}],
-      });
-      expect(mockSetState).toHaveBeenCalledWith({isLoading: false});
-      expect(mockAddMessage).toHaveBeenCalledTimes(1);
-      expect(mockAddMessage).toHaveBeenCalledWith('user', userQuery);
-      expect(mockAddMessage).not.toHaveBeenCalledWith('assistant', expect.any(String));
+      const foundElement = appController._findReportContainer();
+      expect(foundElement).toBeNull();
     });
   });
 });
