@@ -56,6 +56,8 @@ npm install
        <button id="ai-trigger-btn">启动 AI 分析助手</button>
        <div id="ai-container" style="width: 400px; height: 600px; margin-top: 20px;"></div>
 
+       <script src="https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/highlight.js@latest/highlight.min.js"></script>
        <script src="/dist/smart-finereport.umd.js"></script>
        <script>
            function _g() { return { reportName: "LocalTest" }; }
@@ -145,7 +147,8 @@ npm run build
    npm run build
    ```
 3. **上传产物**: 将 `dist/` 目录下的 `smart-finereport.umd.js` 和 `smart-finereport.css` 文件上传到 CDN
-   或服务器静态资源目录，并获取其公开访问 URL。
+   或服务器静态资源目录，并获取其公开访问 URL。请注意，`smart-finereport.umd.js` 已将 `mermaid` 和 `highlight.js`
+   外部化，因此您需要在 HTML 中单独引入它们。
 
 ---
 
@@ -161,7 +164,11 @@ npm run build
    <!-- 1. 引入 CSS 文件 (请替换为实际 URL) -->
    <link rel="stylesheet" type="text/css" href="https://your-cdn.com/path/to/smart-finereport.css">
 
-   <!-- 2. 创建 AI 助手的挂载容器 -->
+   <!-- 2. 引入外部依赖 (Mermaid 和 Highlight.js) -->
+   <script src="https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/highlight.js@latest/highlight.min.js"></script>
+
+   <!-- 3. 创建 AI 助手的挂载容器 -->
    <div id="smartfine-chat-container"></div>
    ```
 

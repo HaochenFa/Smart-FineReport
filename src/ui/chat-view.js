@@ -3,6 +3,9 @@
  * @author Haochen (Billy) Fa
  * @description UI Layer, organize DOM elements 纯粹 UI 视图层，管理 DOM 元素
  */
+import {marked} from "marked";
+import mermaid from "mermaid";
+import hljs from "highlight.js";
 
 export class ChatView {
   /**
@@ -12,121 +15,154 @@ export class ChatView {
    */
   constructor(container, onSubmit, onReset) {
     this.container = container;
-    this.onSubmit = onSubmit; // 用户提交消息时的回调函数
-    this.onReset = onReset; // 用户点击重置时的回调函数
+    this.onSubmit = onSubmit;
+    this.onReset = onReset;
 
-    // 创建UI元素
-    this.chatWindow = document.createElement("div"); // 聊天窗口主容器
+    this._setupMarkdown();
+
+    this.chatWindow = document.createElement("div");
     this.chatWindow.className =
-      "flex flex-col h-full bg-gray-50 rounded-lg shadow-md overflow-hidden";
+      "flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-gray-200/50";
 
-    this.messageContainer = document.createElement("div"); // 消息显示区域
+    this.messageContainer = document.createElement("div");
     this.messageContainer.className = "flex-1 overflow-y-auto p-4 space-y-4";
     this.messageContainer.id = "message-container";
 
-    this.inputArea = document.createElement("div"); // 输入区域
-    this.inputArea.className = "flex items-center p-4 border-t border-gray-200 bg-white";
+    this.inputArea = document.createElement("div");
+    this.inputArea.className =
+      "p-4 border-t border-gray-200/80 bg-white/50";
 
-    this.inputField = document.createElement("textarea"); // 文本输入框
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "flex items-center space-x-2";
+
+    this.inputField = document.createElement("textarea");
     this.inputField.className =
-      "flex-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none h-12 overflow-hidden";
-    this.inputField.placeholder = "输入你的消息...";
+      "flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none h-12 overflow-hidden bg-gray-50/90 transition-all duration-300";
+    this.inputField.placeholder = "输入你的分析请求... (Shift+Enter 换行)";
     this.inputField.rows = 1;
-    this.inputField.addEventListener("input", this._autoResizeInput.bind(this)); // 自动调整输入框高度
+    this.inputField.addEventListener("input", this._autoResizeInput.bind(this));
     this.inputField.addEventListener("keypress", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
-        // 回车发送，Shift+回车换行
         e.preventDefault();
         this._handleSubmit();
       }
     });
 
-    this.sendButton = document.createElement("button"); // 发送按钮
+    this.sendButton = document.createElement("button");
     this.sendButton.className =
-      "ml-3 px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200";
-    this.sendButton.textContent = "发送";
+      "px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5";
+    this.sendButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>`;
     this.sendButton.addEventListener("click", this._handleSubmit.bind(this));
 
-    this.resetButton = document.createElement("button"); // 重置按钮
+    this.resetButton = document.createElement("button");
     this.resetButton.className =
-      "ml-3 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-200 relative";
-    this.resetButton.innerHTML = "重置"; // 使用 innerHTML 以便可以添加提示点
+      "p-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-300 relative";
+    this.resetButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20v-5h-5" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9a9 9 0 0114.13-6.36" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 15a9 9 0 01-14.13 6.36" /></svg>`;
     this.resetButton.addEventListener("click", this._handleReset.bind(this));
+
+    inputWrapper.appendChild(this.resetButton);
+    inputWrapper.appendChild(this.inputField);
+    inputWrapper.appendChild(this.sendButton);
+    this.inputArea.appendChild(inputWrapper);
   }
 
-  /**
-   * @description 渲染初始的聊天窗口界面。
-   */
-  render() {
-    // 将输入框和按钮添加到输入区域
-    this.inputArea.appendChild(this.inputField);
-    this.inputArea.appendChild(this.sendButton);
-    this.inputArea.appendChild(this.resetButton);
+  _setupMarkdown() {
+    marked.setOptions({
+      highlight: (code, lang) => {
+        const language = hljs.getLanguage(lang) ? lang : "plaintext";
+        return hljs.highlight(code, {language}).value;
+      },
+      async: true,
+    });
+    mermaid.initialize({startOnLoad: false});
+  }
 
-    // 将消息容器和输入区域添加到聊天窗口
+  render() {
     this.chatWindow.appendChild(this.messageContainer);
     this.chatWindow.appendChild(this.inputArea);
-
-    // 将聊天窗口添加到主容器
-    this.container.id = "smartfine-chat-container"; // Add unique ID
+    this.container.id = "smartfine-chat-container";
     this.container.appendChild(this.chatWindow);
-
-    // 确保容器占据可用高度，并使用 flex 布局
-    this.container.className += " h-screen flex flex-col p-4"; // 添加 Tailwind CSS 类
+    this.container.className += " h-full flex flex-col";
   }
 
-  /**
-   * @description 在聊天记录中添加一条用户消息。
-   * @param {{role: string, content: string}} message - 消息对象。
-   */
-  addMessage(message) {
+  async addMessage(message) {
     const messageElement = document.createElement("div");
-    const isUser = message.role === "user";
+    const {role, content} = message;
 
-    messageElement.className = `flex ${isUser ? "justify-end" : "justify-start"}`;
+    let bubbleStyle = "";
+    if (role === "user") {
+      messageElement.className = "flex justify-end mb-4 items-start";
+      bubbleStyle = "bg-blue-500 text-white rounded-lg p-3 max-w-lg shadow-md";
+    } else if (role === "assistant") {
+      messageElement.className = "flex justify-start mb-4 items-start";
+      bubbleStyle = "bg-white text-gray-800 rounded-lg p-3 max-w-lg shadow-md prose-ai-response";
+    } else {
+      messageElement.className = "text-center my-2";
+      const systemSpan = document.createElement("span");
+      systemSpan.className =
+        "text-xs text-gray-500 bg-gray-100 rounded-full px-3 py-1";
+      systemSpan.textContent = content;
+      messageElement.appendChild(systemSpan);
+      this.messageContainer.appendChild(messageElement);
+      this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+      return;
+    }
 
     const bubble = document.createElement("div");
-    bubble.className = `max-w-xl p-3 rounded-xl shadow-sm ${
-      isUser
-        ? "bg-gray-700 text-white rounded-br-none"
-        : "bg-gray-200 text-gray-800 rounded-bl-none"
-    }`;
-    bubble.textContent = message.content;
+    bubble.className = bubbleStyle;
+
+    if (role === "assistant") {
+      await this._renderMarkdown(bubble, content);
+    } else {
+      bubble.textContent = content;
+    }
 
     messageElement.appendChild(bubble);
     this.messageContainer.appendChild(messageElement);
-
-    // 滚动到底部以显示最新消息
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
 
-  /**
-   * @description 创建一个用于显示进度的AI消息气泡
-   * @returns {HTMLElement} 创建的消息元素
-   */
+  async _renderMarkdown(element, content) {
+    try {
+      const html = await marked.parse(content);
+      element.innerHTML = html;
+      const mermaidElements = element.querySelectorAll(".language-mermaid");
+      for (const el of mermaidElements) {
+        const code = el.textContent;
+        const {svg} = await mermaid.render(
+          `mermaid-${Date.now()}`,
+          code
+        );
+        const svgContainer = document.createElement("div");
+        svgContainer.innerHTML = svg;
+        el.parentNode.replaceWith(svgContainer);
+      }
+    } catch (e) {
+      element.innerHTML = content; // Fallback to raw content on error
+      console.error("Markdown rendering error:", e);
+    }
+  }
+
   createProgressMessage() {
     const messageElement = document.createElement("div");
-    messageElement.className = "flex justify-start";
+    messageElement.className = "flex justify-start mb-4 items-start";
 
     const bubble = document.createElement("div");
-    bubble.className = "max-w-xl p-3 rounded-xl shadow-sm bg-gray-200 text-gray-800 rounded-bl-none";
+    bubble.className = "bg-white text-gray-800 rounded-lg p-3 max-w-lg shadow-md";
+    bubble.innerHTML = `<div class="flex items-center"><svg class="animate-spin h-5 w-5 mr-3 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>分析中...</span></div>`;
 
     messageElement.appendChild(bubble);
     this.messageContainer.appendChild(messageElement);
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
 
-    return bubble; // 返回气泡本身，以便更新其内容
+    return bubble;
   }
 
-  /**
-   * @description 更新指定消息元素的内容
-   * @param {HTMLElement} element - 要更新的DOM元素 (消息气泡)
-   * @param {string} htmlContent - 新的HTML内容
-   */
-  updateMessage(element, htmlContent) {
-    element.innerHTML = htmlContent;
+  async updateMessage(element, htmlContent) {
+    await this._renderMarkdown(element, htmlContent);
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
+
 
   /**
    * @description 从DOM中移除一个消息元素
@@ -146,37 +182,21 @@ export class ChatView {
    * @private
    */
   _renderProgressSteps(stages) {
-    const icon_inprogress = "<svg class=\"animate-spin h-5 w-5 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\"><circle class=\"opacity-25\" cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"4\"></circle><path class=\"opacity-75\" fill=\"currentColor\" d=\"M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z\"></path></svg>";
-    const icon_completed = "<svg class=\"h-5 w-5 text-green-500\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\" /></svg>";
-    const icon_pending = "<svg class=\"h-5 w-5 text-gray-400\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M21 12a9 9 0 11-18 0 9 9 0 0118 0z\" /></svg>";
-    const icon_failed = "<svg class=\"h-5 w-5 text-red-500\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z\" clip-rule=\"evenodd\" /></svg>";
+    const icons = {
+      inprogress: `<svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`,
+      completed: `<svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>`,
+      pending: `<svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+      failed: `<svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`
+    };
 
     return stages.map(stage => {
-      let icon, textClass;
-      switch (stage.status) {
-        case "completed":
-          icon = icon_completed;
-          textClass = "text-gray-500 line-through";
-          break;
-        case "inprogress":
-          icon = icon_inprogress;
-          textClass = "text-blue-600 font-semibold";
-          break;
-        case "failed":
-          icon = icon_failed;
-          textClass = "text-red-600 font-semibold";
-          break;
-        case "pending":
-        default:
-          icon = icon_pending;
-          textClass = "text-gray-500";
-          break;
-      }
-      return `<div class="flex items-center space-x-3 py-1">
-          ${icon}
-          <span class="${textClass}">${stage.text}</span>
-        </div>`;
-    }).join("");
+      const icon = icons[stage.status] || icons.pending;
+      const textClass = stage.status === 'completed' ? 'text-gray-500 line-through' : 'text-gray-800';
+      return `<div class="flex items-center space-x-2 py-1">
+                ${icon}
+                <span class="${textClass}">${stage.text}</span>
+              </div>`;
+    }).join('');
   }
 
   /**
@@ -188,8 +208,7 @@ export class ChatView {
     if (isStale) {
       if (!dot) {
         dot = document.createElement("span");
-        dot.className =
-          "stale-dot absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white";
+        dot.className = "stale-dot absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full";
         this.resetButton.appendChild(dot);
         this.resetButton.title = "数据已更新，建议重置分析";
       }

@@ -1,3 +1,215 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#smartfine-chat-container {
+    height: 80vh;
+    width: clamp(400px, 60vw, 1200px);
+    width: clamp(400px, 90vw, 1200px);
+    max-width: 1200px;
+    min-width: 400px;
+}
+
+.prose-ai-response {
+    color: #374151;
+}
+
+.prose-ai-response h1,
+.prose-ai-response h2,
+.prose-ai-response h3,
+.prose-ai-response h4,
+.prose-ai-response h5,
+.prose-ai-response h6 {
+    color: #1f2937;
+    font-weight: 600;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+}
+
+.prose-ai-response h1 {
+    font-size: 1.5em;
+}
+
+.prose-ai-response h2 {
+    font-size: 1.25em;
+}
+
+.prose-ai-response h3 {
+    font-size: 1.1em;
+}
+
+.prose-ai-response p {
+    margin-bottom: 1em;
+    line-height: 1.6;
+}
+
+.prose-ai-response ul,
+.prose-ai-response ol {
+    margin-left: 1.5em;
+    margin-bottom: 1em;
+    padding-left: 0.5em;
+}
+
+.prose-ai-response li {
+    margin-bottom: 0.5em;
+}
+
+.prose-ai-response blockquote {
+    border-left: 4px solid #d1d5db;
+    padding-left: 1em;
+    margin-left: 0;
+    font-style: italic;
+    color: #4b5563;
+}
+
+.prose-ai-response pre {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    padding: 1em;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1em;
+}
+
+.prose-ai-response code {
+    font-family: "Courier New", Courier, monospace;
+    background-color: #e5e7eb;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+}
+
+.prose-ai-response pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+.prose-ai-response table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1em;
+}
+
+.prose-ai-response th,
+.prose-ai-response td {
+    border: 1px solid #d1d5db;
+    padding: 0.75em 1em;
+    text-align: left;
+}
+
+.prose-ai-response thead {
+    background-color: #f3f4f6;
+}
+
+.prose-ai-response th {
+    font-weight: 600;
+}
+
+.prose-ai-response a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.prose-ai-response a:hover {
+    text-decoration: underline;
+}
+
+/* Highlight.js theme */
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0.5em;
+    background: #282c34;
+    color: #abb2bf;
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: #5c6370;
+    font-style: italic;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-formula {
+    color: #c678dd;
+}
+
+.hljs-section,
+.hljs-name,
+.hljs-selector-tag,
+.hljs-deletion,
+.hljs-subst {
+    color: #e06c75;
+}
+
+.hljs-literal {
+    color: #56b6c2;
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta-string {
+    color: #98c379;
+}
+
+.hljs-built_in,
+.hljs-class .hljs-title {
+    color: #e6c07b;
+}
+
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-type,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number {
+    color: #d19a66;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta,
+.hljs-selector-id,
+.hljs-title {
+    color: #61aeee;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
+}
+
+.hljs-link {
+    text-decoration: underline;
+}
+
+/* Mermaid diagram styling */
+.mermaid {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+}
+
+/* Dark mode support for mermaid */
+@media (prefers-color-scheme: dark) {
+    .mermaid {
+        background-color: #2d333b;
+        border-color: #555;
+    }
+
+    .mermaid .messageText, .mermaid .labelText {
+        fill: #eee !important;
+    }
+}

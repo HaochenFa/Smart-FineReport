@@ -1,12 +1,20 @@
 module.exports = {
-  content: [
-    './src/**/*.js', // Scans all JS files to find classes in use
-  ],
+  content: ["./src/**/*.{js,html}", "./public/index.html"],
   theme: {
-    extend: {},
+    extend: {
+      height: {
+        'chat-view': '80vh',
+      },
+      width: {
+        'chat-view': '60vw',
+      },
+      maxWidth: {
+        'chat-view': '900px',
+      },
+      minWidth: {
+        'chat-view': '600px',
+      }
+    },
   },
   plugins: [],
-  // Critical! Adds a high-priority selector to all utility classes
-  // This ensures our styles only take effect inside #smartfine-chat-container
-  important: '#smartfine-chat-container',
 }

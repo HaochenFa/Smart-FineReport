@@ -18,6 +18,9 @@ export default {
   // 入口文件
   input: "src/main.js",
 
+  // 外部依赖
+  external: ['mermaid', 'highlight.js'],
+
   // 输出配置
   output: [
     // 1. UMD (Universal Module Definition) - 用于浏览器环境

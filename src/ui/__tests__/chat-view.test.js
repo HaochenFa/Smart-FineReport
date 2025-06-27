@@ -1,9 +1,3 @@
-/**
- * @file chat-view.test.js
- * @author Haochen (Billy) Fa
- * @description Unit test for chat-view.js, updated for progress-tracking functionality.
- */
-
 import {describe, beforeEach, it, expect, jest} from "@jest/globals";
 import {ChatView} from "@/ui/chat-view.js";
 
@@ -26,7 +20,10 @@ describe("ChatView", () => {
     it("should render the basic structure correctly", () => {
       expect(container.querySelector("#message-container")).not.toBeNull();
       expect(container.querySelector("textarea")).not.toBeNull();
-      expect(container.querySelector("button").textContent).toBe("发送");
+      // Check for the presence of the send button by its class
+      expect(container.querySelector("button.bg-blue-600")).not.toBeNull();
+      // Check for the presence of the reset button by its class
+      expect(container.querySelector("button.bg-gray-200")).not.toBeNull();
     });
   });
 
@@ -34,7 +31,7 @@ describe("ChatView", () => {
     it("should call onSubmit when the send button is clicked", () => {
       const textarea = container.querySelector("textarea");
       textarea.value = "Hello, world!";
-      container.querySelector("button.bg-gray-800").click();
+      container.querySelector("button.bg-blue-600").click(); // Updated selector
       expect(onSubmitMock).toHaveBeenCalledWith("Hello, world!");
     });
 
@@ -69,32 +66,35 @@ describe("ChatView", () => {
   });
 
   describe("Message Handling", () => {
-    it("addMessage should add a user message to the container", () => {
-      chatView.addMessage({role: "user", content: "User message"});
+    it("addMessage should add a user message to the container", async () => {
+      await chatView.addMessage({role: "user", content: "User message"});
       const messageElement = container.querySelector(".justify-end");
       expect(messageElement).not.toBeNull();
       expect(messageElement.textContent).toBe("User message");
     });
 
-    it("addMessage should add an assistant message to the container", () => {
-      chatView.addMessage({role: "assistant", content: "Assistant message"});
+    it("addMessage should add an assistant message to the container", async () => {
+      await chatView.addMessage({role: "assistant", content: "Assistant message"});
       const messageElement = container.querySelector(".justify-start");
       expect(messageElement).not.toBeNull();
-      expect(messageElement.textContent).toBe("Assistant message");
+      // Marked will wrap the content in a <p> tag
+      expect(messageElement.querySelector('p').textContent).toBe("Assistant message");
     });
 
     it("createProgressMessage should create and return a new message bubble", () => {
       const progressBubble = chatView.createProgressMessage();
       expect(progressBubble).not.toBeNull();
-      expect(progressBubble.classList.contains("bg-gray-200")).toBe(true);
+      // Updated class name
+      expect(progressBubble.classList.contains("bg-white")).toBe(true);
       expect(chatView.messageContainer.contains(progressBubble)).toBe(true);
     });
 
-    it("updateMessage should set the innerHTML of a given element", () => {
+    it("updateMessage should set the innerHTML of a given element", async () => {
       const progressBubble = chatView.createProgressMessage();
       const newHtml = "<p>Loading...</p>";
-      chatView.updateMessage(progressBubble, newHtml);
-      expect(progressBubble.innerHTML).toBe(newHtml);
+      await chatView.updateMessage(progressBubble, newHtml);
+      // Use toContain because marked might add extra wrappers
+      expect(progressBubble.innerHTML).toContain(newHtml);
     });
 
     it("removeMessage should remove the entire message element from the DOM", () => {
