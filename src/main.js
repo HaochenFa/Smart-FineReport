@@ -17,13 +17,13 @@ import {Logger} from "@/utils/logger.js";
  * @param {string} options.bffUrl - (可选) 后端 BFF 服务的 URL
  * @param {object} options.fineReportInstance - 帆软环境传入的全局实例 (例如 _finereport 或 FR)
  */
-window.initAIAssistant = (options) => {
+export const initAIAssistant = (options) => {
   // 2. 设置日志级别
   Logger.setLevel(SETTINGS.logger.level);
 
   // 3. 对传入参数进行校验，确保能正常启动
-  if (!options || !options.containerSelector || !options.fineReportInstance) {
-    Logger.error("AI Assistant Initialization Failed: `containerSelector` and `fineReportInstance` must be provided.");
+  if (!options || !options.containerSelector) {
+    Logger.error("AI Assistant Initialization Failed: `containerSelector` must be provided.");
     return;
   }
 

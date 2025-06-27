@@ -64,11 +64,6 @@ export default class AppController {
     // 6. 触发初次分析
     this.triggerInitialAnalysis();
 
-    // 7. 模拟监听帆软报表数据更新事件
-    // 在实际集成中，这里应该替换为真实的帆软 API 事件监听器
-    setTimeout(() => {
-      this.handleReportUpdate();
-    }, 30000); // 模拟30秒后数据更新
 
     Logger.log("AppController Initialized and Ready");
   }

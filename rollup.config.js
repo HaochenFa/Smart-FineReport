@@ -6,6 +6,7 @@ import pkg from "./package.json";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
 import postcss from "rollup-plugin-postcss";
+import alias from "@rollup/plugin-alias";
 
 // 判断当前是否是生产环境
 const isProduction = process.env.NODE_ENV === "production";
@@ -56,6 +57,12 @@ export default {
   plugins: [
     // 解析 node_modules 中的模块
     resolve(),
+    // 配置别名
+    alias({
+      entries: [
+        {find: '@', replacement: process.cwd() + '/src'}
+      ]
+    }),
     // 转换 CommonJS 模块为 ES6
     commonjs(),
     // Babel 转换

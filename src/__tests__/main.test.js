@@ -77,7 +77,7 @@ describe("initializeAIAssistant", () => {
   // Test Case 2: 验证日志级别是否被正确设置
   it("should call Logger.setLevel with the correct level from settings", () => {
     const validOptions = {
-      containerSelector: "#test-container", fineReportInstance: {},
+      containerSelector: "#test-container",
     };
     document.body.innerHTML = "<div id=\"test-container\"></div>";
 
@@ -115,12 +115,12 @@ describe("initializeAIAssistant", () => {
   // Test Case 4: 验证参数校验逻辑
   describe("when options are invalid", () => {
     // 使用 .each 来测试多种无效输入，保持代码 DRY
-    it.each([[undefined, "undefined"], [null, "null"], [{}, "empty object"], [{containerSelector: "#app"}, "missing fineReportInstance"], [{fineReportInstance: {}}, "missing containerSelector"],])("should log an error and return when options are %s", (invalidOptions) => {
+    it.each([[undefined, "undefined"], [null, "null"], [{}, "empty object"], [{fineReportInstance: {}}, "missing containerSelector"],])("should log an error and return when options are %s", (invalidOptions) => {
       window.initAIAssistant(invalidOptions);
 
       // 验证记录了错误日志
       expect(mockLogger.error).toHaveBeenCalledTimes(1);
-      expect(mockLogger.error).toHaveBeenCalledWith("AI Assistant Initialization Failed: `containerSelector` and `fineReportInstance` must be provided.");
+      expect(mockLogger.error).toHaveBeenCalledWith("AI Assistant Initialization Failed: `containerSelector` must be provided.");
 
       // 验证核心逻辑未被执行
       expect(mockAppControllerConstructor).not.toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe("initializeAIAssistant", () => {
     });
 
     const validOptions = {
-      containerSelector: "#error-container", fineReportInstance: {},
+      containerSelector: "#error-container",
     };
     document.body.innerHTML = "<div id=\"error-container\"></div>";
     const container = document.querySelector(validOptions.containerSelector);
@@ -163,7 +163,7 @@ describe("initializeAIAssistant", () => {
     });
 
     const validOptions = {
-      containerSelector: "#init-error-container", fineReportInstance: {},
+      containerSelector: "#init-error-container",
     };
     document.body.innerHTML = "<div id=\"init-error-container\"></div>";
     const container = document.querySelector(validOptions.containerSelector);

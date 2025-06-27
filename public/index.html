@@ -238,9 +238,7 @@
 
 <script src="../dist/smart-finereport.umd.js"></script>
 <script>
-  function _g() {
-    return {reportName: "LocalTest"};
-  }
+
 
   const triggerBtn = document.getElementById('ai-trigger-btn');
   const modalOverlay = document.getElementById('modal-overlay');
@@ -253,8 +251,7 @@
     if (!isAssistantInitialized) {
       if (window.SmartFineReport && window.SmartFineReport.initAIAssistant) {
         window.SmartFineReport.initAIAssistant({
-          containerSelector: '#ai-container',
-          fineReportInstance: _g()
+          containerSelector: '#ai-container'
         });
         isAssistantInitialized = true;
       } else {
