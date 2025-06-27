@@ -33,7 +33,7 @@ export class ChatView {
       "p-4 border-t border-gray-200/80 bg-white/50";
 
     const inputWrapper = document.createElement("div");
-    inputWrapper.className = "flex items-center space-x-2";
+    inputWrapper.className = "flex items-stretch w-full";
 
     this.inputField = document.createElement("textarea");
     this.inputField.className =
@@ -56,7 +56,7 @@ export class ChatView {
 
     this.resetButton = document.createElement("button");
     this.resetButton.className =
-      "p-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-300 relative";
+      "p-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-300 relative flex items-center justify-center";
     this.resetButton.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 4v5h5\" /><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M20 20v-5h-5\" /><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M4 9a9 9 0 0114.13-6.36\" /><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M20 15a9 9 0 01-14.13 6.36\" /></svg>";
     this.resetButton.addEventListener("click", this._handleReset.bind(this));
 
@@ -82,7 +82,7 @@ export class ChatView {
     this.chatWindow.appendChild(this.inputArea);
     this.container.id = "smartfine-chat-container";
     this.container.appendChild(this.chatWindow);
-    this.container.className += " h-full flex flex-col";
+    this.container.className += " h-full w-full flex flex-col";
   }
 
   async addMessage(message) {
@@ -95,7 +95,7 @@ export class ChatView {
       bubbleStyle = "bg-blue-500 text-white rounded-lg p-3 max-w-lg shadow-md";
     } else if (role === "assistant") {
       messageElement.className = "flex justify-start mb-4 items-start";
-      bubbleStyle = "bg-white text-gray-800 rounded-lg p-3 max-w-lg shadow-md prose-ai-response";
+      bubbleStyle = "bg-white text-gray-800 rounded-lg p-3 max-w-[80%] shadow-md prose-ai-response";
     } else {
       messageElement.className = "text-center my-2";
       const systemSpan = document.createElement("span");
