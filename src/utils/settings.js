@@ -6,7 +6,7 @@
 
 export const SETTINGS = {
   service: {
-    url: "http://http://10.2.32.137:3001/api/v1/",
+    url: "http://127.0.0.1:3001/api/v1/",
   },
   logger: {
     level: "log",
