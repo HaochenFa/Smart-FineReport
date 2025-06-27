@@ -52,6 +52,3 @@ export const initAIAssistant = (options) => {
     }
   }
 };
-
-// 将初始化函数暴露到全局 window 对象
-window.initAIAssistant = initAIAssistant;

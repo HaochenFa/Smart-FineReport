@@ -54,7 +54,10 @@ describe("initializeAIAssistant", () => {
   // 在所有测试开始前，动态导入被测试的模块
   // 必须在 mock 定义之后进行 import
   beforeAll(async () => {
-    await import("@/main.js");
+    // 模拟 Rollup UMD 模块的全局暴露行为
+    window.SmartFineReport = {};
+    const mainModule = await import("@/main.js");
+    window.SmartFineReport.initAIAssistant = mainModule.initAIAssistant;
   });
 
   // 在每个测试用例运行前，重置所有模拟函数和 DOM
@@ -70,8 +73,8 @@ describe("initializeAIAssistant", () => {
 
   // Test Case 1: 验证函数是否正确挂载到 window 对象
   it("should correctly attach initializeAIAssistant to the window object", () => {
-    expect(window.initAIAssistant).toBeDefined();
-    expect(typeof window.initAIAssistant).toBe("function");
+    expect(window.SmartFineReport.initAIAssistant).toBeDefined();
+    expect(typeof window.SmartFineReport.initAIAssistant).toBe("function");
   });
 
   // Test Case 2: 验证日志级别是否被正确设置
@@ -81,7 +84,7 @@ describe("initializeAIAssistant", () => {
     };
     document.body.innerHTML = "<div id=\"test-container\"></div>";
 
-    window.initAIAssistant(validOptions);
+    window.SmartFineReport.initAIAssistant(validOptions);
 
     expect(mockLogger.setLevel).toHaveBeenCalledTimes(1);
     expect(mockLogger.setLevel).toHaveBeenCalledWith(MOCK_SETTINGS.logger.level);
@@ -97,7 +100,7 @@ describe("initializeAIAssistant", () => {
     };
     document.body.innerHTML = "<div id=\"app\"></div>";
 
-    window.initAIAssistant(validOptions);
+    window.SmartFineReport.initAIAssistant(validOptions);
 
     // 验证 AppController 构造函数被调用，并传入了正确的配置
     expect(mockAppControllerConstructor).toHaveBeenCalledTimes(1);
@@ -116,7 +119,7 @@ describe("initializeAIAssistant", () => {
   describe("when options are invalid", () => {
     // 使用 .each 来测试多种无效输入，保持代码 DRY
     it.each([[undefined, "undefined"], [null, "null"], [{}, "empty object"], [{fineReportInstance: {}}, "missing containerSelector"],])("should log an error and return when options are %s", (invalidOptions) => {
-      window.initAIAssistant(invalidOptions);
+      window.SmartFineReport.initAIAssistant(invalidOptions);
 
       // 验证记录了错误日志
       expect(mockLogger.error).toHaveBeenCalledTimes(1);
@@ -141,7 +144,7 @@ describe("initializeAIAssistant", () => {
     document.body.innerHTML = "<div id=\"error-container\"></div>";
     const container = document.querySelector(validOptions.containerSelector);
 
-    window.initAIAssistant(validOptions);
+    window.SmartFineReport.initAIAssistant(validOptions);
 
     // 验证记录了严重错误
     expect(mockLogger.error).toHaveBeenCalledTimes(1);
@@ -168,7 +171,7 @@ describe("initializeAIAssistant", () => {
     document.body.innerHTML = "<div id=\"init-error-container\"></div>";
     const container = document.querySelector(validOptions.containerSelector);
 
-    window.initAIAssistant(validOptions);
+    window.SmartFineReport.initAIAssistant(validOptions);
 
     // 验证构造函数仍然被调用了
     expect(mockAppControllerConstructor).toHaveBeenCalledTimes(1);

@@ -71,7 +71,7 @@ describe("AppController Analysis Workflows", () => {
     jest.clearAllMocks();
 
     // Mock the DOM environment
-    document.body.innerHTML = `<div id="app"></div>`;
+    document.body.innerHTML = "<div id=\"app\"></div>";
     const appContainer = document.getElementById("app");
     // This spy is crucial for the init method to find the container
     jest.spyOn(document, "querySelector").mockReturnValue(appContainer);

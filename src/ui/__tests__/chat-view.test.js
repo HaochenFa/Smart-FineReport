@@ -78,7 +78,7 @@ describe("ChatView", () => {
       const messageElement = container.querySelector(".justify-start");
       expect(messageElement).not.toBeNull();
       // Marked will wrap the content in a <p> tag
-      expect(messageElement.querySelector('p').textContent).toBe("Assistant message");
+      expect(messageElement.querySelector("p").textContent).toBe("Assistant message");
     });
 
     it("createProgressMessage should create and return a new message bubble", () => {
