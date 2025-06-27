@@ -19,30 +19,15 @@ export default {
   input: "src/main.js",
 
   // 外部依赖
-  external: ['mermaid', 'highlight.js'],
+  // external: ['mermaid', 'highlight.js'], // Now bundled locally
 
   // 输出配置
   output: [
-    // 1. UMD (Universal Module Definition) - 用于浏览器环境
-    // 可以通过 <script> 标签直接引用
-    {
-      file: pkg.browser, // 'dist/smart-finereport.umd.js'
-      format: "umd",
-      // UMD 模式下，需要指定一个全局变量名
-      // 当在浏览器中引入时，模块内容会挂载到 window.SmartFineReport 上
-      name: "SmartFineReport",
-      // 'named' 可以同时处理 default export 和 named exports
-      exports: "named",
-      sourcemap: true,
-      plugins: [
-        // 仅在生产环境下进行代码压缩
-        isProduction && terser(),
-      ],
-    },
+
 
     // 2. CJS (CommonJS) - 用于 Node.js 环境
     {
-      file: pkg.main, // 'dist/smart-finereport.cjs.js'
+      dir: 'dist/cjs', // Output directory for CJS format
       format: "cjs",
       exports: "named",
       sourcemap: true,
@@ -50,9 +35,7 @@ export default {
 
     // 3. ESM (ES Module) - 用于现代浏览器和打包工具 (如 Webpack, Vite)
     {
-      file: pkg.module, // 'dist/smart-finereport.esm.js'
-      format: "es",
-      sourcemap: true,
+      dir: 'dist/esm', // Output directory for ESM format
     },
   ],
 

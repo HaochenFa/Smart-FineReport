@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>SmartFineReport - Local Test</title>
-    <link rel="stylesheet" href="../dist/smart-finereport.umd.css">
+    <link rel="stylesheet" href="../dist/esm/main.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body {
             font-family: sans-serif;
@@ -13,7 +14,6 @@
         }
 
         #report-mock {
-            position: relative; /* For positioning the trigger button */
             border: 1px solid #d9d9d9;
             padding: 20px;
             margin-bottom: 20px;
@@ -27,72 +27,6 @@
             margin-bottom: 25px;
             font-size: 24px;
             color: #333;
-        }
-
-        #ai-trigger-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 14px;
-            padding: 8px 12px;
-            cursor: pointer;
-            background-color: #1890ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-            z-index: 10;
-        }
-
-        #ai-trigger-btn:hover {
-            background-color: #40a9ff;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            display: none; /* Hidden by default */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            position: relative;
-            background: white;
-            width: 400px;
-            height: 600px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            flex-direction: column;
-        }
-
-        #modal-close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: transparent;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-            z-index: 1010;
-        }
-
-        #modal-close-btn:hover {
-            color: #000;
-        }
-
-        #ai-container {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
         }
 
         .grid-container {
@@ -168,7 +102,7 @@
 <body>
 <h1>本地测试环境</h1>
 <div id="report-mock">
-    <button id="ai-trigger-btn">启动 AI 分析助手</button>
+    <!-- The trigger button is now injected by the script -->
     <h2>销售分析仪表板</h2>
     <div class="grid-container">
         <div class="grid-item kpi">
@@ -228,51 +162,10 @@
     </div>
 </div>
 
-<!-- AI Assistant Modal -->
-<div id="modal-overlay" class="modal-overlay">
-    <div class="modal-content">
-        <button id="modal-close-btn">&times;</button>
-        <div id="ai-container"></div>
-    </div>
-</div>
+<!-- The AI Assistant and its Modal are now injected by the script -->
 
-<script src="../dist/smart-finereport.umd.js"></script>
+<script type="module" src="../dist/esm/main.js"></script>
 <script>
-
-
-  const triggerBtn = document.getElementById('ai-trigger-btn');
-  const modalOverlay = document.getElementById('modal-overlay');
-  const closeBtn = document.getElementById('modal-close-btn');
-  let isAssistantInitialized = false;
-
-  triggerBtn.addEventListener('click', function () {
-    modalOverlay.style.display = 'flex'; // Show the modal
-
-    if (!isAssistantInitialized) {
-      if (window.SmartFineReport && window.SmartFineReport.initAIAssistant) {
-        window.SmartFineReport.initAIAssistant({
-          containerSelector: '#ai-container'
-        });
-        isAssistantInitialized = true;
-      } else {
-        console.error("SmartFineReport script not loaded or failed to initialize.");
-        // Optional: Show an error message in the modal
-        document.getElementById('ai-container').innerHTML = '<p style="padding: 20px; text-align: center;">无法加载 AI 助手。</p>';
-      }
-    }
-  });
-
-  function closeModal() {
-    modalOverlay.style.display = 'none';
-  }
-
-  closeBtn.addEventListener('click', closeModal);
-  modalOverlay.addEventListener('click', function (event) {
-    if (event.target === modalOverlay) {
-      closeModal();
-    }
-  });
-
   // Chart.js Initialization
   document.addEventListener('DOMContentLoaded', function () {
     // Sales Trend Chart (Bar)
