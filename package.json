@@ -2,7 +2,9 @@
   "name": "smartfinereport",
   "version": "v1.0.0-vision-alpha",
   "description": "ai-integrated-finereport",
-  "main": "src/main.js",
+  "main": "dist/smart-finereport.cjs.js",
+  "module": "dist/smart-finereport.esm.js",
+  "browser": "dist/smart-finereport.umd.js",
   "type": "module",
   "scripts": {
     "dev": "rollup -c --watch",
@@ -35,6 +37,7 @@
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
+    "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/jest-dom": "^6.6.3",
     "html2canvas": "^1.4.1"
   }
