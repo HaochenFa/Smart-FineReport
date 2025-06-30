@@ -12,6 +12,7 @@ const cors = require('cors');
 
 // 2. 初始化 Express 应用
 const app = express();
+app.use(express.json({limit: '10mb', extended: true}));
 
 // 3. 从环境变量中获取配置
 const PORT = process.env.PORT || 3001;

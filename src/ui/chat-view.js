@@ -5,7 +5,8 @@
  */
 import {marked} from "marked";
 import mermaid from "mermaid";
-import hljs from "highlight.js";
+
+// import hljs from "highlight.js";
 
 export class ChatView {
   /**
@@ -37,7 +38,7 @@ export class ChatView {
 
     this.inputField = document.createElement("textarea");
     this.inputField.className =
-      "flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none h-12 overflow-hidden bg-gray-50/90 transition-all duration-300";
+      "ml-5 mr-5 flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none h-12 overflow-hidden bg-gray-50/90 transition-all duration-300";
     this.inputField.placeholder = "输入你的分析请求... (Shift+Enter 换行)";
     this.inputField.rows = 1;
     this.inputField.addEventListener("input", this._autoResizeInput.bind(this));
@@ -68,10 +69,10 @@ export class ChatView {
 
   _setupMarkdown() {
     marked.setOptions({
-      highlight: (code, lang) => {
-        const language = hljs.getLanguage(lang) ? lang : "plaintext";
-        return hljs.highlight(code, {language}).value;
-      },
+      // highlight: (code, lang) => {
+      //   const language = hljs.getLanguage(lang) ? lang : "plaintext";
+      //   return hljs.highlight(code, {language}).value;
+      // },
       async: true,
     });
     mermaid.initialize({startOnLoad: false});

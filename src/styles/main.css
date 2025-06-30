@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 #smartfine-chat-container {
-    height: 80vh;
-    width: clamp(400px, 60vw, 1200px);
+    height: 85vh;
+    width: 100%;
     max-width: 1200px;
     min-width: 400px;
 }
