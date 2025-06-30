@@ -26,7 +26,7 @@ export class ChatView {
       "flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-gray-200/50";
 
     this.messageContainer = document.createElement("div");
-    this.messageContainer.className = "flex-1 overflow-y-auto p-4 space-y-4";
+    this.messageContainer.className = "flex-1 flex flex-col overflow-y-auto p-4 space-y-4";
     this.messageContainer.id = "message-container";
 
     this.inputArea = document.createElement("div");
@@ -121,6 +121,7 @@ export class ChatView {
     messageElement.appendChild(bubble);
     this.messageContainer.appendChild(messageElement);
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+    console.log(`[ChatView] Adding message: Role - ${role}, Content - ${content.substring(0, 50)}...`); // Debug log
   }
 
   async _renderMarkdown(element, content) {

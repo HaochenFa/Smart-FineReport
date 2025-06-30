@@ -87,8 +87,9 @@ export default class AppController {
       const aiResponse = await this.runAnalysis(defaultQuery, true);
 
       // 3. 更新UI，显示分析结果
+      const currentState = this.stateManager.getState();
       this.stateManager.setState({
-        messages: [{role: "assistant", content: aiResponse}],
+        messages: [...currentState.messages, {role: "assistant", content: aiResponse}],
       });
       this.contextManager.addMessage("assistant", aiResponse);
     } catch (error) {
