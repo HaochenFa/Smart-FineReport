@@ -73,7 +73,7 @@ export class ChatView {
       //   const language = hljs.getLanguage(lang) ? lang : "plaintext";
       //   return hljs.highlight(code, {language}).value;
       // },
-      async: true,
+      async: false,
     });
     mermaid.initialize({startOnLoad: false});
   }
@@ -113,37 +113,37 @@ export class ChatView {
     bubble.className = bubbleStyle;
 
     if (role === "assistant") {
-      await this._renderMarkdown(bubble, content);
+      bubble.innerHTML = content;
+      // await this._renderMarkdown(bubble, content);
     } else {
-      bubble.textContent = content;
+      bubble.innerHTML = content;
     }
 
     messageElement.appendChild(bubble);
     this.messageContainer.appendChild(messageElement);
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
-    console.log(`[ChatView] Adding message: Role - ${role}, Content - ${content.substring(0, 50)}...`); // Debug log
   }
 
-  async _renderMarkdown(element, content) {
-    try {
-      const html = await marked.parse(content);
-      element.innerHTML = html;
-      const mermaidElements = element.querySelectorAll(".language-mermaid");
-      for (const el of mermaidElements) {
-        const code = el.textContent;
-        const {svg} = await mermaid.render(
-          `mermaid-${Date.now()}`,
-          code
-        );
-        const svgContainer = document.createElement("div");
-        svgContainer.innerHTML = svg;
-        el.parentNode.replaceWith(svgContainer);
-      }
-    } catch (e) {
-      element.innerHTML = content; // Fallback to raw content on error
-      console.error("Markdown rendering error:", e);
-    }
-  }
+  // async _renderMarkdown(element, content) {
+  //   try {
+  //     const html = await marked.parse(content);
+  //     element.innerHTML = html;
+  //     const mermaidElements = element.querySelectorAll(".language-mermaid");
+  //     for (const el of mermaidElements) {
+  //       const code = el.textContent;
+  //       const {svg} = await mermaid.render(
+  //         `mermaid-${Date.now()}`,
+  //         code
+  //       );
+  //       const svgContainer = document.createElement("div");
+  //       svgContainer.innerHTML = svg;
+  //       el.parentNode.replaceWith(svgContainer);
+  //     }
+  //   } catch (e) {
+  //     element.innerHTML = content; // Fallback to raw content on error
+  //     console.error("Markdown rendering error:", e);
+  //   }
+  // }
 
   createProgressMessage() {
     const messageElement = document.createElement("div");
@@ -161,7 +161,7 @@ export class ChatView {
   }
 
   async updateMessage(element, htmlContent) {
-    await this._renderMarkdown(element, htmlContent);
+    // await this._renderMarkdown(element, htmlContent);
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
 

@@ -15,6 +15,7 @@ import {AnalysisPipeline} from "../core/ai-analysis-pipeline.js";
 import {Logger} from "../utils/logger.js";
 import {ContextManager} from "@/core/context-manager.js";
 import html2canvas from "html2canvas";
+import {marked} from "marked";
 
 export default class AppController {
   /**
@@ -87,9 +88,8 @@ export default class AppController {
       const aiResponse = await this.runAnalysis(defaultQuery, true);
 
       // 3. 更新UI，显示分析结果
-      const currentState = this.stateManager.getState();
       this.stateManager.setState({
-        messages: [...currentState.messages, {role: "assistant", content: aiResponse}],
+        messages: [{role: "assistant", content: aiResponse}],
       });
       this.contextManager.addMessage("assistant", aiResponse);
     } catch (error) {
@@ -139,7 +139,9 @@ export default class AppController {
     const imageBase64 = canvas.toDataURL("image/png");
 
     // 调用核心分析逻辑，传入 this.contextManager 作为 contextProvider
-    return await this.pipeline.run(text, imageBase64, this.contextManager, isInitial);
+    const aiResponseMarkdown = await this.pipeline.run(text, imageBase64, this.contextManager, isInitial);
+    const aiResponseHtml = await marked.parse(aiResponseMarkdown); // Parse Markdown to HTML here
+    return aiResponseHtml;
   }
 
   /**

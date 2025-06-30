@@ -117,14 +117,20 @@ export class UIManager {
   }
 
   async _handleUserSubmit(messageText) {
-    await this.messageSubmitHandler(messageText);
     this.view.clearInput();
+    await this.messageSubmitHandler(messageText);
   }
 
   async _updateMessages(messages) {
     this.view.messageContainer.innerHTML = "";
     if (messages && Array.isArray(messages)) {
-      await Promise.all(messages.map(message => this.view.addMessage(message)));
+      messages = messages.map(item => {
+        return {
+          ...item,
+          content: marked.parse(item.content)
+        }
+      })
+      await Promise.all(messages.map(async message => await this.view.addMessage(message)));
     }
   }
 }

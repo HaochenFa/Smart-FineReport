@@ -99,38 +99,34 @@ flowchart BT
 
 ```plaintext
 /SmartFineReport
-├── src/                # Source files
-│   ├── main.js             # The Main Entrance
-│   ├── app/            # Application control and initialization
-│   │    ├── app-controller.js        # Core service
-│   │    └── state-manager.js         # UI <-> Backend bridging
-│   ├── core/           # Core AI and analysis logic
-│   │    ├── ai-analysis-pipeline.js  # AI service controller
-│   │    ├── context-manager.js       # Manage context (conversation)
-│   │    ├── vllm-interface.js        # Connect to vLLM service
-│   │    └── prompt-builder.js        # Build structured prompts
-│   ├── integration/    # FineReport integration (v1.5.x)
-│   │    ├── data-processor.js        # (v1.5.x) Organize and clean raw data
-│   │    └── fr-interface.js          # (v1.5.x) Fetch FR data
-│   ├── services/       # Common services
-│   │    └── api-service.js           # General API service wrapper
-│   ├── ui/             # User interface components
-│   │    ├── chat-view.js             # Basic chat window implementation
-│   │    └── ui-manager.js            # Control UI status
-│   └── utils/          # Utility functions and configs
-│        ├── default-prompt.js        # Prompt template
-│        ├── logger.js                # Logger
-│        └── settings.js              # Static config and secrets
 │
-└──tests/               # Test files
-    ├── e2e/            # E2E tests
-    └── integration/    # Integration tests
-         └── full-analysis-flow.test.js # Statndard path integration test
+└── src/                # Source files
+   ├── main.js             # The Main Entrance
+   ├── app/            # Application control and initialization
+   │    ├── app-controller.js        # Core service
+   │    └── state-manager.js         # UI <-> Backend bridging
+   ├── core/           # Core AI and analysis logic
+   │    ├── ai-analysis-pipeline.js  # AI service controller
+   │    ├── context-manager.js       # Manage context (conversation)
+   │    ├── vllm-interface.js        # Connect to vLLM service
+   │    └── prompt-builder.js        # Build structured prompts
+   ├── integration/    # FineReport integration (v1.5.x)
+   │    ├── data-processor.js        # (v1.5.x) Organize and clean raw data
+   │    └── fr-interface.js          # (v1.5.x) Fetch FR data
+   ├── services/       # Common services
+   │    └── api-service.js           # General API service wrapper
+   ├── ui/             # User interface components
+   │    ├── chat-view.js             # Basic chat window implementation
+   │    └── ui-manager.js            # Control UI status
+   └── utils/          # Utility functions and configs
+        ├── default-prompt.js        # Prompt template
+        ├── logger.js                # Logger
+        └── settings.js              # Static config and secrets
 ```
 
 ## 开发计划
 
-项目当前处于 `v1.0.0-vision-alpha` 阶段，核心的视觉分析功能已开发完成。后续计划将聚焦于稳定性和用户体验提升，直至正式上线。
+项目当前处于 `v1.1.0-vision` 阶段，核心的视觉分析功能已开发完成。后续计划将聚焦于稳定性和用户体验提升。
 
 ### v1.0: 视觉分析核心 (已完成)
 
@@ -142,17 +138,16 @@ flowchart BT
 
 ### 后续计划
 
--   [ ] **环境部署与测试**:
-    -   [ ] 部署到内部测试环境，进行全面的功能验证。
+-   [x] **环境部署与测试**:
+    -   [x] 部署到内部测试环境，进行全面的功能验证。
     -   [ ] 部署到预生产环境，与真实的帆软看板进行集成测试。
 -   [x] **UI/UX 优化**:
     -   [x] **富文本支持**：实现了 Markdown、代码高亮和 Mermaid 图表渲染。
     -   [x] **响应式布局**：优化了弹窗和输入框的响应式布局，提升了在不同屏幕尺寸下的可用性。
     -   [x] **消息气泡设计**：重新设计了聊天消息气泡，更清晰地区分用户、AI 和系统消息。
     -   [x] **输入区域现代化**：更新了输入框和按钮的样式，并优化了“重置”按钮的布局。
-    -   [ ] 进一步优化 UI 布局和交互细节，提升用户体验。
-    -   [ ] 增强 UI 对不同尺寸看板和屏幕的响应式适配能力。
--   [ ] **端到端 (E2E) 测试**: 编写自动化 E2E 测试用例，模拟用户从点击按钮到获取分析结果的完整流程。
+  -   [x] 进一步优化 UI 布局和交互细节，提升用户体验。
+  -   [x] 增强 UI 对不同尺寸看板和屏幕的响应式适配能力。
 -   [ ] **文档完善**: 更新和完善最终用户使用手册和开发者文档。
 -   [ ] **正式上线**: 在完成所有测试和优化后，正式发布 v1.0.0 版本。
 

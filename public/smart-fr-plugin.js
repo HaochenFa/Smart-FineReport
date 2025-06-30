@@ -19,6 +19,6 @@ loadJS('http://localhost:8080/dist/esm/main.js', function () {
   console.log('smart-finereport脚本加载完成');
 });
 
-loadJS('http://localhost:8080/public/tailwindcss@3.4.16.js', function () {
+loadJS('http://localhost:8080/public/tailwindcss.js', function () {
   console.log('tailwindcss脚本加载完成');
 });

@@ -212,3 +212,8 @@
         fill: #eee !important;
     }
 }
+
+/* Force message order to be natural */
+#message-container > div {
+    order: initial !important;
+}
