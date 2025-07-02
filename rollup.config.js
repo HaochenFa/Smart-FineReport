@@ -28,11 +28,18 @@ export default {
   // external: ['mermaid', 'highlight.js'], // Now bundled locally
 
   // 输出配置
-  output: {
-    file: 'dist/smart-finereport.min.js',
-    format: 'esm',
-    sourcemap: true,
-  },
+  output: [
+    {
+      file: 'dist/smart-finereport.esm.min.js',
+      format: 'esm',
+      sourcemap: true,
+    },
+    {
+      file: 'dist/smart-finereport.cjs.min.js',
+      format: 'cjs',
+      sourcemap: true,
+    },
+  ],
 
   // 插件列表
   plugins: [
