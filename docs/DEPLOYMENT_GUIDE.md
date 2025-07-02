@@ -136,9 +136,9 @@ npm run build
 1. **部署文件**: 将 `dist/cjs/` 目录、`dist/esm/` 目录、`public/smart-fr-plugin.js` 和 `public/tailwindcss.js`
    文件复制到您服务器上的一个公共可访问文件夹中，例如 `your_server_root/public/smartfinereport/`。
 
-2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置 -> 引入JavaScript文件`。
+2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置`。分别在“引入JavaScript文件”和“引入CSS文件”选项卡中进行配置。
 
-3. **引入路径**: 在弹出的对话框中，输入您部署文件的绝对路径。例如，如果您的文件部署在
-   `your_server_root/public/smartfinereport/`，则输入 `/public/smartfinereport/smart-fr-plugin.js`。
+3. **引入路径**: 在弹出的对话框中，分别输入您部署的 JavaScript 和 CSS 文件的绝对路径。例如，如果您的文件部署在
+   `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入 `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入 `/public/smartfinereport/smart-finereport.cjs.min.css`。
 
 4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。

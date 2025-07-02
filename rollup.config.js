@@ -25,7 +25,7 @@ export default {
   input: "src/main.js",
 
   // 外部依赖
-  // external: ['mermaid', 'highlight.js'], // Now bundled locally
+  
 
   // 输出配置
   output: [
