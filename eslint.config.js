@@ -1,6 +1,6 @@
 export default [
   {
-    "ignores": ["dist/**", "coverage/**"],
+    "ignores": ["dist/**", "coverage/**", "src/styles/tailwind.js"],
   },
   {
     "files": ["src/**/*.js"],

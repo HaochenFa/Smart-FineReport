@@ -6,6 +6,7 @@
 
 import "./styles/main.css";
 import "./styles/fab.css"; // 引入新的样式文件
+import "./styles/tailwind.js";
 import AppController from "@/app/app-controller.js";
 import {SETTINGS} from "@/utils/settings.js";
 import {Logger} from "@/utils/logger.js";
