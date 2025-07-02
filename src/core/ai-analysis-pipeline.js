@@ -20,15 +20,16 @@ export class AnalysisPipeline {
    * @param {object} promptBuilder - 负责构建Prompt的对象。必须实现 build(userRequest, imageBase64, contextProvider) 方法。
    * @param {object} aiEngine - 负责与AI模型交互的对象。必须实现 async getResponse(prompt) 方法。
    */
-  constructor(promptBuilder, aiEngine) {
+  constructor(promptBuilder, aiEngine, uiManager) {
     // Basic validation to ensure dependencies and their methods exist
-    if (!promptBuilder?.build || !aiEngine?.getResponse) {
+    if (!promptBuilder?.build || !aiEngine?.getResponse || !uiManager?.showAssistantStatus || !uiManager?.hideAssistantStatus) {
       const errorMsg = "[AnalysisPipeline] A dependency is missing or does not implement its required method.";
       log.error(errorMsg);
       throw new Error(errorMsg);
     }
     this.#promptBuilder = promptBuilder;
     this.#aiEngine = aiEngine;
+    this.uiManager = uiManager;
 
     log.log("[AnalysisPipeline] Pipeline initialized successfully with all dependencies.");
   }
@@ -47,16 +48,20 @@ export class AnalysisPipeline {
     try {
       // 步骤 1: 构建最终的 Prompt
       log.log("[AnalysisPipeline] Step 1: Building final prompt with image...");
+      this.uiManager.showAssistantStatus("构建提示中...");
       const finalPrompt = this.#promptBuilder.build(userRequest, imageBase64, contextProvider, isInitial);
       log.log("[AnalysisPipeline] Prompt built successfully.");
 
       // 步骤 3: 调用 AI 引擎获取响应
       log.log("[AnalysisPipeline] Step 3: Sending prompt to AI engine...");
+      this.uiManager.showAssistantStatus("发送数据中...");
       const aiResponse = await this.#aiEngine.getResponse(finalPrompt);
       log.log("[AnalysisPipeline] AI engine returned a response.");
+      this.uiManager.showAssistantStatus("解析结果中...");
 
       // 步骤 4: 返回最终结果
       log.log("[AnalysisPipeline] Analysis finished successfully.");
+      this.uiManager.hideAssistantStatus();
       return aiResponse;
 
     } catch (error) {

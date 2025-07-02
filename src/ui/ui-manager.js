@@ -63,40 +63,15 @@ export class UIManager {
     this.stateManager.addMessage({role: "user", content: userInput});
   }
 
-  showProgressTracker() {
-    return this.view.createProgressMessage();
+  showAssistantStatus(statusText) {
+    this.view.showAssistantStatus(statusText);
   }
 
-  async updateProgress(progressElement, allStages, currentStageId) {
-    const stagesWithStatus = allStages.map((stage, index) => {
-      const currentStageIndex = allStages.findIndex(s => s.id === currentStageId);
-      let status = "pending";
-      if (index < currentStageIndex) {
-        status = "completed";
-      } else if (index === currentStageIndex) {
-        status = "inprogress";
-      }
-      return {...stage, status};
-    });
-    const html = this.view._renderProgressSteps(stagesWithStatus);
-    await this.view.updateMessage(progressElement, html);
+  hideAssistantStatus() {
+    this.view.hideAssistantStatus();
   }
 
-  async renderError(progressElement, allStages, error, failedStageId) {
-    const stagesWithStatus = allStages.map((stage, index) => {
-      const failedIndex = allStages.findIndex(s => s.id === failedStageId);
-      let status = "pending";
-      if (index < failedIndex) {
-        status = "completed";
-      } else if (index === failedIndex) {
-        status = "failed";
-      }
-      return {...stage, status};
-    });
-    const html = this.view._renderProgressSteps(stagesWithStatus);
-    const errorHtml = `<div class="text-red-500 mt-2"><p class="font-bold">分析失败:</p><p>${error.message}</p></div>`;
-    await this.view.updateMessage(progressElement, html + errorHtml);
-  }
+  
 
   _bindToStateChanges() {
     this.stateManager.subscribe((state) => this._update(state));

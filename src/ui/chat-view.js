@@ -88,11 +88,20 @@ export class ChatView {
     } else if (role === "assistant") {
       messageElement.className = "flex justify-start mb-4 items-start";
       bubbleStyle = "bg-white text-gray-800 rounded-lg p-3 max-w-[80%] shadow-md prose-ai-response";
-    } else {
+    } else { // System message
       messageElement.className = "text-center my-2";
       const systemSpan = document.createElement("span");
-      systemSpan.className =
-        "text-xs text-gray-500 bg-gray-100 rounded-full px-3 py-1";
+      let systemSpanClasses = "text-xs bg-gray-100 rounded-full px-3 py-1"; // Base classes
+
+      if (type === "error") {
+        systemSpanClasses += " text-red-500";
+      } else if (type === "warning") {
+        systemSpanClasses += " text-orange-500";
+      } else { // Default system message
+        systemSpanClasses += " text-gray-500";
+      }
+
+      systemSpan.className = systemSpanClasses;
       systemSpan.textContent = content;
       messageElement.appendChild(systemSpan);
       this.messageContainer.appendChild(messageElement);
@@ -116,23 +125,34 @@ export class ChatView {
 
   
 
-  createProgressMessage() {
-    const messageElement = document.createElement("div");
-    messageElement.className = "flex justify-start mb-4 items-start";
-
-    const bubble = document.createElement("div");
-    bubble.className = "bg-white text-gray-800 rounded-lg p-3 max-w-lg shadow-md";
-    bubble.innerHTML = "<div class=\"flex items-center\"><svg class=\"animate-spin h-5 w-5 mr-3 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\"><circle class=\"opacity-25\" cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" stroke-width=\"4\"></circle><path class=\"opacity-75\" fill=\"currentColor\" d=\"M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z\"></path></svg><span>分析中...</span></div>";
-
-    messageElement.appendChild(bubble);
-    this.messageContainer.appendChild(messageElement);
-    this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
-
-    return bubble;
-  }
+  
 
   async updateMessage(element, htmlContent) {
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+  }
+
+  /**
+   * @description 在消息气泡上方显示AI助手状态文本。
+   * @param {string} statusText - 要显示的状态文本。
+   */
+  showAssistantStatus(statusText) {
+    if (!this.assistantStatusElement) {
+      this.assistantStatusElement = document.createElement("div");
+      this.assistantStatusElement.className = "text-center text-gray-500 text-sm my-2";
+      this.messageContainer.before(this.assistantStatusElement); // Insert before messageContainer
+    }
+    this.assistantStatusElement.textContent = statusText;
+    this.assistantStatusElement.style.display = "block";
+    this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+  }
+
+  /**
+   * @description 隐藏AI助手状态文本。
+   */
+  hideAssistantStatus() {
+    if (this.assistantStatusElement) {
+      this.assistantStatusElement.style.display = "none";
+    }
   }
 
 

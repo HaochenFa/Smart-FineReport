@@ -43,7 +43,7 @@ export default class AppController {
     this.contextManager = new ContextManager();
 
     // 3. 整合核心分析管线 ai-analysis-pipeline
-    this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine);
+    this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine, this.uiManager);
 
     const containerElement = document.querySelector(containerSelector);
     if (!containerElement) {
@@ -77,7 +77,7 @@ export default class AppController {
     this.stateManager.setState({
       isLoading: true,
       messages: [
-        {role: "assistant", content: "您好，我是您的AI分析助手，正在为您分析当前报表..."},
+        {role: "system", content: "您好，我是您的AI分析助手，正在为您分析当前报表...", type: "info"},
       ],
     });
 
@@ -95,7 +95,7 @@ export default class AppController {
     } catch (error) {
       Logger.error("Error during initial analysis:", error);
       this.stateManager.setState({
-        messages: [{role: "assistant", content: "抱歉，初始化分析时遇到问题，请稍后重试。"}],
+        messages: [{role: "system", content: "抱歉，初始化分析时遇到问题，请稍后重试。", type: "error"}],
       });
     } finally {
       this.stateManager.setState({isLoading: false});
@@ -139,9 +139,16 @@ export default class AppController {
     const imageBase64 = canvas.toDataURL("image/png");
 
     // 调用核心分析逻辑，传入 this.contextManager 作为 contextProvider
-    const aiResponseMarkdown = await this.pipeline.run(text, imageBase64, this.contextManager, isInitial);
-    const aiResponseHtml = await marked.parse(aiResponseMarkdown); // Parse Markdown to HTML here
-    return aiResponseHtml;
+    this.uiManager.showAssistantStatus("抓取数据中...");
+    try {
+      const aiResponseMarkdown = await this.pipeline.run(text, imageBase64, this.contextManager, isInitial);
+      this.uiManager.hideAssistantStatus(); // Hide status on success
+      const aiResponseHtml = await marked.parse(aiResponseMarkdown); // Parse Markdown to HTML here
+      return aiResponseHtml;
+    } catch (error) {
+      this.uiManager.hideAssistantStatus(); // Hide status on error
+      throw error; // Re-throw the error
+    }
   }
 
   /**
