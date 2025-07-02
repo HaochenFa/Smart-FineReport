@@ -4,10 +4,6 @@
  * @description UI Layer, organize DOM elements 纯粹 UI 视图层，管理 DOM 元素
  */
 
-
-
-// import hljs from "highlight.js";
-
 export class ChatView {
   /**
    * @param {HTMLElement} container - UI将被渲染到的容器元素。
@@ -19,7 +15,6 @@ export class ChatView {
     this.onSubmit = onSubmit;
     this.onReset = onReset;
 
-    
 
     this.chatWindow = document.createElement("div");
     this.chatWindow.className =
@@ -67,7 +62,6 @@ export class ChatView {
     this.inputArea.appendChild(inputWrapper);
   }
 
-  
 
   render() {
     this.chatWindow.appendChild(this.messageContainer);
@@ -79,7 +73,7 @@ export class ChatView {
 
   async addMessage(message) {
     const messageElement = document.createElement("div");
-    const {role, content} = message;
+    const {role, content, type} = message;
 
     let bubbleStyle = "";
     if (role === "user") {
@@ -123,9 +117,6 @@ export class ChatView {
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
 
-  
-
-  
 
   async updateMessage(element, htmlContent) {
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
