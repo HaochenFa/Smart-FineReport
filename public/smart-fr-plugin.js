@@ -13,8 +13,8 @@ function loadCSS(href) {
   document.head.appendChild(link);
 }
 
-loadCSS('http://localhost:8080/dist/smart-finereport.css');
+loadCSS('http://localhost:8080/dist/smart-finereport.min.css');
 
-loadJS('http://localhost:8080/dist/smart-finereport.js', function () {
+loadJS('http://localhost:8080/dist/smart-finereport.min.js', function () {
   console.log('smart-finereport脚本加载完成');
 });

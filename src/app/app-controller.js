@@ -42,22 +42,22 @@ export default class AppController {
     const aiEngine = new AIEngine({url: this.serviceUrl});
     this.contextManager = new ContextManager();
 
-    // 3. 整合核心分析管线 ai-analysis-pipeline
-    this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine, this.uiManager);
-
     const containerElement = document.querySelector(containerSelector);
     if (!containerElement) {
       Logger.error(`Initialization failed: Container with selector "${containerSelector}" not found.`);
       return;
     }
 
-    // 4. 初始化 UI 管理器
+    // 3. 初始化 UI 管理器
     this.uiManager = new UIManager(
       containerElement, // 传递 DOM 元素而非选择器字符串
       this.stateManager,
       this.handleUserQuery.bind(this),
       this.resetAnalysis.bind(this)
     );
+
+    // 4. 整合核心分析管线 ai-analysis-pipeline
+    this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine, this.uiManager);
 
     // 5. 启动 UI 渲染
     this.uiManager.init();
