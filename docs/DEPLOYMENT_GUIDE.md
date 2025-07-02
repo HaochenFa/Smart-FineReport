@@ -104,109 +104,40 @@ npm run build
 
 ### **阶段二：生产环境部署**
 
-此阶段涉及将项目的前后端分别部署到服务器。
+此阶段涉及将项目部署到服务器。
 
-**步骤 2.1: 部署后端 BFF 服务**
+**步骤 2.1: 构建前端脚本**
 
-1. **上传文件**: 将项目根目录下的 `bff/` 文件夹完整上传到目标服务器。
-2. **配置环境变量**: 在服务器的 `bff/` 目录下创建 `.env` 文件，并配置 vLLM 服务地址及密钥。
-   ```plaintext
-   # /path/to/your/bff/.env
-   LLM_API_KEYS=your_secure_api_key_1,your_secure_api_key_2
-   LLM_FALLBACK_URLS=http://vllm-service-1.com/api,http://vllm-service-2.com/api
-   ```
-3. **安装生产依赖**: 在服务器的 `bff/` 目录下执行：
-   ```bash
-   npm install --production
-   ```
-4. **启动并守护服务**: 使用 `pm2` 启动并管理 BFF 服务进程。
-   ```bash
-   # 全局安装 pm2 (如果尚未安装)
-   npm install -g pm2
-   # 启动服务
-   pm2 start index.js --name "smart-finereport-bff"
-   # 验证服务状态
-   pm2 list
-   ```
-5. **记录地址**: 确保 BFF 服务端口（默认为 **3001**）已在防火墙中开放，并记录其访问地址，例如 `http://YOUR_SERVER_IP:3001`。
+在您的**本地开发环境**中执行以下操作。
 
-**步骤 2.2: 部署前端产物**
-
-1. **配置 BFF 地址**: 在本地代码中，打开 `src/utils/settings.js`，将 `url` 修改为指向已部署的 BFF 服务地址。
+1. **配置后端 API 地址**: 打开 `src/utils/settings.js` 文件，修改 `SETTINGS.service.url` 的值，使其指向您的实际后端 API
+   地址数组。
    ```javascript
    // src/utils/settings.js
    export const SETTINGS = {
      service: {
-       url: "http://YOUR_SERVER_IP:3001/api/v1/", // <-- 修改为实际的 BFF 地址
+       url: [
+         "http://your-actual-backend-api-address-1/api/v1/", // <-- 修改为实际的后端 API 地址
+         "http://your-actual-backend-api-address-2/api/v1/", // <-- 修改为实际的后端 API 地址
+       ],
      },
      // ...
    };
    ```
-2. **重新打包**: 由于修改了配置，需再次运行构建命令。
+2. **执行构建**: 在项目根目录下运行打包命令：
    ```bash
    npm run build
    ```
-3. **上传产物**: 将 `dist/` 目录下的 `smart-finereport.umd.js` 和 `smart-finereport.css` 文件上传到 CDN
-   或服务器静态资源目录，并获取其公开访问 URL。请注意，`smart-finereport.umd.js` 已将 `mermaid` 和 `highlight.js`
-   外部化，因此您需要在 HTML 中单独引入它们。
+3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `cjs/` 和 `esm/` 文件夹。
 
----
+### **阶段三：文件部署与帆软集成**
 
-### **阶段三：帆软集成与端到端验证**
+1. **部署文件**: 将 `dist/cjs/` 目录、`dist/esm/` 目录、`public/smart-fr-plugin.js` 和 `public/tailwindcss.js`
+   文件复制到您服务器上的一个公共可访问文件夹中，例如 `your_server_root/public/smartfinereport/`。
 
-此阶段在帆软报表设计器中进行。
+2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置 -> 引入JavaScript文件`。
 
-**步骤 3.1: 添加 AI 助手容器与样式**
+3. **引入路径**: 在弹出的对话框中，输入您部署文件的绝对路径。例如，如果您的文件部署在
+   `your_server_root/public/smartfinereport/`，则输入 `/public/smartfinereport/smart-fr-plugin.js`。
 
-1. 在帆软报表中，拖入一个 **“HTML”** 组件。
-2. 双击该组件，在内容编辑器中粘贴以下代码，引入 CSS 并创建挂载点。
-   ```html
-   <!-- 1. 引入 CSS 文件 (请替换为实际 URL) -->
-   <link rel="stylesheet" type="text/css" href="https://your-cdn.com/path/to/smart-finereport.css">
-
-   <!-- 2. 引入外部依赖 (Mermaid 和 Highlight.js) -->
-   <script src="https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/highlight.js@latest/highlight.min.js"></script>
-
-   <!-- 3. 创建 AI 助手的挂载容器 -->
-   <div id="smartfine-chat-container"></div>
-   ```
-
-**步骤 3.2: 添加并配置触发按钮**
-
-1. 拖入一个 **“按钮”** 组件。
-2. 选中按钮，在 **“事件”** 标签页为“点击”事件添加 JavaScript。
-3. 在弹出的代码编辑器中，粘贴以下代码：
-   ```javascript
-   // 脚本的公开访问 URL (请替换为实际 URL)
-   const scriptUrl = 'https://your-cdn.com/path/to/smart-finereport.umd.js';
-
-   if (window.SmartFineReport && window.SmartFineReport.initAIAssistant) {
-     window.SmartFineReport.initAIAssistant({
-       containerSelector: '#smartfine-chat-container',
-       fineReportInstance: _g()
-     });
-   } else {
-     const script = document.createElement('script');
-     script.src = scriptUrl;
-     script.onload = function() {
-       window.SmartFineReport.initAIAssistant({
-         containerSelector: '#smartfine-chat-container',
-         fineReportInstance: _g()
-       });
-     };
-     document.head.appendChild(script);
-   }
-   ```
-
-**步骤 3.3: 端到端验证清单**
-
-预览集成了 AI 助手的帆软报表，并进行最终验证：
-
-1.  [ ] **加载验证**: 点击触发按钮。
-2.  [ ] **UI 渲染**: AI 助手聊天窗口在指定容器中正确弹出。
-3.  [ ] **首次分析**: 窗口中自动显示欢迎消息，并在短暂延迟后成功输出对当前报表的分析结果。
-4.  [ ] **BFF 连接验证**: 检查浏览器开发者工具，确认前端向 BFF 服务发起的 API 请求返回了 200 状态码。若失败，请检查服务器端
-    `pm2 logs`。
-5.  [ ] **vLLM 连接验证**: 在 BFF 日志中，确认 BFF 服务成功连接到后端的 vLLM 服务。
-6.  [ ] **多轮对话**: 在聊天窗口中输入追问，AI 能够结合上下文给出合理回答。
+4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。

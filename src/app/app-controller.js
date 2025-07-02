@@ -22,7 +22,7 @@ export default class AppController {
    * @constructor 导入全局静态配置
    */
   constructor(serviceUrl) {
-    this.serviceUrl = serviceUrl; // 保存 BFF 服务 URL
+    this.serviceUrl = serviceUrl; // 保存后端服务 URL
   }
 
   /**

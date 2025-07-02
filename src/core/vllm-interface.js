@@ -33,8 +33,8 @@ export class AIEngine {
    * @param {string} [config.apiKey] - The optional API key (bearer token).
    */
   constructor(config) {
-    if (!config || !config.url) {
-      const errorMsg = "AIEngine Error: Configuration object must contain a 'url'.";
+    if (!config || !config.url || (Array.isArray(config.url) && config.url.length === 0)) {
+      const errorMsg = "AIEngine Error: Configuration object must contain a 'url' (string or non-empty array).";
       log.error(errorMsg);
       throw new Error(errorMsg);
     }
@@ -42,7 +42,7 @@ export class AIEngine {
     this.url = config.url;
     this.apiKey = config.apiKey;
 
-    log.log(`[AIEngine] Initialized with URL: ${this.url}`);
+    log.log(`[AIEngine] Initialized with URL(s): ${Array.isArray(this.url) ? this.url.join(', ') : this.url}`);
   }
 
   /**
@@ -69,32 +69,39 @@ export class AIEngine {
       throw new Error(errorMsg);
     }
 
-    try {
-      log.log("[AIEngine] Sending request to vLLM API...");
+    const urlsToTry = Array.isArray(this.url) ? this.url : [this.url];
+    let lastError = null;
 
-      const headers = {};
-      if (this.apiKey) {
-        headers["Authorization"] = `Bearer ${this.apiKey}`;
+    for (const url of urlsToTry) {
+      try {
+        log.log(`[AIEngine] Sending request to vLLM API at: ${url}`);
+
+        const headers = {};
+        if (this.apiKey) {
+          headers["Authorization"] = `Bearer ${this.apiKey}`;
+        }
+
+        const response = await APIService.post(url, body, headers);
+        log.log("[AIEngine] Received API response.");
+
+        // Validate the structure of the response for chat completions and extract the message content
+        if (response && Array.isArray(response.choices) && response.choices.length > 0 && response.choices[0].message && typeof response.choices[0].message.content === "string") {
+          const processedText = response.choices[0].message.content.trim();
+          log.log("[AIEngine] Successfully processed response message.");
+          return processedText;
+        } else {
+          const errorMsg = "[AIEngine] Error: Invalid or unexpected response structure from ChatCompletion API.";
+          log.error(errorMsg, response); // Log the problematic response object
+          throw new Error(errorMsg);
+        }
+      } catch (error) {
+        log.error(`[AIEngine] Error connecting to ${url}:`, error.message);
+        lastError = error;
       }
-
-      const response = await APIService.post(this.url, body, headers);
-      log.log("[AIEngine] Received API response.");
-
-      // Validate the structure of the response for chat completions and extract the message content
-      if (response && Array.isArray(response.choices) && response.choices.length > 0 && response.choices[0].message && typeof response.choices[0].message.content === "string") {
-        const processedText = response.choices[0].message.content.trim();
-        log.log("[AIEngine] Successfully processed response message.");
-        return processedText;
-      } else {
-        const errorMsg = "[AIEngine] Error: Invalid or unexpected response structure from ChatCompletion API.";
-        log.error(errorMsg, response); // Log the problematic response object
-        throw new Error(errorMsg);
-      }
-    } catch (error) {
-      // The APIService already logs the initial error, we can add context here.
-      log.error("[AIEngine] An error occurred during the getResponse process.");
-      // Re-throw the error to allow the caller to handle it.
-      throw error;
     }
+
+    // If we reach here, all URLs failed
+    log.error("[AIEngine] All configured vLLM API URLs failed.");
+    throw lastError || new Error("All configured vLLM API URLs failed.");
   }
 }

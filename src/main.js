@@ -18,7 +18,6 @@ let isAssistantInitialized = false;
  * @function bootstrapAIAssistant
  * @description 核心自举函数。动态创建并注入UI元素（浮动按钮、模态框），并设置事件监听器。
  * @param {object} options - (可选) 初始化配置
- * @param {string} options.bffUrl - (可选) 后端 BFF 服务的 URL
  */
 const bootstrapAIAssistant = (options = {}) => {
   // 1. 创建模态框 (Modal)
@@ -50,7 +49,7 @@ const bootstrapAIAssistant = (options = {}) => {
     if (!isAssistantInitialized) {
       try {
         Logger.log("Initializing AI Assistant for the first time...");
-        const serviceUrl = options.bffUrl || SETTINGS.service.url;
+        const serviceUrl = SETTINGS.service.url;
         appInstance = new AppController(serviceUrl);
         appInstance.init(aiContainerId);
         isAssistantInitialized = true;

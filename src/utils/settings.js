@@ -6,7 +6,10 @@
 
 export const SETTINGS = {
   service: {
-    url: "http://127.0.0.1:3001/api/v1/",
+    url: [
+      "http://placeholder-backend-api-address-1/api/v1/", // 请替换为您的实际后端API地址
+      "http://placeholder-backend-api-address-2/api/v1/", // 请替换为您的实际后端API地址
+    ],
   },
   logger: {
     level: "log",
