@@ -95,7 +95,7 @@ export default class AppController {
     } catch (error) {
       Logger.error("Error during initial analysis:", error);
       this.stateManager.setState({
-        messages: [{role: "system", content: "抱歉，初始化分析时遇到问题，请稍后重试。", type: "error"}],
+        messages: [{role: "system", content: this._getErrorMessage(error), type: "error"}],
       });
     } finally {
       this.stateManager.setState({isLoading: false});
@@ -190,13 +190,38 @@ export default class AppController {
       this.stateManager.setState({
         messages: [
           ...errorState.messages,
-          {role: "assistant", content: "抱歉，分析时遇到问题，请稍后重试。"},
+          {role: "system", content: this._getErrorMessage(error), type: "error"},
         ],
       });
     } finally {
       // 无论成功与否，取消加载状态，避免 UI 卡顿
       this.stateManager.setState({isLoading: false});
     }
+  }
+
+  /**
+   * @private
+   * @description 根据错误类型返回用户友好的错误消息。
+   * @param {Error} error - 捕获到的错误对象。
+   * @returns {string} - 用户友好的错误消息。
+   */
+  _getErrorMessage(error) {
+    Logger.error("Original error:", error);
+    const errorMessage = error.message || "未知错误";
+
+    // 用户可自行解决的错误
+    if (errorMessage.includes("Auto-detection failed: Could not find a suitable report container to screenshot.")) {
+      return "无法自动检测到报表区域。请确保报表已完全加载并可见，或尝试刷新页面。如果问题持续存在，请联系IT支持。";
+    } else if (errorMessage.includes("All configured vLLM API URLs failed.") || errorMessage.includes("Failed to fetch")) {
+      return "网络连接似乎存在问题，或AI服务不可用。请检查您的互联网连接，然后重试。如果问题持续存在，请联系IT支持。";
+    } else if (errorMessage.includes("Prompt cannot be null, empty, or invalid.") || errorMessage.includes("Prompt is not a valid JSON string.")) {
+      return "AI请求参数错误。请尝试使用更简洁的描述，或联系IT支持。";
+    } else if (errorMessage.includes("Invalid or unexpected response structure from ChatCompletion API.")) {
+      return "AI服务返回了异常响应。请稍后重试。如果问题持续存在，请联系IT支持并提供错误详情。";
+    }
+
+    // 需要联系 IT 的错误
+    return "分析时遇到内部错误。请稍后重试。如果问题持续存在，请联系IT支持并提供错误详情。";
   }
 
   /**
