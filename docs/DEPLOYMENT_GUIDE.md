@@ -97,8 +97,9 @@ npm run build
 **打包产物**:
 此命令会在 `dist/` 目录下生成两个核心文件：
 
-* `smart-finereport.umd.js`
-* `smart-finereport.css`
+* `cjs/` 目录 (CommonJS 格式)
+* `esm/` 目录 (ES Module 格式)
+* `smart-finereport.css` (如果您的项目中包含 CSS 提取)
 
 ---
 

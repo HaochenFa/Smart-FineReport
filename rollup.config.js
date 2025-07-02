@@ -15,6 +15,14 @@ const isProduction = process.env.NODE_ENV === "production";
  * Rollup 配置文件
  */
 export default {
+  onwarn(warning, warn) {
+    // 忽略 d3-selection 的循环依赖警告
+    if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('node_modules')) {
+      return;
+    }
+    // 其他警告照常处理
+    warn(warning);
+  },
   // 入口文件
   input: "src/main.js",
 
