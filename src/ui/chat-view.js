@@ -3,8 +3,8 @@
  * @author Haochen (Billy) Fa
  * @description UI Layer, organize DOM elements 纯粹 UI 视图层，管理 DOM 元素
  */
-import {marked} from "marked";
-import mermaid from "mermaid";
+
+
 
 // import hljs from "highlight.js";
 
@@ -19,7 +19,7 @@ export class ChatView {
     this.onSubmit = onSubmit;
     this.onReset = onReset;
 
-    this._setupMarkdown();
+    
 
     this.chatWindow = document.createElement("div");
     this.chatWindow.className =
@@ -67,16 +67,7 @@ export class ChatView {
     this.inputArea.appendChild(inputWrapper);
   }
 
-  _setupMarkdown() {
-    marked.setOptions({
-      // highlight: (code, lang) => {
-      //   const language = hljs.getLanguage(lang) ? lang : "plaintext";
-      //   return hljs.highlight(code, {language}).value;
-      // },
-      async: false,
-    });
-    mermaid.initialize({startOnLoad: false});
-  }
+  
 
   render() {
     this.chatWindow.appendChild(this.messageContainer);
@@ -114,7 +105,6 @@ export class ChatView {
 
     if (role === "assistant") {
       bubble.innerHTML = content;
-      // await this._renderMarkdown(bubble, content);
     } else {
       bubble.innerHTML = content;
     }
@@ -124,26 +114,7 @@ export class ChatView {
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
 
-  // async _renderMarkdown(element, content) {
-  //   try {
-  //     const html = await marked.parse(content);
-  //     element.innerHTML = html;
-  //     const mermaidElements = element.querySelectorAll(".language-mermaid");
-  //     for (const el of mermaidElements) {
-  //       const code = el.textContent;
-  //       const {svg} = await mermaid.render(
-  //         `mermaid-${Date.now()}`,
-  //         code
-  //       );
-  //       const svgContainer = document.createElement("div");
-  //       svgContainer.innerHTML = svg;
-  //       el.parentNode.replaceWith(svgContainer);
-  //     }
-  //   } catch (e) {
-  //     element.innerHTML = content; // Fallback to raw content on error
-  //     console.error("Markdown rendering error:", e);
-  //   }
-  // }
+  
 
   createProgressMessage() {
     const messageElement = document.createElement("div");
@@ -161,7 +132,6 @@ export class ChatView {
   }
 
   async updateMessage(element, htmlContent) {
-    // await this._renderMarkdown(element, htmlContent);
     this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
 

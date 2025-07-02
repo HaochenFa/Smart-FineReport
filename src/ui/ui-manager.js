@@ -124,12 +124,7 @@ export class UIManager {
   async _updateMessages(messages) {
     this.view.messageContainer.innerHTML = "";
     if (messages && Array.isArray(messages)) {
-      messages = messages.map(item => {
-        return {
-          ...item,
-          content: marked.parse(item.content)
-        };
-      });
+      
       await Promise.all(messages.map(async message => await this.view.addMessage(message)));
     }
   }
