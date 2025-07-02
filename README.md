@@ -128,6 +128,8 @@ flowchart BT
    `your_server_root/public/smartfinereport/`，则输入 `/public/smartfinereport/smart-fr-plugin.js`。
 4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。
 
+更多详细信息请参考 [DEPLOYMENT GUIDE](docs/DEPLOYMENT_GUIDE.md)
+
 ## License
 
 本项目采用 MIT 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
