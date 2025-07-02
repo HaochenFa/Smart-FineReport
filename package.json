@@ -7,8 +7,9 @@
   "browser": "dist/smart-finereport.umd.js",
   "type": "module",
   "scripts": {
+    "clean": "rimraf dist",
     "dev": "rollup -c --watch",
-    "build": "cross-env NODE_ENV=production rollup -c",
+    "build": "npm run clean && cross-env NODE_ENV=production rollup -c",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage"
@@ -20,12 +21,15 @@
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@testing-library/jest-dom": "^6.6.3",
     "@tailwindcss/postcss": "^4.1.11",
     "cross-env": "^7.0.3",
     "eslint": "^9.29.0",
     "jest": "^30.0.3",
     "postcss": "^8.5.6",
+    "rimraf": "^5.0.7",
+    "rollup": "^4.44.1",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^3.0.0",
@@ -34,8 +38,6 @@
   "private": true,
   "dependencies": {
     "html2canvas": "^1.4.1",
-    "marked": "^16.0.0",
-    "mermaid": "^11.7.0",
-    "rollup": "^4.44.1"
+    "marked": "^16.0.0"
   }
 }

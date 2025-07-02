@@ -1,14 +1,12 @@
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
-// import {terser} from "rollup-plugin-terser";
-// import pkg from "./package.json";
+import terser from "@rollup/plugin-terser";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
 import postcss from "rollup-plugin-postcss";
 import alias from "@rollup/plugin-alias";
 
-// 判断当前是否是生产环境
 const isProduction = process.env.NODE_ENV === "production";
 
 /**
@@ -30,22 +28,11 @@ export default {
   // external: ['mermaid', 'highlight.js'], // Now bundled locally
 
   // 输出配置
-  output: [
-
-
-    // 2. CJS (CommonJS) - 用于 Node.js 环境
-    {
-      dir: 'dist/cjs', // Output directory for CJS format
-      format: "cjs",
-      exports: "named",
-      sourcemap: true,
-    },
-
-    // 3. ESM (ES Module) - 用于现代浏览器和打包工具 (如 Webpack, Vite)
-    {
-      dir: 'dist/esm', // Output directory for ESM format
-    },
-  ],
+  output: {
+    file: 'dist/smart-finereport.min.js',
+    format: 'esm',
+    sourcemap: true,
+  },
 
   // 插件列表
   plugins: [
@@ -71,6 +58,9 @@ export default {
       minimize: isProduction, // Minimize CSS in production
       sourceMap: !isProduction,
     }),
+
+    // 生产环境下启用代码压缩
+    isProduction && terser(),
 
     // 开发服务器配置 (仅在开发环境下生效)
     !isProduction &&
