@@ -1,6 +1,6 @@
 {
   "name": "smartfinereport",
-  "version": "v1.1.0-vision",
+  "version": "v1.2.0-vision",
   "description": "ai-integrated-finereport",
   "main": "dist/smart-finereport.cjs.js",
   "module": "dist/smart-finereport.esm.js",

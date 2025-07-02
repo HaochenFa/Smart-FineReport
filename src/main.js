@@ -21,8 +21,8 @@ let isAssistantInitialized = false;
  */
 const bootstrapAIAssistant = (options = {}) => {
   // 1. 创建模态框 (Modal)
-  const modalOverlay = document.createElement('div');
-  modalOverlay.className = 'ai-modal-overlay';
+  const modalOverlay = document.createElement("div");
+  modalOverlay.className = "ai-modal-overlay";
   modalOverlay.innerHTML = `
     <div class="ai-modal-content">
       <button class="ai-modal-close-btn">&times;</button>
@@ -32,19 +32,19 @@ const bootstrapAIAssistant = (options = {}) => {
   document.body.appendChild(modalOverlay);
 
   // 2. 创建可拖拽的浮动操作按钮 (FAB)
-  const fab = document.createElement('button');
-  fab.id = 'ai-assistant-fab';
-  fab.innerHTML = '&#x1F916;'; // Robot emoji as a placeholder icon
+  const fab = document.createElement("button");
+  fab.id = "ai-assistant-fab";
+  fab.innerHTML = "&#x1F916;"; // Robot emoji as a placeholder icon
   document.body.appendChild(fab);
 
   // 3. 获取关键 DOM 元素
-  const modalContent = modalOverlay.querySelector('.ai-modal-content');
-  const closeBtn = modalOverlay.querySelector('.ai-modal-close-btn');
-  const aiContainerId = '#ai-container';
+  const modalContent = modalOverlay.querySelector(".ai-modal-content");
+  const closeBtn = modalOverlay.querySelector(".ai-modal-close-btn");
+  const aiContainerId = "#ai-container";
 
   // 4. 模态框控制逻辑
   const openModal = () => {
-    modalOverlay.style.display = 'flex';
+    modalOverlay.style.display = "flex";
     // 首次打开时初始化AI助手
     if (!isAssistantInitialized) {
       try {
@@ -70,11 +70,11 @@ const bootstrapAIAssistant = (options = {}) => {
   };
 
   const closeModal = () => {
-    modalOverlay.style.display = 'none';
+    modalOverlay.style.display = "none";
   };
 
-  closeBtn.addEventListener('click', closeModal);
-  modalOverlay.addEventListener('click', (event) => {
+  closeBtn.addEventListener("click", closeModal);
+  modalOverlay.addEventListener("click", (event) => {
     if (event.target === modalOverlay) {
       closeModal();
     }
@@ -85,10 +85,10 @@ const bootstrapAIAssistant = (options = {}) => {
   let wasDragged = false;
   let offsetX, offsetY;
 
-  fab.addEventListener('mousedown', (e) => {
+  fab.addEventListener("mousedown", (e) => {
     isDragging = true;
     wasDragged = false;
-    fab.style.cursor = 'grabbing';
+    fab.style.cursor = "grabbing";
     // 计算鼠标在按钮内的偏移量
     offsetX = e.clientX - fab.getBoundingClientRect().left;
     offsetY = e.clientY - fab.getBoundingClientRect().top;
@@ -96,7 +96,7 @@ const bootstrapAIAssistant = (options = {}) => {
     e.preventDefault();
   });
 
-  document.addEventListener('mousemove', (e) => {
+  document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
     wasDragged = true; // 标记为已拖拽
     // 计算新的位置
@@ -111,18 +111,18 @@ const bootstrapAIAssistant = (options = {}) => {
     fab.style.left = `${newX}px`;
     fab.style.top = `${newY}px`;
     // 清除固定的 right 和 bottom
-    fab.style.right = 'auto';
-    fab.style.bottom = 'auto';
+    fab.style.right = "auto";
+    fab.style.bottom = "auto";
   });
 
-  document.addEventListener('mouseup', () => {
+  document.addEventListener("mouseup", () => {
     if (isDragging) {
       isDragging = false;
-      fab.style.cursor = 'grab';
+      fab.style.cursor = "grab";
     }
   });
 
-  fab.addEventListener('click', () => {
+  fab.addEventListener("click", () => {
     // 只有在没有发生拖拽时才触发点击事件
     if (!wasDragged) {
       openModal();
@@ -150,7 +150,7 @@ export const initAIAssistant = (options) => {
   Logger.warn("initAIAssistant is deprecated and will be removed in a future version. The AI Assistant now bootstraps automatically.");
   // 可以在这里决定是否还支持旧版初始化，或者直接忽略
   // 为了平滑过渡，我们可以手动调用新的 bootstrap
-  if (!document.getElementById('ai-assistant-fab')) {
+  if (!document.getElementById("ai-assistant-fab")) {
     bootstrapAIAssistant(options);
   }
 };

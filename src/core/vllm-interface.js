@@ -42,7 +42,7 @@ export class AIEngine {
     this.url = config.url;
     this.apiKey = config.apiKey;
 
-    log.log(`[AIEngine] Initialized with URL(s): ${Array.isArray(this.url) ? this.url.join(', ') : this.url}`);
+    log.log(`[AIEngine] Initialized with URL(s): ${Array.isArray(this.url) ? this.url.join(", ") : this.url}`);
   }
 
   /**

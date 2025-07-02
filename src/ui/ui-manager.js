@@ -128,8 +128,8 @@ export class UIManager {
         return {
           ...item,
           content: marked.parse(item.content)
-        }
-      })
+        };
+      });
       await Promise.all(messages.map(async message => await this.view.addMessage(message)));
     }
   }

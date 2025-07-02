@@ -1,7 +1,9 @@
 export default [
   {
+    "ignores": ["dist/**", "coverage/**"],
+  },
+  {
     "files": ["src/**/*.js"],
-    "ignores": ["dist/**"],
     "languageOptions": {
       "ecmaVersion": "latest",
       "sourceType": "module",
