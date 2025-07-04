@@ -4,6 +4,7 @@
  * @description 模块在帆软报表的启动器
  */
 
+// cao ni ma
 function loadJS(src, callback) {
   const script = document.createElement('script');
   script.type = 'module';
