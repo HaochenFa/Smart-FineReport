@@ -1,5 +1,5 @@
 <script>
-  import {onMount} from 'svelte';
+  import {onMount, tick} from 'svelte';
   import {Logger} from './utils/logger.js';
   import {SETTINGS} from './utils/settings.js';
   import AppController from './app/app-controller.js';
@@ -91,10 +91,11 @@
     };
   }
 
-  function handleFabClick() {
+  async function handleFabClick() {
     if (!wasDragged) {
       showModal = true;
       if (!isAssistantInitialized) {
+        await tick(); // 等待 DOM 更新
         try {
           Logger.log("Initializing AI Assistant for the first time...");
           const serviceUrl = SETTINGS.service.url;
