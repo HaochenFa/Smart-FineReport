@@ -335,6 +335,6 @@ export const SETTINGS = {
 3. **引入路径**: 在弹出的对话框中，分别输入您部署的 JavaScript 和 CSS 文件的绝对路径。例如，如果您的文件部署在
    `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入
    `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入
-   `/public/smartfinereport/smart-finereport.cjs.min.css`。
+   `/public/smartfinereport/smart-finereport.cjs.min.css` (如果存在)。
 
 4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。

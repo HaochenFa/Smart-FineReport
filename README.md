@@ -59,36 +59,37 @@ flowchart BT
 
 ```plaintext
 /SmartFineReport
-│
 ├── docs/               # Project documentation
-│   ├── DEPLOYMENT_GUIDE.md
-│   └── v1.0-doc.md
+│   └── DEPLOYMENT_GUIDE.md
 ├── public/             # Public assets and HTML entry
 │   ├── index.html
-│   ├── smart-fr-plugin.js
-│   └── tailwindcss.js
+│   └── smart-fr-plugin.js
 └── src/                # Source files
-   ├── main.js             # The Main Entrance
-   ├── app/            # Application control and initialization
-   │    ├── app-controller.js        # Core service
-   │    └── state-manager.js         # UI <-> Backend bridging
-   ├── core/           # Core AI and analysis logic
-   │    ├── ai-analysis-pipeline.js  # AI service controller
-   │    ├── context-manager.js       # Manage context (conversation)
-   │    ├── vllm-interface.js        # Connect to vLLM service
-   │    └── prompt-builder.js        # Build structured prompts
-   ├── services/       # Common services
-   │    └── api-service.js           # General API service wrapper
-   ├── styles/         # Application styles
-   │    ├── fab.css
-   │    └── main.css
-   ├── ui/             # User interface components
-   │    ├── chat-view.js             # Basic chat window implementation
-   │    └── ui-manager.js            # Control UI status
-   └── utils/          # Utility functions and configs
-        ├── default-prompt.js        # Prompt template
-        ├── logger.js                # Logger
-        └── settings.js              # Static config and secrets
+    ├── App.svelte          # Main Svelte application component
+    ├── main.js             # The Main Entrance
+    ├── app/            # Application control and initialization
+    │    ├── app-controller.js        # Core service
+    │    └── state-manager.js         # UI <-> Backend bridging
+    ├── core/           # Core AI and analysis logic
+    │    ├── ai-analysis-pipeline.js  # AI service controller
+    │    ├── context-manager.js       # Manage context (conversation)
+    │    ├── prompt-builder.js        # Build structured prompts
+    │    └── vllm-interface.js        # Connect to vLLM service
+    ├── services/       # Common services
+    │    └── api-service.js           # General API service wrapper
+    ├── styles/         # Application styles
+    │    ├── fab.css
+    │    ├── main.css
+    │    └── tailwind.js
+    ├── ui/             # User interface components
+    │    ├── chat-view.js             # Web Component wrapper for ChatView.svelte
+    │    ├── ChatView.svelte          # Svelte chat window component
+    │    └── ui-manager.js            # Control UI status
+    └── utils/          # Utility functions and configs
+         ├── default-prompt.js        # Prompt template
+         ├── logger.js                # Logger
+         ├── resizable.js             # Resizable panel utility
+         └── settings.js              # Static config and secrets
 ```
 
 ## 生产环境部署
@@ -123,8 +124,7 @@ export const SETTINGS = {
    npm run build
 ```
 
-3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `smart-finereport.cjs.min.js` (CommonJS 格式) 和
-   `smart-finereport.esm.min.js` (ES Module 格式)。
+3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `smart-finereport.cjs.min.js` (CommonJS 格式)、`smart-finereport.esm.min.js` (ES Module 格式) 以及对应的 CSS 文件。
 
 ### 步骤 2: 文件部署与帆软集成
 
@@ -134,7 +134,7 @@ export const SETTINGS = {
 3. **引入路径**: 在弹出的对话框中，分别输入您部署的 JavaScript 和 CSS 文件的绝对路径。例如，如果您的文件部署在
    `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入
    `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入
-   `/public/smartfinereport/smart-finereport.cjs.min.css`。
+   `/public/smartfinereport/smart-finereport.cjs.min.css` (如果存在)。
 4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。
 
 更多详细信息请参考 [DEPLOYMENT GUIDE](docs/DEPLOYMENT_GUIDE.md)
