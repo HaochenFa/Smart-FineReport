@@ -141,10 +141,11 @@ window.SmartFineReportConfig = window.SmartFineReportConfig || {};
 Logger.setLevel(SETTINGS.logger.level);
 
 // 3. DOM 加载完毕后，自动执行自举函数
-window.onload = function () {
-  Logger.log("DOM fully loaded. Bootstrapping AI Assistant...");
-  bootstrapAIAssistant(window.SmartFineReportConfig);
-};
+bootstrapAIAssistant(window.SmartFineReportConfig);
+// window.onload = function () {
+//   Logger.log("DOM fully loaded. Bootstrapping AI Assistant...");
+//   bootstrapAIAssistant(window.SmartFineReportConfig);
+// };
 
 // 保留原始的导出，以防有旧的集成方式需要它，但这不再是主要用法
 export const initAIAssistant = (options) => {

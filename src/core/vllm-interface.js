@@ -81,7 +81,7 @@ export class AIEngine {
           headers["Authorization"] = `Bearer ${this.apiKey}`;
         }
 
-        const response = await APIService.post(url, body, headers);
+        const response = await APIService.proxyPost(url, body, headers);
         log.log("[AIEngine] Received API response.");
 
         // Validate the structure of the response for chat completions and extract the message content
