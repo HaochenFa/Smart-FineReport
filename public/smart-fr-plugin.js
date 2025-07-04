@@ -4,7 +4,9 @@
  * @description 模块在帆软报表的启动器
  */
 
-// cao ni ma
+/**
+ * 注意：现在这些文件包含了 Svelte 编译后的 AI 助手应用程序及其样式。
+ */
 function loadJS(src, callback) {
   const script = document.createElement('script');
   script.type = 'module';

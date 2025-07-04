@@ -4,7 +4,7 @@
  * @description Organizer between chat-view.js and state-manager.js
  */
 
-import {ChatView} from "./chat-view.js";
+import ChatView from "./ChatView.svelte";
 
 /**
  * UIManager 类负责管理UI的整体逻辑和生命周期。
@@ -31,32 +31,32 @@ export class UIManager {
     this.stateManager = stateManager;
     this.messageSubmitHandler = messageSubmitHandler;
 
-    this.view = new ChatView(
-      this.container,
-      this._handleUserSubmit.bind(this),
-      resetAnalysisHandler
-    );
+    // 定义自定义元素 (如果尚未定义)
+    if (!customElements.get('chat-view')) {
+      customElements.define('chat-view', ChatView);
+    }
+    this.chatViewElement = document.createElement('chat-view');
+    this.container.appendChild(this.chatViewElement);
+
+    // 将 props 传递给 Svelte 组件
+    this.chatViewElement.onSubmit = this._handleUserSubmit.bind(this);
+    this.chatViewElement.onReset = resetAnalysisHandler;
 
     this._bindToStateChanges();
     this.init();
   }
 
   init() {
-    this.view.render();
     const initialState = this.stateManager.getState();
     this._update(initialState);
   }
 
   disableInputs() {
-    this.view.inputField.disabled = true;
-    this.view.sendButton.disabled = true;
-    this.view.resetButton.disabled = true;
+    this.chatViewElement.isDisabled = true;
   }
 
   enableInputs() {
-    this.view.inputField.disabled = false;
-    this.view.sendButton.disabled = false;
-    this.view.resetButton.disabled = false;
+    this.chatViewElement.isDisabled = false;
   }
 
   addUserMessage(userInput) {
@@ -64,14 +64,13 @@ export class UIManager {
   }
 
   showAssistantStatus(statusText) {
-    this.view.showAssistantStatus(statusText);
+    this.chatViewElement.showAssistantStatus(statusText);
   }
 
   hideAssistantStatus() {
-    this.view.hideAssistantStatus();
+    this.chatViewElement.hideAssistantStatus();
   }
 
-  
 
   _bindToStateChanges() {
     this.stateManager.subscribe((state) => this._update(state));
@@ -88,20 +87,14 @@ export class UIManager {
   }
 
   _updateResetButton(isStale) {
-    this.view.updateResetButton(isStale);
+    this.chatViewElement.updateResetButton(isStale);
   }
 
   async _handleUserSubmit(messageText) {
-    this.view.clearInput();
     await this.messageSubmitHandler(messageText);
   }
 
   async _updateMessages(messages) {
-    this.view.messageContainer.innerHTML = "";
-    if (messages && Array.isArray(messages)) {
-      
-      await Promise.all(messages.map(async message => await this.view.addMessage(message)));
-    }
+    this.chatViewElement.messages = messages;
   }
 }
-

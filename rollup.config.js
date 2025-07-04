@@ -6,6 +6,8 @@ import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
 import postcss from "rollup-plugin-postcss";
 import alias from "@rollup/plugin-alias";
+import svelte from 'rollup-plugin-svelte';
+import sveltePreprocess from 'svelte-preprocess';
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -25,7 +27,7 @@ export default {
   input: "src/main.js",
 
   // 外部依赖
-  
+
 
   // 输出配置
   output: [
@@ -57,6 +59,14 @@ export default {
     babel({
       babelHelpers: "bundled",
       exclude: "node_modules/**",
+    }),
+
+    // Svelte 插件
+    svelte({
+      preprocess: sveltePreprocess({
+        postcss: true,
+      }),
+      emitCss: true, // 提取 Svelte 组件中的 CSS
     }),
 
     // PostCSS plugin to handle Tailwind CSS
