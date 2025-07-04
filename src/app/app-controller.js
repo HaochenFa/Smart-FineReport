@@ -27,7 +27,7 @@ export default class AppController {
    * @function init() - 初始化，按顺序实例化导入的组件
    * @param {string} containerSelector - UI 容器的 DOM 选择器
    */
-  init(containerSelector) {
+  init(containerElement) {
     // 1. 初始化状态管理器，确保 UI 反应
     this.stateManager = new StateManager({
       messages: [],
@@ -40,9 +40,9 @@ export default class AppController {
     const aiEngine = new AIEngine({url: this.serviceUrl});
     this.contextManager = new ContextManager();
 
-    const containerElement = document.querySelector(containerSelector);
     if (!containerElement) {
-      Logger.error(`Initialization failed: Container with selector "${containerSelector}" not found.`);
+      // fixme)) Cannot initialize
+      Logger.error(`Initialization failed: Invalid container element provided.`);
       return;
     }
 

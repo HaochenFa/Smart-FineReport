@@ -11,6 +11,7 @@
   let fab;
   let modalOverlay;
   let modalContent;
+  let aiContainerElement; // 新增变量来绑定 DOM 元素
 
   // FAB 拖拽逻辑
   let isDragging = false;
@@ -100,8 +101,8 @@
           Logger.log("Initializing AI Assistant for the first time...");
           const serviceUrl = SETTINGS.service.url;
           appInstance = new AppController(serviceUrl);
-          // 注意：这里需要确保 #ai-container 已经渲染到 DOM 中
-          appInstance.init('#ai-container');
+          // 直接传递 DOM 元素，而不是选择器字符串
+          appInstance.init(aiContainerElement);
           isAssistantInitialized = true;
           Logger.log("AI Assistant Initialized Successfully.");
         } catch (error) {
@@ -148,7 +149,7 @@
          role="button" tabindex="0">
         <div class="ai-modal-content" bind:this={modalContent} use:draggable use:resizable>
             <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
-            <div id="ai-container"></div>
+            <div id="ai-container" bind:this={aiContainerElement}></div>
         </div>
     </div>
 {/if}
