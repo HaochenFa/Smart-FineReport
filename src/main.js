@@ -5,8 +5,8 @@
  */
 
 import App from "./App.svelte";
-import { Logger } from "./utils/logger.js";
-import { SETTINGS } from "./utils/settings.js";
+import {Logger} from "./utils/logger.js";
+import {SETTINGS} from "./utils/settings.js";
 
 // 1. 设置日志级别
 Logger.setLevel(SETTINGS.logger.level);

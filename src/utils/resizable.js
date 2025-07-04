@@ -5,7 +5,7 @@
  */
 
 export function resizable(node) {
-  let x, y, width, height;
+  let x, y, width, height, currentHandle;
 
   const handles = [
     {class: 'resizer top-left', cursor: 'nwse-resize', direction: 'tl'},

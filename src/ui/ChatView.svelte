@@ -1,17 +1,16 @@
 <script>
   import {createEventDispatcher} from 'svelte';
 
-  export let onSubmit;
-  export let onReset;
   export let messages = []; // 新增 messages props
   export let isDisabled = false; // 新增 isDisabled props
 
   const dispatch = createEventDispatcher();
 
-  let messageContainer;
+
   let inputField;
   let assistantStatusElement;
   let resetButton;
+  let messageContainer;
 
   let inputValue = '';
 

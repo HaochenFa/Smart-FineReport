@@ -25,10 +25,6 @@ export default {
   },
   // 入口文件
   input: "src/main.js",
-
-  // 外部依赖
-
-
   // 输出配置
   output: [
     {
@@ -67,6 +63,7 @@ export default {
         postcss: true,
       }),
       emitCss: true, // 提取 Svelte 组件中的 CSS
+      customElement: true, // 将 Svelte 组件编译为 Web Component
     }),
 
     // PostCSS plugin to handle Tailwind CSS

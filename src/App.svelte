@@ -142,7 +142,9 @@
 
 {#if showModal}
     <div class="ai-modal-overlay" bind:this={modalOverlay}
-         on:click={(e) => { if (e.target === modalOverlay) showModal = false; }}>
+         on:click={(e) => { if (e.target === modalOverlay) showModal = false; }}
+         on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === modalOverlay) showModal = false; } }}
+         role="button" tabindex="0">
         <div class="ai-modal-content" bind:this={modalContent} use:draggable use:resizable>
             <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
             <div id="ai-container"></div>
@@ -244,64 +246,71 @@
     }
 
     .ai-modal-close-btn svg,
-  #ai-assistant-fab svg {
-      width: 100%;
-      height: 100%;
-  }
+    #ai-assistant-fab svg {
+        width: 100%;
+        height: 100%;
+    }
 
-  /* Resizable handles styles */
-  .resizer {
-    position: absolute;
-    background: rgba(0, 0, 0, 0.1); /* For debugging, make it transparent in production */
-    z-index: 1000;
-  }
+    /* Resizable handles styles */
+    .resizer {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.1); /* For debugging, make it transparent in production */
+        z-index: 1000;
+    }
 
-  .resizer.top-left {
-    top: -5px;
-    left: -5px;
-    cursor: nwse-resize;
-  }
-  .resizer.top-right {
-    top: -5px;
-    right: -5px;
-    cursor: nesw-resize;
-  }
-  .resizer.bottom-left {
-    bottom: -5px;
-    left: -5px;
-    cursor: nesw-resize;
-  }
-  .resizer.bottom-right {
-    bottom: -5px;
-    right: -5px;
-    cursor: nwse-resize;
-  }
-  .resizer.top {
-    top: -5px;
-    left: 5px;
-    right: 5px;
-    height: 10px;
-    cursor: ns-resize;
-  }
-  .resizer.bottom {
-    bottom: -5px;
-    left: 5px;
-    right: 5px;
-    height: 10px;
-    cursor: ns-resize;
-  }
-  .resizer.left {
-    left: -5px;
-    top: 5px;
-    bottom: 5px;
-    width: 10px;
-    cursor: ew-resize;
-  }
-  .resizer.right {
-    right: -5px;
-    top: 5px;
-    bottom: 5px;
-    width: 10px;
-    cursor: ew-resize;
-  }
+    .resizer.top-left {
+        top: -5px;
+        left: -5px;
+        cursor: nwse-resize;
+    }
+
+    .resizer.top-right {
+        top: -5px;
+        right: -5px;
+        cursor: nesw-resize;
+    }
+
+    .resizer.bottom-left {
+        bottom: -5px;
+        left: -5px;
+        cursor: nesw-resize;
+    }
+
+    .resizer.bottom-right {
+        bottom: -5px;
+        right: -5px;
+        cursor: nwse-resize;
+    }
+
+    .resizer.top {
+        top: -5px;
+        left: 5px;
+        right: 5px;
+        height: 10px;
+        cursor: ns-resize;
+    }
+
+    .resizer.bottom {
+        bottom: -5px;
+        left: 5px;
+        right: 5px;
+        height: 10px;
+        cursor: ns-resize;
+    }
+
+    .resizer.left {
+        left: -5px;
+        top: 5px;
+        bottom: 5px;
+        width: 10px;
+        cursor: ew-resize;
+    }
+
+    .resizer.right {
+        right: -5px;
+        top: 5px;
+        bottom: 5px;
+        width: 10px;
+        cursor: ew-resize;
+    }
 </style>

@@ -7,8 +7,6 @@
 
 import {StateManager} from "./state-manager.js";
 import {UIManager} from "../ui/ui-manager.js";
-// import {FRInterface} from "../integration/fr-interface.js";
-// import {DataProcessor} from "../integration/data-processor.js";
 import {PromptBuilder} from "../core/prompt-builder.js";
 import {AIEngine} from "../core/vllm-interface.js";
 import {AnalysisPipeline} from "../core/ai-analysis-pipeline.js";

@@ -4,6 +4,7 @@
  * @description Organizer between chat-view.js and state-manager.js
  */
 
+/** @type {CustomElementConstructor} */
 import ChatView from "./ChatView.svelte";
 
 /**
@@ -38,9 +39,12 @@ export class UIManager {
     this.chatViewElement = document.createElement('chat-view');
     this.container.appendChild(this.chatViewElement);
 
-    // 将 props 传递给 Svelte 组件
-    this.chatViewElement.onSubmit = this._handleUserSubmit.bind(this);
-    this.chatViewElement.onReset = resetAnalysisHandler;
+    this.chatViewElement.addEventListener('submitMessage', async (event) => {
+      await this._handleUserSubmit(event.detail);
+    });
+    this.chatViewElement.addEventListener('resetAnalysis', () => {
+      resetAnalysisHandler();
+    });
 
     this._bindToStateChanges();
     this.init();
@@ -94,7 +98,7 @@ export class UIManager {
     await this.messageSubmitHandler(messageText);
   }
 
-  async _updateMessages(messages) {
+  _updateMessages(messages) {
     this.chatViewElement.messages = messages;
   }
 }
