@@ -63,12 +63,19 @@ export default {
         postcss: true,
       }),
       emitCss: true, // 提取 Svelte 组件中的 CSS
-      customElement: true, // 将 Svelte 组件编译为 Web Component
+      compilerOptions: {
+        customElement: true, // 将 Svelte 组件编译为 Web Component
+      },
     }),
+
 
     // PostCSS plugin to handle Tailwind CSS
     postcss({
-      extract: true, // Extracts CSS to a separate file
+      extract: (outputChunk) => {
+        // outputChunk.fileName will be like 'smart-finereport.esm.min.js' or 'smart-finereport.cjs.min.js'
+        // We want to replace '.js' with '.css'
+        return outputChunk.fileName.replace(/\.js$/, '.css');
+      },
       minimize: isProduction, // Minimize CSS in production
       sourceMap: !isProduction,
     }),

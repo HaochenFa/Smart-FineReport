@@ -33,16 +33,16 @@ export class UIManager {
     this.messageSubmitHandler = messageSubmitHandler;
 
     // 定义自定义元素 (如果尚未定义)
-    if (!customElements.get('chat-view')) {
-      customElements.define('chat-view', ChatView);
+    if (!customElements.get("chat-view")) {
+      customElements.define("chat-view", ChatView);
     }
-    this.chatViewElement = document.createElement('chat-view');
+    this.chatViewElement = document.createElement("chat-view");
     this.container.appendChild(this.chatViewElement);
 
-    this.chatViewElement.addEventListener('submitMessage', async (event) => {
+    this.chatViewElement.addEventListener("submitMessage", async (event) => {
       await this._handleUserSubmit(event.detail);
     });
-    this.chatViewElement.addEventListener('resetAnalysis', () => {
+    this.chatViewElement.addEventListener("resetAnalysis", () => {
       resetAnalysisHandler();
     });
 

@@ -66,7 +66,7 @@ export class APIService {
       body: JSON.stringify(body),
     };
 
-    return this._handleResponse(fetch(url, requestOptions), 'post');
+    return this._handleResponse(fetch(url, requestOptions), "post");
   }
 
   static async proxyPost(url, body, headers) {
@@ -74,14 +74,14 @@ export class APIService {
       "Content-Type": "application/x-www-form-urlencoded",
     };
     const params = new URLSearchParams();
-    params.append('url', url);
-    params.append('data', JSON.stringify(body));
+    params.append("url", url);
+    params.append("data", JSON.stringify(body));
     const requestOptions = {
       method: "POST",
       headers: new Headers({...defaultHeader, ...headers}),
       body: params,
     };
 
-    return this._handleResponse(fetch(SETTINGS.service.proxy, requestOptions), 'proxyPost');
+    return this._handleResponse(fetch(SETTINGS.service.proxy, requestOptions), "proxyPost");
   }
 }
