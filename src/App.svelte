@@ -3,7 +3,12 @@
   import {Logger} from './utils/logger.js';
   import {SETTINGS} from './utils/settings.js';
   import AppController from './app/app-controller.js';
-  import {resizable} from './utils/resizable.js';
+
+
+  // Import logo images for inline packaging
+  import logo40w from '../public/assets/logo-40w.png';
+  import logo80w from '../public/assets/logo-80w.png';
+  import logo120w from '../public/assets/logo-120w.png';
 
   let showModal = false;
   let isAssistantInitialized = false;
@@ -11,6 +16,7 @@
   let fab;
   let modalContent;
   let aiContainerElement;
+
 
   // FAB 拖拽逻辑
   let isDragging = false;
@@ -24,6 +30,10 @@
     offsetX = e.clientX - fab.getBoundingClientRect().left;
     offsetY = e.clientY - fab.getBoundingClientRect().top;
     e.preventDefault();
+
+    // 添加事件监听器
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
   }
 
   function handleMouseMove(e) {
@@ -46,6 +56,10 @@
     if (isDragging) {
       isDragging = false;
       fab.style.cursor = "grab";
+
+      // 移除事件监听器
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     }
   }
 
@@ -53,11 +67,14 @@
   function draggable(node) {
     let x;
     let y;
+    let isDraggingModal = false;
 
     function handleMousedown(e) {
-      if (e.target.closest('button, textarea, input, .resizer')) {
+      if (e.target.closest('button, textarea, input')) {
         return;
       }
+
+      isDraggingModal = true;
       x = e.clientX;
       y = e.clientY;
 
@@ -68,20 +85,23 @@
     }
 
     function handleMousemove(e) {
+      if (!isDraggingModal) return;
+      
       const dx = e.clientX - x;
       const dy = e.clientY - y;
 
-      const {top, left} = node.getBoundingClientRect();
+      const currentLeft = parseInt(node.style.left) || 0;
+      const currentTop = parseInt(node.style.top) || 0;
 
-      node.style.left = `${left + dx}px`;
-      node.style.top = `${top + dy}px`;
-      node.style.transform = ''; // Remove transform on drag
+      node.style.left = `${currentLeft + dx}px`;
+      node.style.top = `${currentTop + dy}px`;
 
       x = e.clientX;
       y = e.clientY;
     }
 
     function handleMouseup() {
+      isDraggingModal = false;
       node.style.cursor = 'grab';
       window.removeEventListener('mousemove', handleMousemove);
       window.removeEventListener('mouseup', handleMouseup);
@@ -128,8 +148,26 @@
     if (fab && fab.contains(event.target)) {
       return;
     }
+
     if (modalContent && !modalContent.contains(event.target)) {
       showModal = false;
+    }
+  }
+
+
+  // 初始化模态框位置
+  function initializeModalPosition() {
+    if (modalContent && typeof window !== 'undefined') {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const modalWidth = modalContent.offsetWidth || 800;
+      const modalHeight = modalContent.offsetHeight || 600;
+
+      const left = Math.max(0, (windowWidth - modalWidth) / 2);
+      const top = Math.max(0, (windowHeight - modalHeight) / 2);
+
+      modalContent.style.left = `${left}px`;
+      modalContent.style.top = `${top}px`;
     }
   }
 
@@ -137,6 +175,8 @@
     if (typeof window !== 'undefined') {
       if (showModal) {
         window.addEventListener('click', handleClickOutside, true);
+        // 延迟初始化位置，确保DOM已渲染
+        setTimeout(initializeModalPosition, 0);
       } else {
         window.removeEventListener('click', handleClickOutside, true);
       }
@@ -144,15 +184,9 @@
   }
 
   onMount(() => {
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-
+    // 修复：只在需要时添加事件监听器，避免全局污染
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('click', handleClickOutside, true);
-      }
+      window.removeEventListener('click', handleClickOutside, true);
     };
   });
 
@@ -165,14 +199,14 @@
         on:click={handleFabClick}
 >
     <img
-            src="/assets/logo-40w.png"
-            srcset="/assets/logo-40w.png 40w, /assets/logo-80w.png 80w, /assets/logo-120w.png 120w"
+            src={logo40w}
+            srcset="{logo40w} 40w, {logo80w} 80w, {logo120w} 120w"
             sizes="40px"
             alt="AI Assistant Logo"/>
 </button>
 
 {#if showModal}
-    <div class="ai-modal-content" bind:this={modalContent} use:draggable use:resizable>
+    <div class="ai-modal-content" bind:this={modalContent} use:draggable>
         <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
         <div id="ai-container" bind:this={aiContainerElement}></div>
     </div>
@@ -219,9 +253,6 @@
     /* Modal Styles */
     .ai-modal-content {
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
 
         /* Liquid Glass Frame */
         background: rgba(255, 255, 255, 0.1);
@@ -286,66 +317,5 @@
         height: 100%;
     }
 
-    /* Resizable handles styles */
-    .resizer {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-    }
 
-    .resizer.top-left {
-        top: -5px;
-        left: -5px;
-        cursor: nwse-resize;
-    }
-
-    .resizer.top-right {
-        top: -5px;
-        right: -5px;
-        cursor: nesw-resize;
-    }
-
-    .resizer.bottom-left {
-        bottom: -5px;
-        left: -5px;
-        cursor: nesw-resize;
-    }
-
-    .resizer.bottom-right {
-        bottom: -5px;
-        right: -5px;
-        cursor: nwse-resize;
-    }
-
-    .resizer.top {
-        top: -5px;
-        left: 5px;
-        right: 5px;
-        height: 10px;
-        cursor: ns-resize;
-    }
-
-    .resizer.bottom {
-        bottom: -5px;
-        left: 5px;
-        right: 5px;
-        height: 10px;
-        cursor: ns-resize;
-    }
-
-    .resizer.left {
-        left: -5px;
-        top: 5px;
-        bottom: 5px;
-        width: 10px;
-        cursor: ew-resize;
-    }
-
-    .resizer.right {
-        right: -5px;
-        top: 5px;
-        bottom: 5px;
-        width: 10px;
-        cursor: ew-resize;
-    }
 </style>

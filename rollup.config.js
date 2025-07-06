@@ -8,6 +8,7 @@ import postcss from "rollup-plugin-postcss";
 import alias from "@rollup/plugin-alias";
 import svelte from 'rollup-plugin-svelte';
 import sveltePreprocess from 'svelte-preprocess';
+import image from '@rollup/plugin-image';
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -49,6 +50,8 @@ export default {
         {find: '@', replacement: process.cwd() + '/src'}
       ]
     }),
+    // 图片内联打包插件
+    image(),
     // 转换 CommonJS 模块为 ES6
     commonjs(),
     // Babel 转换
