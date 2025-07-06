@@ -47,7 +47,8 @@ export class UIManager {
     });
 
     this._bindToStateChanges();
-    this.init();
+    // Defer initialization to allow the Svelte component to mount and its methods to become available.
+    Promise.resolve().then(() => this.init());
   }
 
   init() {

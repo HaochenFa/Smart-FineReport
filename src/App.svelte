@@ -9,9 +9,8 @@
   let isAssistantInitialized = false;
   let appInstance = null;
   let fab;
-  let modalOverlay;
   let modalContent;
-  let aiContainerElement; // 新增变量来绑定 DOM 元素
+  let aiContainerElement;
 
   // FAB 拖拽逻辑
   let isDragging = false;
@@ -56,10 +55,12 @@
     let y;
 
     function handleMousedown(e) {
+      if (e.target.closest('button, textarea, input, .resizer')) {
+        return;
+      }
       x = e.clientX;
       y = e.clientY;
 
-      node.style.position = 'absolute'; // 确保可以定位
       node.style.cursor = 'grabbing';
 
       window.addEventListener('mousemove', handleMousemove);
@@ -70,8 +71,11 @@
       const dx = e.clientX - x;
       const dy = e.clientY - y;
 
-      node.style.left = `${node.offsetLeft + dx}px`;
-      node.style.top = `${node.offsetTop + dy}px`;
+      const {top, left} = node.getBoundingClientRect();
+
+      node.style.left = `${left + dx}px`;
+      node.style.top = `${top + dy}px`;
+      node.style.transform = ''; // Remove transform on drag
 
       x = e.clientX;
       y = e.clientY;
@@ -93,30 +97,48 @@
   }
 
   async function handleFabClick() {
-    if (!wasDragged) {
-      showModal = true;
-      if (!isAssistantInitialized) {
-        await tick(); // 等待 DOM 更新
-        try {
-          Logger.log("Initializing AI Assistant for the first time...");
-          const serviceUrl = SETTINGS.service.url;
-          appInstance = new AppController(serviceUrl);
-          // 直接传递 DOM 元素，而不是选择器字符串
-          appInstance.init(aiContainerElement);
-          isAssistantInitialized = true;
-          Logger.log("AI Assistant Initialized Successfully.");
-        } catch (error) {
-          Logger.error("A critical error occurred during initialization:", error);
-          const container = modalOverlay.querySelector('#ai-container');
-          if (container) {
-            container.innerHTML = `
-              <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
-                <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
-                <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
-              </div>
-            `;
-          }
+    if (wasDragged) return;
+
+    showModal = true;
+    if (!isAssistantInitialized) {
+      await tick();
+      try {
+        Logger.log("Initializing AI Assistant for the first time...");
+        const serviceUrl = SETTINGS.service.url;
+        appInstance = new AppController(serviceUrl);
+        appInstance.init(aiContainerElement);
+        isAssistantInitialized = true;
+        Logger.log("AI Assistant Initialized Successfully.");
+      } catch (error) {
+        Logger.error("A critical error occurred during initialization:", error);
+        if (aiContainerElement) {
+          aiContainerElement.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
+              <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
+              <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
+            </div>
+          `;
         }
+      }
+    }
+  }
+
+  // Click outside to close logic
+  function handleClickOutside(event) {
+    if (fab && fab.contains(event.target)) {
+      return;
+    }
+    if (modalContent && !modalContent.contains(event.target)) {
+      showModal = false;
+    }
+  }
+
+  $: {
+    if (typeof window !== 'undefined') {
+      if (showModal) {
+        window.addEventListener('click', handleClickOutside, true);
+      } else {
+        window.removeEventListener('click', handleClickOutside, true);
       }
     }
   }
@@ -128,6 +150,9 @@
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('click', handleClickOutside, true);
+      }
     };
   });
 
@@ -139,18 +164,17 @@
         on:mousedown={handleMouseDown}
         on:click={handleFabClick}
 >
-    &#x1F916;
+    <img
+            src="/assets/logo-40w.png"
+            srcset="/assets/logo-40w.png 40w, /assets/logo-80w.png 80w, /assets/logo-120w.png 120w"
+            sizes="40px"
+            alt="AI Assistant Logo"/>
 </button>
 
 {#if showModal}
-    <div class="ai-modal-overlay" bind:this={modalOverlay}
-         on:click={(e) => { if (e.target === modalOverlay) showModal = false; }}
-         on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target === modalOverlay) showModal = false; } }}
-         role="button" tabindex="0">
-        <div class="ai-modal-content" bind:this={modalContent} use:draggable use:resizable>
-            <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
-            <div id="ai-container" bind:this={aiContainerElement}></div>
-        </div>
+    <div class="ai-modal-content" bind:this={modalContent} use:draggable use:resizable>
+        <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
+        <div id="ai-container" bind:this={aiContainerElement}></div>
     </div>
 {/if}
 
@@ -163,7 +187,6 @@
         width: 60px;
         height: 60px;
         background-color: #1890ff;
-        color: white;
         border: none;
         border-radius: 50%;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -171,10 +194,15 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 28px; /* Icon size */
         z-index: 9999;
         transition: background-color 0.3s, transform 0.2s ease-out;
         user-select: none; /* Prevent text selection during drag */
+    }
+
+    #ai-assistant-fab img {
+        width: 40px;
+        height: 40px;
+        mix-blend-mode: multiply;
     }
 
     #ai-assistant-fab:hover {
@@ -189,62 +217,67 @@
     }
 
     /* Modal Styles */
-    .ai-modal-overlay {
-        display: flex; /* Always flex when shown */
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-    }
-
     .ai-modal-content {
-        position: relative;
-        background: white;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        /* Liquid Glass Frame */
+        background: rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        backdrop-filter: blur(16px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25), inset 0 2px 4px 0 rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 12px;
+
         width: 90vw;
         max-width: 800px;
         min-width: 550px;
         height: 85vh;
         max-height: 900px;
         min-height: 600px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         display: flex;
-        flex-direction: column;
-        overflow: hidden;
+        z-index: 10000;
     }
 
     .ai-modal-close-btn {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        background: transparent;
+        top: 18px; /* Adjusted for padding */
+        right: 18px; /* Adjusted for padding */
+        background: rgba(0, 0, 0, 0.1);
         border: none;
-        font-size: 24px;
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 28px;
         cursor: pointer;
-        color: #888;
+        color: #555;
         z-index: 10010;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        transition: background-color 0.2s, color 0.2s;
     }
 
     .ai-modal-close-btn:hover {
+        background-color: rgba(0, 0, 0, 0.2);
         color: #000;
     }
 
     #ai-container {
         width: 100%;
         height: 100%;
+        /* Frosted Glass Canvas */
+        background: rgba(255, 255, 255, 0.65);
         border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
+        overflow: hidden; /* Important to contain children */
     }
 
     .ai-modal-close-btn svg,
@@ -256,7 +289,7 @@
     /* Resizable handles styles */
     .resizer {
         position: absolute;
-        background: rgba(0, 0, 0, 0.1); /* For debugging, make it transparent in production */
+        background: rgba(0, 0, 0, 0.1);
         z-index: 1000;
     }
 
