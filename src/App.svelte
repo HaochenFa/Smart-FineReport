@@ -1,14 +1,15 @@
 <script>
   import {onMount, tick} from 'svelte';
+  import {scale, fade} from 'svelte/transition';
   import {Logger} from './utils/logger.js';
   import {SETTINGS} from './utils/settings.js';
   import AppController from './app/app-controller.js';
-
 
   // Import logo images for inline packaging
   import logo40w from '../public/assets/logo-40w.png';
   import logo80w from '../public/assets/logo-80w.png';
   import logo120w from '../public/assets/logo-120w.png';
+  import logoFullRes from '../public/assets/logo.png';
 
   let showModal = false;
   let isAssistantInitialized = false;
@@ -16,6 +17,10 @@
   let fab;
   let modalContent;
   let aiContainerElement;
+  let isButtonClicked = false;
+  let rippleActive = false;
+  let fabPosition = {x: 0, y: 0}; // FAB按钮中心坐标
+  let modalOrigin = '50% 50%'; // Modal的transform-origin
 
 
   // FAB 拖拽逻辑
@@ -116,8 +121,40 @@
     };
   }
 
+  function calculateFabCenter() {
+    if (!fab) return {x: 0, y: 0};
+    const rect = fab.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  }
+
+  function updateModalOrigin() {
+    const {x, y} = fabPosition;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const originX = (x / vw) * 100;
+    const originY = (y / vh) * 100;
+    modalOrigin = `${originX}% ${originY}%`;
+  }
+
   async function handleFabClick() {
     if (wasDragged) return;
+
+    // 按钮点击动画效果
+    isButtonClicked = true;
+    rippleActive = true;
+
+    // 300ms后重置按钮状态
+    setTimeout(() => {
+      isButtonClicked = false;
+      rippleActive = false;
+    }, 300);
+
+    // 计算FAB按钮位置
+    fabPosition = calculateFabCenter();
+    updateModalOrigin();
 
     showModal = true;
     if (!isAssistantInitialized) {
@@ -141,6 +178,21 @@
         }
       }
     }
+  }
+
+  function dynamicScale(node, {duration = 180, start = 0.8, origin = '50% 50%'}) {
+    return {
+      duration,
+      css: (t) => {
+        const scale = start + (1 - start) * t;
+        const opacity = t;
+        return `
+          transform: scale(${scale});
+          transform-origin: ${origin};
+          opacity: ${opacity};
+        `;
+      }
+    };
   }
 
   // Click outside to close logic
@@ -183,6 +235,22 @@
     }
   }
 
+  // 窗口大小变化时重新计算
+  $: if (typeof window !== 'undefined') {
+    const handleResize = () => {
+      if (showModal && fab) {
+        fabPosition = calculateFabCenter();
+        updateModalOrigin();
+      }
+    };
+
+    if (showModal) {
+      window.addEventListener('resize', handleResize);
+    } else {
+      window.removeEventListener('resize', handleResize);
+    }
+  }
+
   onMount(() => {
     // 修复：只在需要时添加事件监听器，避免全局污染
     return () => {
@@ -195,6 +263,9 @@
 <button
         bind:this={fab}
         id="ai-assistant-fab"
+        class:fab-clicked={isButtonClicked}
+        class:fab-ripple={rippleActive}
+
         on:mousedown={handleMouseDown}
         on:click={handleFabClick}
 >
@@ -206,9 +277,23 @@
 </button>
 
 {#if showModal}
-    <div class="ai-modal-content" bind:this={modalContent} use:draggable>
+    <div class="ai-modal-content" bind:this={modalContent} use:draggable
+         transition:dynamicScale={{duration: 180, start: 0.8, origin: modalOrigin}}>
         <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
-        <div id="ai-container" bind:this={aiContainerElement}></div>
+        <div id="ai-container" bind:this={aiContainerElement}>
+            {#if !isAssistantInitialized}
+                <div class="simple-loading" transition:fade={{duration: 300}}>
+                    <img src={logoFullRes} alt="Loading" class="loading-logo"/>
+                </div>
+            {:else if false}
+                <div class="skeleton-container">
+                    <div class="skeleton-header"></div>
+                    <div class="skeleton-message"></div>
+                    <div class="skeleton-message short"></div>
+                    <div class="skeleton-input"></div>
+                </div>
+            {/if}
+        </div>
     </div>
 {/if}
 
@@ -249,6 +334,36 @@
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
         transform: scale(0.98);
     }
+
+    /* FAB 动画状态 */
+    #ai-assistant-fab.fab-clicked {
+        transform: scale(0.95);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.15s ease-out;
+    }
+
+    #ai-assistant-fab.fab-ripple::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        animation: ripple 0.6s ease-out;
+    }
+
+    @keyframes ripple {
+        to {
+            width: 120px;
+            height: 120px;
+            opacity: 0;
+        }
+    }
+
+    /* 移除了旋转动画效果 */
 
     /* Modal Styles */
     .ai-modal-content {
@@ -309,12 +424,107 @@
         display: flex;
         flex-direction: column;
         overflow: hidden; /* Important to contain children */
+        position: relative; /* 为loading-splash提供定位上下文 */
     }
 
     .ai-modal-close-btn svg,
     #ai-assistant-fab svg {
         width: 100%;
         height: 100%;
+    }
+
+    /* 简单加载动画样式 */
+    .simple-loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+    }
+
+    .loading-logo {
+        width: 80px;
+        height: 80px;
+        opacity: 0.7;
+        animation: breathing 1s ease-in-out infinite;
+    }
+
+    @keyframes breathing {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+    }
+
+    /* 骨架屏样式 */
+    .skeleton-container {
+        padding: 20px;
+        width: 100%;
+        height: 100%;
+    }
+
+    .skeleton-header,
+    .skeleton-message,
+    .skeleton-input {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: skeletonLoading 1.5s infinite;
+        border-radius: 4px;
+        margin-bottom: 16px;
+    }
+
+    .skeleton-header {
+        height: 24px;
+        width: 60%;
+    }
+
+    .skeleton-message {
+        height: 16px;
+        width: 100%;
+    }
+
+    .skeleton-message.short {
+        width: 75%;
+    }
+
+    .skeleton-input {
+        height: 40px;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    @keyframes skeletonLoading {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* 性能优化 */
+    #ai-assistant-fab,
+    .ai-modal-content,
+    .loading-splash {
+        will-change: transform;
+    }
+
+    /* 减少动画偏好支持 */
+    @media (prefers-reduced-motion: reduce) {
+        #ai-assistant-fab,
+        .ai-modal-content,
+        .loading-logo {
+            animation: none !important;
+            transition: none !important;
+        }
     }
 
 

@@ -42,7 +42,7 @@ export default class AppController {
 
     if (!containerElement) {
       // fixme)) Cannot initialize
-      Logger.error(`Initialization failed: Invalid container element provided.`);
+      Logger.error("Initialization failed: Invalid container element provided.");
       return;
     }
 
