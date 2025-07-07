@@ -4,6 +4,7 @@
   import {Logger} from './utils/logger.js';
   import {SETTINGS} from './utils/settings.js';
   import AppController from './app/app-controller.js';
+  import {UIManager} from './ui/ui-manager.js';
 
   // Import logo images for inline packaging
   import logo40w from '../public/assets/logo-40w.png';
@@ -140,7 +141,14 @@
   }
 
   async function handleFabClick() {
-    if (wasDragged) return;
+    console.log('FAB clicked! wasDragged:', wasDragged);
+
+    if (wasDragged) {
+      console.log('Click ignored due to drag');
+      return;
+    }
+
+    console.log('Processing FAB click...');
 
     // 按钮点击动画效果
     isButtonClicked = true;
@@ -156,26 +164,93 @@
     fabPosition = calculateFabCenter();
     updateModalOrigin();
 
+    console.log('Setting showModal to true...');
+    // UI第一优先级：立即显示弹窗
     showModal = true;
+    console.log('showModal is now:', showModal);
+
+    // 调试：检查DOM元素
+    setTimeout(() => {
+      const modalElement = document.querySelector('.ai-modal-content');
+      console.log('Modal element found:', modalElement);
+      if (modalElement) {
+        console.log('Modal element styles:', window.getComputedStyle(modalElement));
+        console.log('Modal element position:', modalElement.getBoundingClientRect());
+      }
+    }, 100);
+
+    // 后台异步初始化并自动开始分析（不阻塞UI）
     if (!isAssistantInitialized) {
+      console.log('Initializing assistant...');
+      initializeAndStartAnalysis();
+    } else {
+      console.log('Assistant already initialized, re-mounting UI');
+
+      // 等待DOM更新完成
       await tick();
-      try {
-        Logger.log("Initializing AI Assistant for the first time...");
-        const serviceUrl = SETTINGS.service.url;
-        appInstance = new AppController(serviceUrl);
-        appInstance.init(aiContainerElement);
-        isAssistantInitialized = true;
-        Logger.log("AI Assistant Initialized Successfully.");
-      } catch (error) {
-        Logger.error("A critical error occurred during initialization:", error);
-        if (aiContainerElement) {
-          aiContainerElement.innerHTML = `
-            <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
-              <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
-              <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
-            </div>
-          `;
-        }
+
+      if (appInstance && aiContainerElement) {
+        console.log('Re-initializing UI Manager with fresh container');
+
+        // 清空容器内容
+        aiContainerElement.innerHTML = '';
+        console.log('Container cleared');
+
+        // 重新初始化UI管理器到新的容器
+        appInstance.uiManager = new UIManager(
+          aiContainerElement,
+          appInstance.stateManager,
+          appInstance.handleUserQuery.bind(appInstance),
+          appInstance.resetAnalysis.bind(appInstance)
+        );
+
+        console.log('New UIManager created:', appInstance.uiManager);
+
+        // 获取当前状态并更新UI
+        const currentState = appInstance.stateManager.getState();
+        console.log('Current state for re-mount:', currentState);
+
+        // 确保UI显示当前状态
+        appInstance.uiManager._update(currentState);
+
+        // 检查容器内容
+        setTimeout(() => {
+          console.log('Container content after re-mount:', aiContainerElement.innerHTML);
+          console.log('ChatView element:', appInstance.uiManager.chatViewElement);
+        }, 200);
+
+        console.log('UI re-mounted successfully');
+      }
+    }
+  }
+
+  async function initializeAndStartAnalysis() {
+    // 等待DOM更新完成
+    await tick();
+
+    try {
+      Logger.log("Initializing AI Assistant for the first time...");
+      const serviceUrl = SETTINGS.service.url;
+      appInstance = new AppController(serviceUrl);
+      appInstance.init(aiContainerElement);
+      isAssistantInitialized = true;
+      Logger.log("AI Assistant Initialized Successfully.");
+
+      // 初始化完成后立即开始自动分析
+      await appInstance.triggerInitialAnalysis();
+    } catch (error) {
+      Logger.error("A critical error occurred during initialization:", error);
+      // 即使初始化失败，也要显示友好的错误信息，而不是隐藏弹窗
+      if (aiContainerElement) {
+        aiContainerElement.innerHTML = `
+          <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
+            <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
+            <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
+            <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              重新加载页面
+            </button>
+          </div>
+        `;
       }
     }
   }
@@ -207,19 +282,32 @@
   }
 
 
-  // 初始化模态框位置
+  // 初始化模态框位置 - 相对于页面内容居中
   function initializeModalPosition() {
     if (modalContent && typeof window !== 'undefined') {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const modalWidth = modalContent.offsetWidth || 800;
-      const modalHeight = modalContent.offsetHeight || 600;
+      // 获取页面滚动位置
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
-      const left = Math.max(0, (windowWidth - modalWidth) / 2);
-      const top = Math.max(0, (windowHeight - modalHeight) / 2);
+      // 获取视口尺寸
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-      modalContent.style.left = `${left}px`;
-      modalContent.style.top = `${top}px`;
+      // 获取弹窗尺寸
+      const modalWidth = modalContent.offsetWidth;
+      const modalHeight = modalContent.offsetHeight;
+
+      // 计算相对于当前视口的居中位置
+      const left = scrollLeft + (viewportWidth - modalWidth) / 2;
+      const top = scrollTop + (viewportHeight - modalHeight) / 2;
+
+      // 设置位置
+      modalContent.style.position = 'absolute';
+      modalContent.style.left = `${Math.max(0, left)}px`;
+      modalContent.style.top = `${Math.max(0, top)}px`;
+      modalContent.style.transform = 'none'; // 移除CSS transform
+
+      console.log('Modal positioned at:', {left, top, scrollTop, scrollLeft});
     }
   }
 
@@ -282,8 +370,17 @@
         <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
         <div id="ai-container" bind:this={aiContainerElement}>
             {#if !isAssistantInitialized}
-                <div class="simple-loading" transition:fade={{duration: 300}}>
-                    <img src={logoFullRes} alt="Loading" class="loading-logo"/>
+                <div class="welcome-loading" transition:fade={{duration: 300}}>
+                    <div class="welcome-content">
+                        <img src={logoFullRes} alt="AI Assistant" class="welcome-logo"/>
+                        <h3 class="welcome-title">AI 分析助手</h3>
+                        <p class="welcome-subtitle">正在为您分析当前报表...</p>
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
                 </div>
             {:else if false}
                 <div class="skeleton-container">
@@ -365,18 +462,44 @@
 
     /* 移除了旋转动画效果 */
 
-    /* Modal Styles */
+    /* Modal Styles - Apple 2025 WWDC Liquid Glass Design */
     .ai-modal-content {
-        position: fixed;
+        /* 位置由JavaScript动态设置 */
+        position: absolute;
 
-        /* Liquid Glass Frame */
-        background: rgba(255, 255, 255, 0.1);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
-        backdrop-filter: blur(16px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25), inset 0 2px 4px 0 rgba(255, 255, 255, 0.2);
-        border-radius: 16px;
-        padding: 12px;
+        /* Apple 2025 WWDC Liquid Glass Frame - 真实玻璃扭曲效果 */
+        background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+        linear-gradient(135deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.02) 30%,
+                rgba(255, 255, 255, 0.08) 70%,
+                rgba(255, 255, 255, 0.03) 100%);
+
+        /* 增强的玻璃效果 - 模拟曲率和扭曲 */
+        -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
+        backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
+
+        /* 玻璃边缘效果 */
+        border: 1px solid;
+        border-image: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0.1) 25%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0.1) 75%,
+        rgba(255, 255, 255, 0.25) 100%) 1;
+
+        /* 多层阴影模拟玻璃深度和光线折射 */
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12),
+        0 2px 16px 0 rgba(31, 38, 135, 0.08),
+        0 1px 4px 0 rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.15),
+        inset 1px 0 0 0 rgba(255, 255, 255, 0.2),
+        inset -1px 0 0 0 rgba(255, 255, 255, 0.1);
+
+        border-radius: 20px;
+        padding: 10px;
 
         width: 90vw;
         max-width: 800px;
@@ -386,12 +509,16 @@
         min-height: 600px;
         display: flex;
         z-index: 10000;
+
+        /* 玻璃曲率效果 */
+        transform: perspective(1000px) rotateX(0.5deg) rotateY(0.2deg);
+        transform-style: preserve-3d;
     }
 
     .ai-modal-close-btn {
         position: absolute;
-        top: 18px; /* Adjusted for padding */
-        right: 18px; /* Adjusted for padding */
+        top: 14px; /* Adjusted for moderate padding */
+        right: 14px; /* Adjusted for moderate padding */
         background: rgba(0, 0, 0, 0.1);
         border: none;
         font-size: 18px;
@@ -414,18 +541,7 @@
         color: #000;
     }
 
-    #ai-container {
-        width: 100%;
-        height: 100%;
-        /* Frosted Glass Canvas */
-        background: rgba(255, 255, 255, 0.65);
-        border-radius: 8px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden; /* Important to contain children */
-        position: relative; /* 为loading-splash提供定位上下文 */
-    }
+    /* #ai-container 样式已移至 main.css 中统一管理 */
 
     .ai-modal-close-btn svg,
     #ai-assistant-fab svg {
@@ -433,8 +549,8 @@
         height: 100%;
     }
 
-    /* 简单加载动画样式 */
-    .simple-loading {
+    /* 欢迎加载界面样式 */
+    .welcome-loading {
         position: absolute;
         top: 0;
         left: 0;
@@ -444,13 +560,67 @@
         justify-content: center;
         align-items: center;
         z-index: 10001;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
 
-    .loading-logo {
+    .welcome-content {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        max-width: 300px;
+    }
+
+    .welcome-logo {
         width: 80px;
         height: 80px;
-        opacity: 0.7;
-        animation: breathing 1s ease-in-out infinite;
+        margin-bottom: 20px;
+        opacity: 0.9;
+        animation: breathing 2s ease-in-out infinite;
+    }
+
+    .welcome-title {
+        color: #1890ff;
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .welcome-subtitle {
+        color: #666;
+        font-size: 16px;
+        margin: 0 0 24px 0;
+        line-height: 1.5;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .loading-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .loading-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #1890ff;
+        animation: loading-bounce 1.4s ease-in-out infinite both;
+    }
+
+    .loading-dots span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .loading-dots span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    .loading-dots span:nth-child(3) {
+        animation-delay: 0s;
     }
 
     @keyframes breathing {
@@ -460,6 +630,17 @@
         }
         50% {
             transform: scale(1.1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes loading-bounce {
+        0%, 80%, 100% {
+            transform: scale(0);
+            opacity: 0.5;
+        }
+        40% {
+            transform: scale(1);
             opacity: 1;
         }
     }
@@ -521,7 +702,8 @@
     @media (prefers-reduced-motion: reduce) {
         #ai-assistant-fab,
         .ai-modal-content,
-        .loading-logo {
+        .welcome-logo,
+        .loading-dots span {
             animation: none !important;
             transition: none !important;
         }

@@ -92,6 +92,7 @@ export default class AppController {
       this.contextManager.addMessage("assistant", aiResponse);
     } catch (error) {
       Logger.error("Error during initial analysis:", error);
+      this.uiManager.hideAssistantStatus(); // 隐藏状态栏
       this.stateManager.setState({
         messages: [{role: "system", content: this._getErrorMessage(error), type: "error"}],
       });
@@ -184,6 +185,7 @@ export default class AppController {
     } catch (error) {
       // 错误处理：如果 pipeline 分析失败，应当告知用户
       Logger.error("Error occurred while handling user query:", error);
+      this.uiManager.hideAssistantStatus(); // 隐藏状态栏
       const errorState = this.stateManager.getState();
       this.stateManager.setState({
         messages: [

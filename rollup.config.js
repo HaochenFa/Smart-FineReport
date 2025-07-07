@@ -29,12 +29,12 @@ export default {
   // 输出配置
   output: [
     {
-      file: 'dist/smart-finereport.esm.min.js',
+      file: 'public/dist/smart-finereport.esm.min.js',
       format: 'esm',
       sourcemap: true,
     },
     {
-      file: 'dist/smart-finereport.cjs.min.js',
+      file: 'public/dist/smart-finereport.cjs.min.js',
       format: 'cjs',
       sourcemap: true,
     },
@@ -67,7 +67,14 @@ export default {
       }),
       emitCss: true, // 提取 Svelte 组件中的 CSS
       compilerOptions: {
-        customElement: true, // 将 Svelte 组件编译为 Web Component
+        dev: !isProduction,
+        hydratable: false,
+        enableSourcemap: !isProduction,
+      },
+      onwarn: (warning, handler) => {
+        // 忽略一些常见的警告
+        if (warning.code === 'css-unused-selector') return;
+        handler(warning);
       },
     }),
 
@@ -106,7 +113,7 @@ export default {
     // 实时重新加载 (仅在开发环境下生效)
     !isProduction &&
     livereload({
-      watch: ["dist", "public"],
+      watch: ["public"],
     }),
   ],
 

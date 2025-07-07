@@ -16,8 +16,27 @@
 
   function autoResizeInput() {
     if (inputField) {
+      const defaultHeight = 40; // 两行文字的默认高度
+      const maxHeight = 100; // 最大高度
+
+      // 如果内容为空，回到默认高度
+      if (!inputValue.trim()) {
+        inputField.style.height = defaultHeight + 'px';
+        return;
+      }
+
+      // 临时设置为auto来计算实际需要的高度
       inputField.style.height = 'auto';
-      inputField.style.height = inputField.scrollHeight + 'px';
+      const scrollHeight = inputField.scrollHeight;
+
+      // 如果内容高度小于等于默认高度，保持默认高度
+      if (scrollHeight <= defaultHeight) {
+        inputField.style.height = defaultHeight + 'px';
+      } else {
+        // 只有当内容超过默认高度时，才增加高度
+        const newHeight = Math.min(scrollHeight, maxHeight);
+        inputField.style.height = newHeight + 'px';
+      }
     }
   }
 
@@ -26,7 +45,10 @@
     if (message) {
       dispatch('submitMessage', message);
       inputValue = ''; // 提交后清空输入框
-      autoResizeInput(); // 重置输入框高度
+      // 使用 setTimeout 确保 inputValue 更新后再调整高度
+      setTimeout(() => {
+        autoResizeInput(); // 重置输入框高度
+      }, 0);
     }
   }
 
@@ -43,22 +65,26 @@
 
     if (role === "user") {
       messageClass = "flex justify-end mb-4 items-start";
-      bubbleClass = "bg-blue-500 text-white rounded-lg p-3 max-w-lg shadow-md";
+      bubbleClass = "message-bubble-user";
     } else if (role === "assistant") {
       messageClass = "flex justify-start mb-4 items-start";
-      bubbleClass = "bg-white text-gray-800 rounded-lg p-3 max-w-[80%] shadow-md prose-ai-response";
+      bubbleClass = "message-bubble-assistant prose-ai-response";
     } else { // System message
-      messageClass = "text-center my-2";
-      let systemSpanClasses = "text-xs bg-gray-100 rounded-full px-3 py-1"; // Base classes
+      messageClass = "flex justify-center my-5";
+      let systemSpanClasses = "message-bubble-system"; // Base classes
 
       if (type === "error") {
-        systemSpanClasses += " text-red-500";
+        systemSpanClasses += " error";
       } else if (type === "warning") {
-        systemSpanClasses += " text-orange-500";
-      } else { // Default system message
-        systemSpanClasses += " text-gray-500";
+        systemSpanClasses += " warning";
+      } else if (type === "loading" || content.includes("发送数据中") || content.includes("处理中") || content.includes("分析中")) {
+        systemSpanClasses += " loading";
       }
-      return `<div class="${messageClass}"><span class="${systemSpanClasses}">${content}</span></div>`;
+
+      // 保持系统消息简洁，不进行换行处理
+      const processedContent = content;
+
+      return `<div class="${messageClass}"><span class="${systemSpanClasses}">${processedContent}</span></div>`;
     }
 
     return `<div class="${messageClass}"><div class="${bubbleClass}">${content}</div></div>`;
@@ -68,12 +94,27 @@
     if (assistantStatusElement) {
       assistantStatusElement.textContent = statusText;
       assistantStatusElement.style.display = 'block';
+
+      // 使用 requestAnimationFrame 确保 DOM 更新后再添加动画类
+      requestAnimationFrame(() => {
+        assistantStatusElement.classList.remove('hide');
+        assistantStatusElement.classList.add('show');
+      });
     }
   }
 
   export function hideAssistantStatus() {
     if (assistantStatusElement) {
-      assistantStatusElement.style.display = 'none';
+      assistantStatusElement.classList.remove('show');
+      assistantStatusElement.classList.add('hide');
+
+      // 等待动画完成后隐藏元素
+      setTimeout(() => {
+        if (assistantStatusElement) {
+          assistantStatusElement.style.display = 'none';
+          assistantStatusElement.classList.remove('hide');
+        }
+      }, 400); // 与CSS动画时间一致
     }
   }
 
@@ -96,23 +137,27 @@
 
 </script>
 
-<div class="flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-gray-200/50">
-    <div bind:this={assistantStatusElement} class="text-center text-gray-500 text-sm my-2" style="display: none;"></div>
-    <div bind:this={messageContainer} class="flex-1 flex flex-col overflow-y-auto p-4 space-y-4" id="message-container">
+<div class="flex flex-col h-full overflow-hidden bg-gradient-to-b from-blue-50/20 to-indigo-50/15 rounded-[16px]">
+    <div bind:this={assistantStatusElement} class="status-bar text-center text-gray-700 text-sm"
+         style="display: none; z-index: 1000; position: relative;"></div>
+    <div bind:this={messageContainer}
+         class="flex-1 flex flex-col overflow-y-auto px-6 py-6 space-y-4 scrollbar-thin scrollbar-thumb-blue-300/40 scrollbar-track-transparent"
+         id="message-container">
         {#each messages as message (message.id || JSON.stringify(message))}
             {@html renderMessage(message)}
         {/each}
     </div>
 
-    <div class="p-4 border-t border-gray-200/80 bg-white/50">
-        <div class="flex items-stretch w-full">
+    <div class="px-6 py-5 mt-4 bg-gradient-to-r from-white/40 to-blue-50/30 backdrop-blur-sm rounded-b-[16px]">
+        <div class="flex items-stretch gap-3 w-full">
             <button
                     bind:this={resetButton}
-                    class="p-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors duration-300 relative flex items-center justify-center"
+                    class="chat-button-reset"
                     on:click={handleReset}
                     disabled={isDisabled}
+                    title="重置对话"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                      stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20v-5h-5"/>
@@ -124,7 +169,7 @@
             <textarea
                     bind:this={inputField}
                     bind:value={inputValue}
-                    class="ml-5 mr-5 flex-1 p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none h-12 overflow-hidden bg-gray-50/90 transition-all duration-300"
+                    class="chat-input"
                     placeholder="输入你的分析请求... (Shift+Enter 换行)"
                     rows="1"
                     on:input={autoResizeInput}
@@ -137,11 +182,12 @@
                     disabled={isDisabled}
             ></textarea>
             <button
-                    class="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                    class="chat-button-submit"
                     on:click={handleSubmit}
                     disabled={isDisabled}
+                    title="发送消息"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                      stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M5 10l7-7m0 0l7 7m-7-7v18"/>

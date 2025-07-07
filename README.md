@@ -12,6 +12,33 @@ GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 - 💬 **多轮次交互**：支持用户围绕报表截图和生成的分析报告，与 AI 进行多轮次的追问和探讨。
 - 📊 **富文本展示**：支持 Markdown 格式的分析报告，提供更清晰、专业的阅读体验。
 
+## 开发环境要求
+
+- **Node.js**: v22.17.0 或更高版本
+- **npm**: v10.9.2 或更高版本
+
+### 快速开始
+
+1. **使用正确的Node.js版本**（如果安装了nvm）：
+   ```bash
+   nvm use
+   ```
+
+2. **安装依赖**：
+   ```bash
+   npm install
+   ```
+
+3. **开发模式**：
+   ```bash
+   npm run dev
+   ```
+
+4. **代码检查和构建**：
+   ```bash
+   npm run build
+   ```
+
 ## 部署方式
 
 智帆报表 AI 助手设计为可嵌入式组件，部署到帆软环境主要涉及以下步骤：
@@ -82,7 +109,6 @@ flowchart BT
     │    ├── main.css
     │    └── tailwind.js
     ├── ui/             # User interface components
-    │    ├── chat-view.js             # Web Component wrapper for ChatView.svelte
     │    ├── ChatView.svelte          # Svelte chat window component
     │    └── ui-manager.js            # Control UI status
     └── utils/          # Utility functions and configs

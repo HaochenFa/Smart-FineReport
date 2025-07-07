@@ -14,9 +14,30 @@ import "./styles/fab.css";
 // 1. 设置日志级别
 Logger.setLevel(SETTINGS.logger.level);
 
-// 2. 挂载 Svelte 应用
-const app = new App({
-  target: document.body,
-});
+// 2. 确保DOM准备好后再挂载 Svelte 应用
+let app;
+
+function initializeApp() {
+  if (document.body) {
+    app = new App({
+      target: document.body,
+    });
+
+    // 全局导出（用于浏览器环境）
+    if (typeof window !== "undefined") {
+      window.SmartFineReport = app;
+    }
+  } else {
+    // 如果DOM还没准备好，等待一下再试
+    setTimeout(initializeApp, 10);
+  }
+}
+
+// 检查DOM状态
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+  initializeApp();
+}
 
 export default app;

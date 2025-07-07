@@ -32,7 +32,7 @@ export class APIService {
         };
         try {
           errorData.body = await response.json();
-        } catch (e) {
+        } catch {
           errorData.body = "Could not parse error response body as JSON.";
         }
         throw new Error(`HTTP error: ${response.status}. Details: ${JSON.stringify(errorData)}`);
