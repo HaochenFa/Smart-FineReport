@@ -1,5 +1,7 @@
 # 🤖 智帆报表 (Smart FineReport Dashboard)
 
+**Language**: [中文](README.md) | [English](README_EN.md)
+
 GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 
 一个集成 AI 分析功能的帆软报表 (FineReport) 框架。该项目当前版本为 v1.2.0-vision，其核心思想是：通过捕获报表界面的截图，并将其发送给多模态大语言模型（vLLM

@@ -1,5 +1,7 @@
 # 🤖 Smart FineReport Dashboard
 
+**Language**: [中文](README.md) | [English](README_EN.md)
+
 GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 
 An AI-integrated FineReport framework. The current version is v1.2.0-vision, with the core concept of capturing report interface screenshots and sending them to multimodal large language models (vLLM deployment) to achieve intelligent analysis of report data.
