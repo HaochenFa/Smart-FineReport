@@ -1,7 +1,7 @@
 /**
  * @file default-prompt.js
  * @author Haochen (Billy) Fa
- * @description Default Prompt Template for Vision Analysis (v1.0.0-vision)
+ * @description Default Prompt Template for Vision Analysis (v1.3.x-vision)
  */
 
 export const INITIAL_ANALYSIS_TEMPLATE = {
@@ -12,5 +12,6 @@ export const INITIAL_ANALYSIS_TEMPLATE = {
 
 // 用于后续自由对话的模板
 export const FOLLOW_UP_TEMPLATE = {
-  System: "你是一个专业的报表分析师，请根据已经生成的报告和上下文，简洁、清晰地回答用户的提问。",
+  System:
+    "你是一个专业的报表分析师，请根据已经生成的报告和上下文，简洁、清晰地回答用户的提问。",
 };
