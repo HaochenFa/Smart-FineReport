@@ -1,16 +1,16 @@
 <script>
-  import {onMount, tick} from 'svelte';
-  import {scale, fade} from 'svelte/transition';
-  import {Logger} from './utils/logger.js';
-  import {SETTINGS} from './utils/settings.js';
-  import AppController from './app/app-controller.js';
-  import {UIManager} from './ui/ui-manager.js';
+  import { onMount, tick } from "svelte";
+  import { fade } from "svelte/transition";
+  import { Logger } from "./utils/logger.js";
+  import { SETTINGS } from "./utils/settings.js";
+  import AppController from "./app/app-controller.js";
+  import { UIManager } from "./ui/ui-manager.js";
 
   // Import logo images for inline packaging
-  import logo40w from '../public/assets/logo-40w.png';
-  import logo80w from '../public/assets/logo-80w.png';
-  import logo120w from '../public/assets/logo-120w.png';
-  import logoFullRes from '../public/assets/logo.png';
+  import logo40w from "../public/assets/logo-40w.png";
+  import logo80w from "../public/assets/logo-80w.png";
+  import logo120w from "../public/assets/logo-120w.png";
+  import logoFullRes from "../public/assets/logo.png";
 
   let showModal = false;
   let isAssistantInitialized = false;
@@ -20,9 +20,8 @@
   let aiContainerElement;
   let isButtonClicked = false;
   let rippleActive = false;
-  let fabPosition = {x: 0, y: 0}; // FAB按钮中心坐标
-  let modalOrigin = '50% 50%'; // Modal的transform-origin
-
+  let fabPosition = { x: 0, y: 0 }; // FAB按钮中心坐标
+  let modalOrigin = "50% 50%"; // Modal的transform-origin
 
   // FAB 拖拽逻辑
   let isDragging = false;
@@ -76,7 +75,7 @@
     let isDraggingModal = false;
 
     function handleMousedown(e) {
-      if (e.target.closest('button, textarea, input')) {
+      if (e.target.closest("button, textarea, input")) {
         return;
       }
 
@@ -84,15 +83,15 @@
       x = e.clientX;
       y = e.clientY;
 
-      node.style.cursor = 'grabbing';
+      node.style.cursor = "grabbing";
 
-      window.addEventListener('mousemove', handleMousemove);
-      window.addEventListener('mouseup', handleMouseup);
+      window.addEventListener("mousemove", handleMousemove);
+      window.addEventListener("mouseup", handleMouseup);
     }
 
     function handleMousemove(e) {
       if (!isDraggingModal) return;
-      
+
       const dx = e.clientX - x;
       const dy = e.clientY - y;
 
@@ -108,31 +107,31 @@
 
     function handleMouseup() {
       isDraggingModal = false;
-      node.style.cursor = 'grab';
-      window.removeEventListener('mousemove', handleMousemove);
-      window.removeEventListener('mouseup', handleMouseup);
+      node.style.cursor = "grab";
+      window.removeEventListener("mousemove", handleMousemove);
+      window.removeEventListener("mouseup", handleMouseup);
     }
 
-    node.addEventListener('mousedown', handleMousedown);
+    node.addEventListener("mousedown", handleMousedown);
 
     return {
       destroy() {
-        node.removeEventListener('mousedown', handleMousedown);
-      }
+        node.removeEventListener("mousedown", handleMousedown);
+      },
     };
   }
 
   function calculateFabCenter() {
-    if (!fab) return {x: 0, y: 0};
+    if (!fab) return { x: 0, y: 0 };
     const rect = fab.getBoundingClientRect();
     return {
       x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2
+      y: rect.top + rect.height / 2,
     };
   }
 
   function updateModalOrigin() {
-    const {x, y} = fabPosition;
+    const { x, y } = fabPosition;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const originX = (x / vw) * 100;
@@ -141,14 +140,14 @@
   }
 
   async function handleFabClick() {
-    console.log('FAB clicked! wasDragged:', wasDragged);
+    console.log("FAB clicked! wasDragged:", wasDragged);
 
     if (wasDragged) {
-      console.log('Click ignored due to drag');
+      console.log("Click ignored due to drag");
       return;
     }
 
-    console.log('Processing FAB click...');
+    console.log("Processing FAB click...");
 
     // 按钮点击动画效果
     isButtonClicked = true;
@@ -164,37 +163,37 @@
     fabPosition = calculateFabCenter();
     updateModalOrigin();
 
-    console.log('Setting showModal to true...');
+    console.log("Setting showModal to true...");
     // UI第一优先级：立即显示弹窗
     showModal = true;
-    console.log('showModal is now:', showModal);
+    console.log("showModal is now:", showModal);
 
     // 调试：检查DOM元素
     setTimeout(() => {
-      const modalElement = document.querySelector('.ai-modal-content');
-      console.log('Modal element found:', modalElement);
+      const modalElement = document.querySelector(".ai-modal-content");
+      console.log("Modal element found:", modalElement);
       if (modalElement) {
-        console.log('Modal element styles:', window.getComputedStyle(modalElement));
-        console.log('Modal element position:', modalElement.getBoundingClientRect());
+        console.log("Modal element styles:", window.getComputedStyle(modalElement));
+        console.log("Modal element position:", modalElement.getBoundingClientRect());
       }
     }, 100);
 
     // 后台异步初始化并自动开始分析（不阻塞UI）
     if (!isAssistantInitialized) {
-      console.log('Initializing assistant...');
+      console.log("Initializing assistant...");
       initializeAndStartAnalysis();
     } else {
-      console.log('Assistant already initialized, re-mounting UI');
+      console.log("Assistant already initialized, re-mounting UI");
 
       // 等待DOM更新完成
       await tick();
 
       if (appInstance && aiContainerElement) {
-        console.log('Re-initializing UI Manager with fresh container');
+        console.log("Re-initializing UI Manager with fresh container");
 
         // 清空容器内容
-        aiContainerElement.innerHTML = '';
-        console.log('Container cleared');
+        aiContainerElement.innerHTML = "";
+        console.log("Container cleared");
 
         // 重新初始化UI管理器到新的容器
         appInstance.uiManager = new UIManager(
@@ -204,22 +203,22 @@
           appInstance.resetAnalysis.bind(appInstance)
         );
 
-        console.log('New UIManager created:', appInstance.uiManager);
+        console.log("New UIManager created:", appInstance.uiManager);
 
         // 获取当前状态并更新UI
         const currentState = appInstance.stateManager.getState();
-        console.log('Current state for re-mount:', currentState);
+        console.log("Current state for re-mount:", currentState);
 
         // 确保UI显示当前状态
         appInstance.uiManager._update(currentState);
 
         // 检查容器内容
         setTimeout(() => {
-          console.log('Container content after re-mount:', aiContainerElement.innerHTML);
-          console.log('ChatView element:', appInstance.uiManager.chatViewElement);
+          console.log("Container content after re-mount:", aiContainerElement.innerHTML);
+          console.log("ChatView element:", appInstance.uiManager.chatViewElement);
         }, 200);
 
-        console.log('UI re-mounted successfully');
+        console.log("UI re-mounted successfully");
       }
     }
   }
@@ -255,7 +254,7 @@
     }
   }
 
-  function dynamicScale(node, {duration = 180, start = 0.8, origin = '50% 50%'}) {
+  function dynamicScale(node, { duration = 180, start = 0.8, origin = "50% 50%" }) {
     return {
       duration,
       css: (t) => {
@@ -266,7 +265,7 @@
           transform-origin: ${origin};
           opacity: ${opacity};
         `;
-      }
+      },
     };
   }
 
@@ -281,10 +280,9 @@
     }
   }
 
-
   // 初始化模态框位置 - 相对于页面内容居中
   function initializeModalPosition() {
-    if (modalContent && typeof window !== 'undefined') {
+    if (modalContent && typeof window !== "undefined") {
       // 获取页面滚动位置
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -302,29 +300,29 @@
       const top = scrollTop + (viewportHeight - modalHeight) / 2;
 
       // 设置位置
-      modalContent.style.position = 'absolute';
+      modalContent.style.position = "absolute";
       modalContent.style.left = `${Math.max(0, left)}px`;
       modalContent.style.top = `${Math.max(0, top)}px`;
-      modalContent.style.transform = 'none'; // 移除CSS transform
+      modalContent.style.transform = "none"; // 移除CSS transform
 
-      console.log('Modal positioned at:', {left, top, scrollTop, scrollLeft});
+      console.log("Modal positioned at:", { left, top, scrollTop, scrollLeft });
     }
   }
 
   $: {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (showModal) {
-        window.addEventListener('click', handleClickOutside, true);
+        window.addEventListener("click", handleClickOutside, true);
         // 延迟初始化位置，确保DOM已渲染
         setTimeout(initializeModalPosition, 0);
       } else {
-        window.removeEventListener('click', handleClickOutside, true);
+        window.removeEventListener("click", handleClickOutside, true);
       }
     }
   }
 
   // 窗口大小变化时重新计算
-  $: if (typeof window !== 'undefined') {
+  $: if (typeof window !== "undefined") {
     const handleResize = () => {
       if (showModal && fab) {
         fabPosition = calculateFabCenter();
@@ -333,381 +331,345 @@
     };
 
     if (showModal) {
-      window.addEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
     } else {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     }
   }
 
   onMount(() => {
     // 修复：只在需要时添加事件监听器，避免全局污染
     return () => {
-      window.removeEventListener('click', handleClickOutside, true);
+      window.removeEventListener("click", handleClickOutside, true);
     };
   });
-
 </script>
 
 <button
-        bind:this={fab}
-        id="ai-assistant-fab"
-        class:fab-clicked={isButtonClicked}
-        class:fab-ripple={rippleActive}
-
-        on:mousedown={handleMouseDown}
-        on:click={handleFabClick}
+  bind:this={fab}
+  id="ai-assistant-fab"
+  class:fab-clicked={isButtonClicked}
+  class:fab-ripple={rippleActive}
+  on:mousedown={handleMouseDown}
+  on:click={handleFabClick}
 >
-    <img
-            src={logo40w}
-            srcset="{logo40w} 40w, {logo80w} 80w, {logo120w} 120w"
-            sizes="40px"
-            alt="AI Assistant Logo"/>
+  <img
+    src={logo40w}
+    srcset="{logo40w} 40w, {logo80w} 80w, {logo120w} 120w"
+    sizes="40px"
+    alt="AI Assistant Logo"
+  />
 </button>
 
 {#if showModal}
-    <div class="ai-modal-content" bind:this={modalContent} use:draggable
-         transition:dynamicScale={{duration: 180, start: 0.8, origin: modalOrigin}}>
-        <button class="ai-modal-close-btn" on:click={() => { showModal = false; }}>&times;</button>
-        <div id="ai-container" bind:this={aiContainerElement}>
-            {#if !isAssistantInitialized}
-                <div class="welcome-loading" transition:fade={{duration: 300}}>
-                    <div class="welcome-content">
-                        <img src={logoFullRes} alt="AI Assistant" class="welcome-logo"/>
-                        <h3 class="welcome-title">AI 分析助手</h3>
-                        <p class="welcome-subtitle">正在为您分析当前报表...</p>
-                        <div class="loading-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                </div>
-            {:else if false}
-                <div class="skeleton-container">
-                    <div class="skeleton-header"></div>
-                    <div class="skeleton-message"></div>
-                    <div class="skeleton-message short"></div>
-                    <div class="skeleton-input"></div>
-                </div>
-            {/if}
+  <div
+    class="ai-modal-content"
+    bind:this={modalContent}
+    use:draggable
+    transition:dynamicScale={{ duration: 180, start: 0.8, origin: modalOrigin }}
+  >
+    <button
+      class="ai-modal-close-btn"
+      on:click={() => {
+        showModal = false;
+      }}>&times;</button
+    >
+    <div id="ai-container" bind:this={aiContainerElement}>
+      {#if !isAssistantInitialized}
+        <div class="welcome-loading" transition:fade={{ duration: 300 }}>
+          <div class="welcome-content">
+            <img src={logoFullRes} alt="AI Assistant" class="welcome-logo" />
+            <h3 class="welcome-title">AI 分析助手</h3>
+            <p class="welcome-subtitle">正在为您分析当前报表...</p>
+            <div class="loading-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
         </div>
+      {/if}
     </div>
+  </div>
 {/if}
 
 <style global>
-    /* FAB Styles */
-    #ai-assistant-fab {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        background-color: #1890ff;
-        border: none;
-        border-radius: 50%;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        cursor: grab;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        transition: background-color 0.3s, transform 0.2s ease-out;
-        user-select: none; /* Prevent text selection during drag */
+  /* FAB Styles */
+  #ai-assistant-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #1890ff;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    cursor: grab;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition:
+      background-color 0.3s,
+      transform 0.2s ease-out;
+    user-select: none; /* Prevent text selection during drag */
+  }
+
+  #ai-assistant-fab img {
+    width: 40px;
+    height: 40px;
+    mix-blend-mode: multiply;
+  }
+
+  #ai-assistant-fab:hover {
+    background-color: #40a9ff;
+    transform: scale(1.05);
+  }
+
+  #ai-assistant-fab:active {
+    cursor: grabbing;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    transform: scale(0.98);
+  }
+
+  /* FAB 动画状态 */
+  #ai-assistant-fab.fab-clicked {
+    transform: scale(0.95);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.15s ease-out;
+  }
+
+  #ai-assistant-fab.fab-ripple::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    animation: ripple 0.6s ease-out;
+  }
+
+  @keyframes ripple {
+    to {
+      width: 120px;
+      height: 120px;
+      opacity: 0;
     }
+  }
 
-    #ai-assistant-fab img {
-        width: 40px;
-        height: 40px;
-        mix-blend-mode: multiply;
-    }
+  /* Modal Styles - Apple 2025 WWDC Liquid Glass Design */
+  .ai-modal-content {
+    /* 位置由JavaScript动态设置 */
+    position: absolute;
 
-    #ai-assistant-fab:hover {
-        background-color: #40a9ff;
-        transform: scale(1.05);
-    }
+    /* Apple 2025 WWDC Liquid Glass Frame - 真实玻璃扭曲效果 */
+    background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 30%,
+        rgba(255, 255, 255, 0.08) 70%,
+        rgba(255, 255, 255, 0.03) 100%
+      );
 
-    #ai-assistant-fab:active {
-        cursor: grabbing;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-        transform: scale(0.98);
-    }
+    /* 增强的玻璃效果 - 模拟曲率和扭曲 */
+    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
+    backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
 
-    /* FAB 动画状态 */
-    #ai-assistant-fab.fab-clicked {
-        transform: scale(0.95);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        transition: all 0.15s ease-out;
-    }
-
-    #ai-assistant-fab.fab-ripple::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        animation: ripple 0.6s ease-out;
-    }
-
-    @keyframes ripple {
-        to {
-            width: 120px;
-            height: 120px;
-            opacity: 0;
-        }
-    }
-
-    /* 移除了旋转动画效果 */
-
-    /* Modal Styles - Apple 2025 WWDC Liquid Glass Design */
-    .ai-modal-content {
-        /* 位置由JavaScript动态设置 */
-        position: absolute;
-
-        /* Apple 2025 WWDC Liquid Glass Frame - 真实玻璃扭曲效果 */
-        background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-        linear-gradient(135deg,
-                rgba(255, 255, 255, 0.05) 0%,
-                rgba(255, 255, 255, 0.02) 30%,
-                rgba(255, 255, 255, 0.08) 70%,
-                rgba(255, 255, 255, 0.03) 100%);
-
-        /* 增强的玻璃效果 - 模拟曲率和扭曲 */
-        -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
-        backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
-
-        /* 玻璃边缘效果 */
-        border: 1px solid;
-        border-image: linear-gradient(135deg,
+    /* 玻璃边缘效果 */
+    border: 1px solid;
+    border-image: linear-gradient(
+        135deg,
         rgba(255, 255, 255, 0.3) 0%,
         rgba(255, 255, 255, 0.1) 25%,
         rgba(255, 255, 255, 0.4) 50%,
         rgba(255, 255, 255, 0.1) 75%,
-        rgba(255, 255, 255, 0.25) 100%) 1;
+        rgba(255, 255, 255, 0.25) 100%
+      )
+      1;
 
-        /* 多层阴影模拟玻璃深度和光线折射 */
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12),
-        0 2px 16px 0 rgba(31, 38, 135, 0.08),
-        0 1px 4px 0 rgba(255, 255, 255, 0.1),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
-        inset 0 -1px 0 0 rgba(255, 255, 255, 0.15),
-        inset 1px 0 0 0 rgba(255, 255, 255, 0.2),
-        inset -1px 0 0 0 rgba(255, 255, 255, 0.1);
+    /* 多层阴影模拟玻璃深度和光线折射 */
+    box-shadow:
+      0 8px 32px 0 rgba(31, 38, 135, 0.12),
+      0 2px 16px 0 rgba(31, 38, 135, 0.08),
+      0 1px 4px 0 rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 0 rgba(255, 255, 255, 0.15),
+      inset 1px 0 0 0 rgba(255, 255, 255, 0.2),
+      inset -1px 0 0 0 rgba(255, 255, 255, 0.1);
 
-        border-radius: 20px;
-        padding: 10px;
+    border-radius: 20px;
+    padding: 10px;
 
-        width: 90vw;
-        max-width: 800px;
-        min-width: 550px;
-        height: 85vh;
-        max-height: 900px;
-        min-height: 600px;
-        display: flex;
-        z-index: 10000;
+    width: 90vw;
+    max-width: 800px;
+    min-width: 550px;
+    height: 85vh;
+    max-height: 900px;
+    min-height: 600px;
+    display: flex;
+    z-index: 10000;
 
-        /* 玻璃曲率效果 */
-        transform: perspective(1000px) rotateX(0.5deg) rotateY(0.2deg);
-        transform-style: preserve-3d;
+    /* 玻璃曲率效果 */
+    transform: perspective(1000px) rotateX(0.5deg) rotateY(0.2deg);
+    transform-style: preserve-3d;
+  }
+
+  .ai-modal-close-btn {
+    position: absolute;
+    top: 14px; /* Adjusted for moderate padding */
+    right: 14px; /* Adjusted for moderate padding */
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 28px;
+    cursor: pointer;
+    color: #555;
+    z-index: 10010;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .ai-modal-close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: #000;
+  }
+
+  /* #ai-container 样式已移至 main.css 中统一管理 */
+
+  .ai-modal-close-btn svg,
+  #ai-assistant-fab svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 欢迎加载界面样式 */
+  .welcome-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .welcome-content {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    max-width: 300px;
+  }
+
+  .welcome-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    opacity: 0.9;
+    animation: breathing 2s ease-in-out infinite;
+  }
+
+  .welcome-title {
+    color: #1890ff;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .welcome-subtitle {
+    color: #666;
+    font-size: 16px;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .loading-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .loading-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1890ff;
+    animation: loading-bounce 1.4s ease-in-out infinite both;
+  }
+
+  .loading-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+
+  .loading-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+
+  .loading-dots span:nth-child(3) {
+    animation-delay: 0s;
+  }
+
+  @keyframes breathing {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.7;
     }
-
-    .ai-modal-close-btn {
-        position: absolute;
-        top: 14px; /* Adjusted for moderate padding */
-        right: 14px; /* Adjusted for moderate padding */
-        background: rgba(0, 0, 0, 0.1);
-        border: none;
-        font-size: 18px;
-        font-weight: bold;
-        line-height: 28px;
-        cursor: pointer;
-        color: #555;
-        z-index: 10010;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        transition: background-color 0.2s, color 0.2s;
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
     }
+  }
 
-    .ai-modal-close-btn:hover {
-        background-color: rgba(0, 0, 0, 0.2);
-        color: #000;
+  @keyframes loading-bounce {
+    0%,
+    80%,
+    100% {
+      transform: scale(0);
+      opacity: 0.5;
     }
-
-    /* #ai-container 样式已移至 main.css 中统一管理 */
-
-    .ai-modal-close-btn svg,
-    #ai-assistant-fab svg {
-        width: 100%;
-        height: 100%;
+    40% {
+      transform: scale(1);
+      opacity: 1;
     }
+  }
 
-    /* 欢迎加载界面样式 */
-    .welcome-loading {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10001;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
+  /* 性能优化 */
+  #ai-assistant-fab,
+  .ai-modal-content,
+  .loading-splash {
+    will-change: transform;
+  }
 
-    .welcome-content {
-        text-align: center;
-        padding: 40px 20px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        max-width: 300px;
-    }
-
-    .welcome-logo {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 20px;
-        opacity: 0.9;
-        animation: breathing 2s ease-in-out infinite;
-    }
-
-    .welcome-title {
-        color: #1890ff;
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0 0 12px 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .welcome-subtitle {
-        color: #666;
-        font-size: 16px;
-        margin: 0 0 24px 0;
-        line-height: 1.5;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .loading-dots {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .loading-dots span {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #1890ff;
-        animation: loading-bounce 1.4s ease-in-out infinite both;
-    }
-
-    .loading-dots span:nth-child(1) {
-        animation-delay: -0.32s;
-    }
-
-    .loading-dots span:nth-child(2) {
-        animation-delay: -0.16s;
-    }
-
-    .loading-dots span:nth-child(3) {
-        animation-delay: 0s;
-    }
-
-    @keyframes breathing {
-        0%, 100% {
-            transform: scale(1);
-            opacity: 0.7;
-        }
-        50% {
-            transform: scale(1.1);
-            opacity: 1;
-        }
-    }
-
-    @keyframes loading-bounce {
-        0%, 80%, 100% {
-            transform: scale(0);
-            opacity: 0.5;
-        }
-        40% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-
-    /* 骨架屏样式 */
-    .skeleton-container {
-        padding: 20px;
-        width: 100%;
-        height: 100%;
-    }
-
-    .skeleton-header,
-    .skeleton-message,
-    .skeleton-input {
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: skeletonLoading 1.5s infinite;
-        border-radius: 4px;
-        margin-bottom: 16px;
-    }
-
-    .skeleton-header {
-        height: 24px;
-        width: 60%;
-    }
-
-    .skeleton-message {
-        height: 16px;
-        width: 100%;
-    }
-
-    .skeleton-message.short {
-        width: 75%;
-    }
-
-    .skeleton-input {
-        height: 40px;
-        width: 100%;
-        margin-top: 20px;
-    }
-
-    @keyframes skeletonLoading {
-        0% {
-            background-position: -200% 0;
-        }
-        100% {
-            background-position: 200% 0;
-        }
-    }
-
-    /* 性能优化 */
+  /* 减少动画偏好支持 */
+  @media (prefers-reduced-motion: reduce) {
     #ai-assistant-fab,
     .ai-modal-content,
-    .loading-splash {
-        will-change: transform;
+    .welcome-logo,
+    .loading-dots span {
+      animation: none !important;
+      transition: none !important;
     }
-
-    /* 减少动画偏好支持 */
-    @media (prefers-reduced-motion: reduce) {
-        #ai-assistant-fab,
-        .ai-modal-content,
-        .welcome-logo,
-        .loading-dots span {
-            animation: none !important;
-            transition: none !important;
-        }
-    }
-
-
+  }
 </style>
