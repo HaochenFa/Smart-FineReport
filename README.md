@@ -14,30 +14,25 @@ GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 
 ## 开发环境要求
 
-- **Node.js**: v22.17.0 或更高版本
-- **npm**: v10.9.2 或更高版本
+- **Node.js**: v22.17.0 或其他兼容版本
+- **npm**: v10.9.2 或其他兼容版本
 
 ### 快速开始
 
-1. **使用正确的 Node.js 版本**（如果安装了 nvm）：
-
-   ```bash
-   nvm use
-   ```
-
-2. **安装依赖**：
+1. **安装依赖**：
 
    ```bash
    npm install
    ```
 
-3. **开发模式**：
+2. **开发模式**：
 
    ```bash
    npm run dev
    ```
 
-4. **代码检查和构建**：
+3. **代码检查和构建**：
+
    ```bash
    npm run build
    ```
@@ -129,8 +124,7 @@ flowchart BT
 
 在您的**本地开发环境**中执行以下操作。
 
-1. **配置后端 API 地址**: 打开 `src/utils/settings.js` 文件，修改 `SETTINGS.service.url` 的值，使其指向您的实际后端 API
-   地址数组。
+1. **配置后端 API 地址**: 打开 `src/utils/settings.js` 文件，修改`SETTINGSservice.url` 的值，使其指向您的实际后端 API 地址数组。
 
 ```javascript
 export const SETTINGS = {

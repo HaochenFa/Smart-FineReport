@@ -212,7 +212,9 @@ npm install
       // Chart.js Initialization
       document.addEventListener("DOMContentLoaded", function () {
         // Sales Trend Chart (Bar)
-        const salesCtx = document.getElementById("salesTrendChart").getContext("2d");
+        const salesCtx = document
+          .getElementById("salesTrendChart")
+          .getContext("2d");
         new Chart(salesCtx, {
           type: "bar",
           data: {
@@ -238,7 +240,9 @@ npm install
         });
 
         // Product Category Chart (Pie)
-        const productCtx = document.getElementById("productCategoryChart").getContext("2d");
+        const productCtx = document
+          .getElementById("productCategoryChart")
+          .getContext("2d");
         new Chart(productCtx, {
           type: "pie",
           data: {
