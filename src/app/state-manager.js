@@ -37,8 +37,19 @@ export class StateManager {
    * @returns {{messages: Array, isLoading: boolean}} 当前状态的副本。
    */
   getState() {
-    // 使用结构化克隆可以进行深拷贝，对于包含嵌套对象或数组的状态更安全
-    return structuredClone(this._state);
+    // 优先使用 structuredClone（性能更好），降级到 JSON 深拷贝以确保兼容性
+    if (typeof structuredClone === "function") {
+      return structuredClone(this._state);
+    }
+
+    // 降级到 JSON 深拷贝
+    try {
+      return JSON.parse(JSON.stringify(this._state));
+    } catch {
+      // 最后降级到浅拷贝
+      console.warn("[StateManager] Deep clone failed, using shallow copy");
+      return { ...this._state };
+    }
   }
 
   /**
@@ -62,7 +73,7 @@ export class StateManager {
    */
   setState(newState) {
     // 将当前状态与新状态合并以创建更新后的状态。
-    this._state = {...this._state, ...newState};
+    this._state = { ...this._state, ...newState };
 
     // “发布”变更：通知所有注册的监听器
     this._listeners.forEach((listener) => listener(this.getState()));
@@ -74,7 +85,7 @@ export class StateManager {
    */
   addMessage(message) {
     const newMessages = [...this._state.messages, message];
-    this.setState({messages: newMessages});
+    this.setState({ messages: newMessages });
   }
 
   /**
@@ -82,6 +93,6 @@ export class StateManager {
    * @param {boolean} isLoading - 新的加载状态。
    */
   setLoading(isLoading) {
-    this.setState({isLoading});
+    this.setState({ isLoading });
   }
 }

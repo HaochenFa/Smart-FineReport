@@ -4,8 +4,8 @@
 
 **前置要求**:
 
-* **本地环境**: Node.js (v18.x+), npm, Git
-* **服务器环境**: Node.js, npm, pm2
+- **本地环境**: Node.js (v18.x+), npm, Git
+- **服务器环境**: Node.js, npm, pm2
 
 ---
 
@@ -33,48 +33,243 @@ npm install
 1. 在项目根目录，确保 `public` 文件夹存在。
 2. 在 `public` 文件夹内，创建 `index.html` 文件并配置如下：
 
-   ```html
-   <!DOCTYPE html>
-   <html lang="en">
-   <head>
-       <meta charset="UTF-8">
-       <title>SmartFineReport - Local Test</title>
-       <link rel="stylesheet" href="/dist/smart-finereport.css">
-       <style>
-           body { font-family: sans-serif; padding: 20px; }
-           #report-mock { border: 2px dashed #ccc; padding: 20px; margin-bottom: 20px; background-color: #f7f7f7; }
-           #ai-container { border: 1px solid #000; }
-           button { font-size: 16px; padding: 10px 15px; cursor: pointer; }
-       </style>
-   </head>
-   <body>
-       <h1>本地测试环境</h1>
-       <div id="report-mock">
-           <h2>模拟的报表区域</h2>
-           <img src="https://via.placeholder.com/400x200.png?text=Sample+Chart" alt="Sample Chart">
-       </div>
-       <button id="ai-trigger-btn">启动 AI 分析助手</button>
-       <div id="ai-container" style="width: 400px; height: 600px; margin-top: 20px;"></div>
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SmartFineReport - Local Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <link rel="stylesheet" href="../dist/smart-finereport.cjs.min.css" />
+    <script type="module" src="../dist/smart-finereport.cjs.min.js"></script>
+    <!-- <script type="module" src="./smart-fr-plugin.js"></script> -->
 
-       <script src="https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/highlight.js@latest/highlight.min.js"></script>
-       <script src="/dist/smart-finereport.umd.js"></script>
-       <script>
-           function _g() { return { reportName: "LocalTest" }; }
-           document.getElementById('ai-trigger-btn').addEventListener('click', function() {
-               if (window.SmartFineReport && window.SmartFineReport.initAIAssistant) {
-                   window.SmartFineReport.initAIAssistant({
-                       containerSelector: '#ai-container',
-                       fineReportInstance: _g()
-                   });
-               } else {
-                   console.error("SmartFineReport script not loaded or failed to initialize.");
-               }
-           });
-       </script>
-   </body>
-   </html>
-   ```
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+        background-color: #f0f2f5;
+      }
+
+      #report-mock {
+        border: 1px solid #d9d9d9;
+        padding: 20px;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      #report-mock h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 24px;
+        color: #333;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+
+      .grid-item {
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #e8e8e8;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .grid-item.chart-large {
+        grid-column: span 2;
+      }
+
+      .grid-item.table-full {
+        grid-column: span 3;
+      }
+
+      .kpi {
+        text-align: center;
+      }
+
+      .kpi h4 {
+        margin: 0 0 10px 0;
+        font-size: 1em;
+        color: #555;
+      }
+
+      .kpi p {
+        margin: 0;
+        font-size: 2em;
+        font-weight: bold;
+        color: #1890ff;
+      }
+
+      .chart h4,
+      .table-container h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      .chart canvas {
+        max-width: 100%;
+        height: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        font-weight: 600;
+      }
+
+      tbody tr:nth-child(odd) {
+        background-color: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>本地测试环境</h1>
+    <div id="report-mock">
+      <!-- The trigger button is now injected by the script -->
+      <h2>销售分析仪表板</h2>
+      <div class="grid-container">
+        <div class="grid-item kpi">
+          <h4>总销售额</h4>
+          <p>¥1,234,567</p>
+        </div>
+        <div class="grid-item kpi">
+          <h4>平均订单价值</h4>
+          <p>¥890.12</p>
+        </div>
+        <div class="grid-item kpi">
+          <h4>新客户</h4>
+          <p>1,234</p>
+        </div>
+        <div class="grid-item chart chart-large">
+          <h4>月度销售趋势</h4>
+          <canvas id="salesTrendChart"></canvas>
+        </div>
+        <div class="grid-item chart">
+          <h4>产品类别分布</h4>
+          <canvas id="productCategoryChart"></canvas>
+        </div>
+        <div class="grid-item table-full table-container">
+          <h4>区域销售明细</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>区域</th>
+                <th>销售额</th>
+                <th>同比增长</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>华东</td>
+                <td>¥450,000</td>
+                <td style="color: green;">+12%</td>
+              </tr>
+              <tr>
+                <td>华北</td>
+                <td>¥320,000</td>
+                <td style="color: green;">+8%</td>
+              </tr>
+              <tr>
+                <td>华南</td>
+                <td>¥280,000</td>
+                <td style="color: red;">-2%</td>
+              </tr>
+              <tr>
+                <td>华西</td>
+                <td>¥180,000</td>
+                <td style="color: green;">+15%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- The AI Assistant and its Modal are now injected by the script -->
+
+    <!-- <link rel="stylesheet" href="../dist/esm/main.css"> -->
+    <!-- <script type="module" src="../dist/esm/main.js"></script> -->
+    <script type="module" src="./smart-fr-plugin.js"></script>
+    <script>
+      // Chart.js Initialization
+      document.addEventListener("DOMContentLoaded", function () {
+        // Sales Trend Chart (Bar)
+        const salesCtx = document
+          .getElementById("salesTrendChart")
+          .getContext("2d");
+        new Chart(salesCtx, {
+          type: "bar",
+          data: {
+            labels: ["一月", "二月", "三月", "四月", "五月", "六月"],
+            datasets: [
+              {
+                label: "月度销售额 (万元)",
+                data: [65, 59, 80, 81, 56, 55],
+                backgroundColor: "rgba(24, 144, 255, 0.6)",
+                borderColor: "rgba(24, 144, 255, 1)",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
+        });
+
+        // Product Category Chart (Pie)
+        const productCtx = document
+          .getElementById("productCategoryChart")
+          .getContext("2d");
+        new Chart(productCtx, {
+          type: "pie",
+          data: {
+            labels: ["电子产品", "家居用品", "户外运动", "图书音像"],
+            datasets: [
+              {
+                label: "产品类别分布",
+                data: [300, 150, 100, 80],
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.7)",
+                  "rgba(54, 162, 235, 0.7)",
+                  "rgba(255, 206, 86, 0.7)",
+                  "rgba(75, 192, 192, 0.7)",
+                ],
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+          },
+        });
+      });
+    </script>
+  </body>
+</html>
+```
 
 **步骤 1.3: 启动本地开发服务器**
 
@@ -95,11 +290,11 @@ npm run build
 ```
 
 **打包产物**:
-此命令会在 `dist/` 目录下生成两个核心文件：
+此命令会在 `dist/` 目录下生成多个核心文件：
 
-* `cjs/` 目录 (CommonJS 格式)
-* `esm/` 目录 (ES Module 格式)
-* `smart-finereport.css` (如果您的项目中包含 CSS 提取)
+- `smart-finereport.cjs.min.js` (CommonJS 格式)
+- `smart-finereport.esm.min.js` (ES Module 格式)
+- `~.cjs.min.css` & `~.esm.min.css` (CSS 样式)
 
 ---
 
@@ -113,32 +308,42 @@ npm run build
 
 1. **配置后端 API 地址**: 打开 `src/utils/settings.js` 文件，修改 `SETTINGS.service.url` 的值，使其指向您的实际后端 API
    地址数组。
-   ```javascript
-   // src/utils/settings.js
-   export const SETTINGS = {
-     service: {
-       url: [
-         "http://your-actual-backend-api-address-1/api/v1/", // <-- 修改为实际的后端 API 地址
-         "http://your-actual-backend-api-address-2/api/v1/", // <-- 修改为实际的后端 API 地址
-       ],
-     },
-     // ...
-   };
-   ```
+
+```javascript
+export const SETTINGS = {
+  service: {
+    url: [
+      "http://placeholder-backend-api-address-1/api/v1/chat/completions", // 请替换为您的实际后端API地址
+      "http://placeholder-backend-api-address-2/api/v1/generate", // 请替换为您的实际后端API地址
+    ],
+    proxy: "https://placeholder-proxy-address.com",
+  },
+  logger: {
+    level: "log",
+  },
+};
+```
+
 2. **执行构建**: 在项目根目录下运行打包命令：
-   ```bash
+
+```bash
    npm run build
-   ```
-3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `cjs/` 和 `esm/` 文件夹。
+```
+
+3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `smart-finereport.cjs.min.js`，`smart-finereport.esm.min.js`，
+   `~.cjs.min.css` & `~.esm.min.css`。
 
 ### **阶段三：文件部署与帆软集成**
 
-1. **部署文件**: 将 `dist/cjs/` 目录、`dist/esm/` 目录、`public/smart-fr-plugin.js` 和 `public/tailwindcss.js`
+1. **部署文件**: 将 `smart-finereport.cjs.min.js`、`smart-finereport.esm.min.js` 目录、`public/smart-fr-plugin.js` 和
+   `style/tailwind.js`
    文件复制到您服务器上的一个公共可访问文件夹中，例如 `your_server_root/public/smartfinereport/`。
 
-2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置`。分别在“引入JavaScript文件”和“引入CSS文件”选项卡中进行配置。
+2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置`。分别在“引入 JavaScript 文件”和“引入 CSS 文件”选项卡中进行配置。
 
 3. **引入路径**: 在弹出的对话框中，分别输入您部署的 JavaScript 和 CSS 文件的绝对路径。例如，如果您的文件部署在
-   `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入 `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入 `/public/smartfinereport/smart-finereport.cjs.min.css`。
+   `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入
+   `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入
+   `/public/smartfinereport/smart-finereport.cjs.min.css` (如果存在)。
 
 4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。

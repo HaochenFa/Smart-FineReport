@@ -12,6 +12,31 @@ GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 - 💬 **多轮次交互**：支持用户围绕报表截图和生成的分析报告，与 AI 进行多轮次的追问和探讨。
 - 📊 **富文本展示**：支持 Markdown 格式的分析报告，提供更清晰、专业的阅读体验。
 
+## 开发环境要求
+
+- **Node.js**: v22.17.0 或其他兼容版本
+- **npm**: v10.9.2 或其他兼容版本
+
+### 快速开始
+
+1. **安装依赖**：
+
+   ```bash
+   npm install
+   ```
+
+2. **开发模式**：
+
+   ```bash
+   npm run dev
+   ```
+
+3. **代码检查和构建**：
+
+   ```bash
+   npm run build
+   ```
+
 ## 部署方式
 
 智帆报表 AI 助手设计为可嵌入式组件，部署到帆软环境主要涉及以下步骤：
@@ -59,36 +84,36 @@ flowchart BT
 
 ```plaintext
 /SmartFineReport
-│
 ├── docs/               # Project documentation
-│   ├── DEPLOYMENT_GUIDE.md
-│   └── v1.0-doc.md
+│   └── DEPLOYMENT_GUIDE.md
 ├── public/             # Public assets and HTML entry
 │   ├── index.html
-│   ├── smart-fr-plugin.js
-│   └── tailwindcss.js
+│   └── smart-fr-plugin.js
 └── src/                # Source files
-   ├── main.js             # The Main Entrance
-   ├── app/            # Application control and initialization
-   │    ├── app-controller.js        # Core service
-   │    └── state-manager.js         # UI <-> Backend bridging
-   ├── core/           # Core AI and analysis logic
-   │    ├── ai-analysis-pipeline.js  # AI service controller
-   │    ├── context-manager.js       # Manage context (conversation)
-   │    ├── vllm-interface.js        # Connect to vLLM service
-   │    └── prompt-builder.js        # Build structured prompts
-   ├── services/       # Common services
-   │    └── api-service.js           # General API service wrapper
-   ├── styles/         # Application styles
-   │    ├── fab.css
-   │    └── main.css
-   ├── ui/             # User interface components
-   │    ├── chat-view.js             # Basic chat window implementation
-   │    └── ui-manager.js            # Control UI status
-   └── utils/          # Utility functions and configs
-        ├── default-prompt.js        # Prompt template
-        ├── logger.js                # Logger
-        └── settings.js              # Static config and secrets
+    ├── App.svelte          # Main Svelte application component
+    ├── main.js             # The Main Entrance
+    ├── app/            # Application control and initialization
+    │    ├── app-controller.js        # Core service
+    │    └── state-manager.js         # UI <-> Backend bridging
+    ├── core/           # Core AI and analysis logic
+    │    ├── ai-analysis-pipeline.js  # AI service controller
+    │    ├── context-manager.js       # Manage context (conversation)
+    │    ├── prompt-builder.js        # Build structured prompts
+    │    └── vllm-interface.js        # Connect to vLLM service
+    ├── services/       # Common services
+    │    └── api-service.js           # General API service wrapper
+    ├── styles/         # Application styles
+    │    ├── fab.css
+    │    ├── main.css
+    │    └── tailwind.js
+    ├── ui/             # User interface components
+    │    ├── ChatView.svelte          # Svelte chat window component
+    │    └── ui-manager.js            # Control UI status
+    └── utils/          # Utility functions and configs
+         ├── default-prompt.js        # Prompt template
+         ├── logger.js                # Logger
+         ├── resizable.js             # Resizable panel utility
+         └── settings.js              # Static config and secrets
 ```
 
 ## 生产环境部署
@@ -99,33 +124,40 @@ flowchart BT
 
 在您的**本地开发环境**中执行以下操作。
 
-1. **配置后端 API 地址**: 打开 `src/utils/settings.js` 文件，修改 `SETTINGS.service.url` 的值，使其指向您的实际后端 API
-   地址数组。
-   ```javascript
-   // src/utils/settings.js
-   export const SETTINGS = {
-     service: {
-       url: [
-         "http://your-actual-backend-api-address-1/api/v1/", // <-- 修改为实际的后端 API 地址
-         "http://your-actual-backend-api-address-2/api/v1/", // <-- 修改为实际的后端 API 地址
-       ],
-     },
-     // ...
-   };
-   ```
+1. **配置后端 API 地址**: 打开 `src/utils/settings.js` 文件，修改`SETTINGSservice.url` 的值，使其指向您的实际后端 API 地址数组。
+
+```javascript
+export const SETTINGS = {
+  service: {
+    url: [
+      "http://placeholder-backend-api-address-1/api/v1/chat/completions", // 请替换为您的实际后端API地址
+      "http://placeholder-backend-api-address-2/api/v1/generate", // 请替换为您的实际后端API地址
+    ],
+    proxy: "https://placeholder-proxy-address.com",
+  },
+  logger: {
+    level: "log",
+  },
+};
+```
+
 2. **执行构建**: 在项目根目录下运行打包命令：
-   ```bash
+
+```bash
    npm run build
-   ```
-3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `cjs/` 和 `esm/` 文件夹。
+```
+
+3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `smart-finereport.cjs.min.js` (CommonJS 格式)、`smart-finereport.esm.min.js` (ES Module 格式) 以及对应的 CSS 文件。
 
 ### 步骤 2: 文件部署与帆软集成
 
-1. **部署文件**: 将 `dist/cjs/` 目录、`dist/esm/` 目录、`public/smart-fr-plugin.js` 和 `public/tailwindcss.js`
+1. **部署文件**: 将 `dist/*.cjs.min.*`、`dist/*.esm.min.*`、`public/smart-fr-plugin.js` 和 `style/tailwind.js`
    文件复制到您服务器上的一个公共可访问文件夹中，例如 `your_server_root/public/smartfinereport/`。
 2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置 -> 引入JavaScript文件`。
 3. **引入路径**: 在弹出的对话框中，分别输入您部署的 JavaScript 和 CSS 文件的绝对路径。例如，如果您的文件部署在
-   `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入 `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入 `/public/smartfinereport/smart-finereport.cjs.min.css`。
+   `your_server_root/public/smartfinereport/`，则 JavaScript 文件输入
+   `/public/smartfinereport/smart-finereport.cjs.min.js`，CSS 文件输入
+   `/public/smartfinereport/smart-finereport.cjs.min.css` (如果存在)。
 4. **验证**: 部署完成后，预览您的帆软报表，验证 AI 助手功能是否正常加载和运行。
 
 更多详细信息请参考 [DEPLOYMENT GUIDE](docs/DEPLOYMENT_GUIDE.md)

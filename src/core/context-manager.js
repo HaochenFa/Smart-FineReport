@@ -3,7 +3,7 @@
  * @author Haochen (Billy) Fa
  * @description Manages the conversation history for the AI model, ensuring it doesn"t exceed a specific token limit.
  */
-import {Logger} from "../utils/logger.js";
+import { Logger } from "../utils/logger.js";
 
 const DEFAULT_MAX_MESSAGES = 11; // Default number of messages to keep in history
 
@@ -14,7 +14,9 @@ export class ContextManager {
   constructor(maxMessages = DEFAULT_MAX_MESSAGES) {
     this.maxMessages = maxMessages;
     this.history = [];
-    Logger.log(`[ContextManager] ContextManager initialized. Maximum history capacity set to ${this.maxMessages} messages.`);
+    Logger.log(
+      `[ContextManager] ContextManager initialized. Maximum history capacity set to ${this.maxMessages} messages.`
+    );
   }
 
   /**
@@ -28,7 +30,7 @@ export class ContextManager {
       return; // Do not add system messages to the history
     }
 
-    const message = {role, content};
+    const message = { role, content };
     this.history.push(message);
     Logger.log(`[ContextManager] Message added: { role: "${role}" }`);
 
@@ -47,7 +49,9 @@ export class ContextManager {
    * @returns {Array<Object>} A copy of the conversation history.
    */
   getHistory() {
-    Logger.log(`[ContextManager] Returning conversation history with ${this.history.length} messages.`);
+    Logger.log(
+      `[ContextManager] Returning conversation history with ${this.history.length} messages.`
+    );
     return [...this.history]; // Return a shallow copy
   }
 

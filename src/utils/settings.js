@@ -10,6 +10,7 @@ export const SETTINGS = {
       "http://placeholder-backend-api-address-1/api/v1/chat/completions", // 请替换为您的实际后端API地址
       "http://placeholder-backend-api-address-2/api/v1/generate", // 请替换为您的实际后端API地址
     ],
+    proxy: "https://placeholder-proxy-address.com",
   },
   logger: {
     level: "log",

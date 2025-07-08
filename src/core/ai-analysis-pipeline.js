@@ -6,7 +6,7 @@
  * @import ../utils/logger.js
  */
 
-import {Logger as log} from "../utils/logger.js";
+import { Logger as log } from "../utils/logger.js";
 
 export class AnalysisPipeline {
   /**
@@ -22,8 +22,14 @@ export class AnalysisPipeline {
    */
   constructor(promptBuilder, aiEngine, uiManager) {
     // Basic validation to ensure dependencies and their methods exist
-    if (!promptBuilder?.build || !aiEngine?.getResponse || !uiManager?.showAssistantStatus || !uiManager?.hideAssistantStatus) {
-      const errorMsg = "[AnalysisPipeline] A dependency is missing or does not implement its required method.";
+    if (
+      !promptBuilder?.build ||
+      !aiEngine?.getResponse ||
+      !uiManager?.showAssistantStatus ||
+      !uiManager?.hideAssistantStatus
+    ) {
+      const errorMsg =
+        "[AnalysisPipeline] A dependency is missing or does not implement its required method.";
       log.error(errorMsg);
       throw new Error(errorMsg);
     }
@@ -49,7 +55,12 @@ export class AnalysisPipeline {
       // 步骤 1: 构建最终的 Prompt
       log.log("[AnalysisPipeline] Step 1: Building final prompt with image...");
       this.uiManager.showAssistantStatus("构建提示中...");
-      const finalPrompt = this.#promptBuilder.build(userRequest, imageBase64, contextProvider, isInitial);
+      const finalPrompt = this.#promptBuilder.build(
+        userRequest,
+        imageBase64,
+        contextProvider,
+        isInitial
+      );
       log.log("[AnalysisPipeline] Prompt built successfully.");
 
       // 步骤 3: 调用 AI 引擎获取响应
@@ -63,7 +74,6 @@ export class AnalysisPipeline {
       log.log("[AnalysisPipeline] Analysis finished successfully.");
       this.uiManager.hideAssistantStatus();
       return aiResponse;
-
     } catch (error) {
       log.error("[AnalysisPipeline] An error occurred during the analysis pipeline:", error);
       throw new Error(`Analysis failed: ${error.message}`);

@@ -8,8 +8,8 @@
  * @import ../utils/logger.js
  */
 
-import {INITIAL_ANALYSIS_TEMPLATE, FOLLOW_UP_TEMPLATE} from "../utils/default-prompt.js";
-import {Logger as log} from "../utils/logger.js";
+import { INITIAL_ANALYSIS_TEMPLATE, FOLLOW_UP_TEMPLATE } from "../utils/default-prompt.js";
+import { Logger as log } from "../utils/logger.js";
 
 export class PromptBuilder {
   /**
@@ -22,7 +22,7 @@ export class PromptBuilder {
    * @returns {string} - 准备发送给AI的、序列化为JSON字符串的完整Prompt。
    */
   build(userRequest, imageBase64, contextProvider, isInitial = true) {
-    log.log("开始构建多模态Prompt", {userRequest});
+    log.log("开始构建多模态Prompt", { userRequest });
 
     try {
       // 步骤 1: 获取对话历史
@@ -33,7 +33,9 @@ export class PromptBuilder {
         if (Array.isArray(rawHistory)) {
           history = rawHistory;
         } else {
-          log.warn("Context provider returned invalid history format, expected an array of message objects.");
+          log.warn(
+            "Context provider returned invalid history format, expected an array of message objects."
+          );
         }
       } else {
         log.warn("No valid contextProvider was provided, conversation history will be empty.");
@@ -45,9 +47,7 @@ export class PromptBuilder {
       }
 
       // 根据 isInitial 标志选择系统预设
-      const systemPrompt = isInitial
-        ? INITIAL_ANALYSIS_TEMPLATE.System
-        : FOLLOW_UP_TEMPLATE.System;
+      const systemPrompt = isInitial ? INITIAL_ANALYSIS_TEMPLATE.System : FOLLOW_UP_TEMPLATE.System;
 
       // 步骤 2: 构建多模态消息结构
       const messages = [
@@ -73,7 +73,6 @@ export class PromptBuilder {
           ],
         },
       ];
-
 
       // 步骤 3: 构建最终的请求体
       const finalPayload = {

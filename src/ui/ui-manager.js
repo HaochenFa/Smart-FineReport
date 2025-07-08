@@ -1,10 +1,10 @@
 /**
  * @file ui-manager.js
  * @author Haochen (Billy) Fa
- * @description Organizer between chat-view.js and state-manager.js
+ * @description Organizer between ChatView.svelte and state-manager.js
  */
 
-import {ChatView} from "./chat-view.js";
+import ChatView from "./ChatView.svelte";
 
 /**
  * UIManager 类负责管理UI的整体逻辑和生命周期。
@@ -30,48 +30,67 @@ export class UIManager {
     this.container = container;
     this.stateManager = stateManager;
     this.messageSubmitHandler = messageSubmitHandler;
+    this.resetAnalysisHandler = resetAnalysisHandler;
+    this.isInitialized = false;
 
-    this.view = new ChatView(
-      this.container,
-      this._handleUserSubmit.bind(this),
-      resetAnalysisHandler
-    );
+    // 创建 Svelte 组件实例，挂载到指定容器
+    this.chatViewElement = new ChatView({
+      target: this.container,
+      props: {
+        messages: [],
+        isDisabled: false,
+      },
+    });
+
+    // 监听组件事件
+    this.chatViewElement.$on("submitMessage", async (event) => {
+      await this._handleUserSubmit(event.detail);
+    });
+
+    this.chatViewElement.$on("resetAnalysis", () => {
+      resetAnalysisHandler();
+    });
 
     this._bindToStateChanges();
+    // 直接初始化
     this.init();
   }
 
   init() {
-    this.view.render();
+    if (this.isInitialized) return;
+    this.isInitialized = true;
+
     const initialState = this.stateManager.getState();
     this._update(initialState);
   }
 
   disableInputs() {
-    this.view.inputField.disabled = true;
-    this.view.sendButton.disabled = true;
-    this.view.resetButton.disabled = true;
+    if (this.chatViewElement) {
+      this.chatViewElement.$set({ isDisabled: true });
+    }
   }
 
   enableInputs() {
-    this.view.inputField.disabled = false;
-    this.view.sendButton.disabled = false;
-    this.view.resetButton.disabled = false;
+    if (this.chatViewElement) {
+      this.chatViewElement.$set({ isDisabled: false });
+    }
   }
 
   addUserMessage(userInput) {
-    this.stateManager.addMessage({role: "user", content: userInput});
+    this.stateManager.addMessage({ role: "user", content: userInput });
   }
 
   showAssistantStatus(statusText) {
-    this.view.showAssistantStatus(statusText);
+    if (this.chatViewElement && this.chatViewElement.showAssistantStatus) {
+      this.chatViewElement.showAssistantStatus(statusText);
+    }
   }
 
   hideAssistantStatus() {
-    this.view.hideAssistantStatus();
+    if (this.chatViewElement && this.chatViewElement.hideAssistantStatus) {
+      this.chatViewElement.hideAssistantStatus();
+    }
   }
-
-  
 
   _bindToStateChanges() {
     this.stateManager.subscribe((state) => this._update(state));
@@ -88,20 +107,18 @@ export class UIManager {
   }
 
   _updateResetButton(isStale) {
-    this.view.updateResetButton(isStale);
+    if (this.chatViewElement && this.chatViewElement.updateResetButton) {
+      this.chatViewElement.updateResetButton(isStale);
+    }
   }
 
   async _handleUserSubmit(messageText) {
-    this.view.clearInput();
-    await this.messageSubmitHandler(messageText);
+    return this.messageSubmitHandler(messageText);
   }
 
-  async _updateMessages(messages) {
-    this.view.messageContainer.innerHTML = "";
-    if (messages && Array.isArray(messages)) {
-      
-      await Promise.all(messages.map(async message => await this.view.addMessage(message)));
+  _updateMessages(messages) {
+    if (this.chatViewElement && this.isInitialized) {
+      this.chatViewElement.$set({ messages: messages });
     }
   }
 }
-
