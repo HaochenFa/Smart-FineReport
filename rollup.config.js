@@ -6,9 +6,9 @@ import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
 import postcss from "rollup-plugin-postcss";
 import alias from "@rollup/plugin-alias";
-import svelte from 'rollup-plugin-svelte';
-import sveltePreprocess from 'svelte-preprocess';
-import image from '@rollup/plugin-image';
+import svelte from "rollup-plugin-svelte";
+import sveltePreprocess from "svelte-preprocess";
+import image from "@rollup/plugin-image";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -18,7 +18,7 @@ const isProduction = process.env.NODE_ENV === "production";
 export default {
   onwarn(warning, warn) {
     // 忽略 d3-selection 的循环依赖警告
-    if (warning.code === 'CIRCULAR_DEPENDENCY' && warning.message.includes('node_modules')) {
+    if (warning.code === "CIRCULAR_DEPENDENCY" && warning.message.includes("node_modules")) {
       return;
     }
     // 其他警告照常处理
@@ -29,13 +29,13 @@ export default {
   // 输出配置
   output: [
     {
-      file: 'public/dist/smart-finereport.esm.min.js',
-      format: 'esm',
+      file: "public/dist/smart-finereport.esm.min.js",
+      format: "esm",
       sourcemap: true,
     },
     {
-      file: 'public/dist/smart-finereport.cjs.min.js',
-      format: 'cjs',
+      file: "public/dist/smart-finereport.cjs.min.js",
+      format: "cjs",
       sourcemap: true,
     },
   ],
@@ -46,9 +46,7 @@ export default {
     resolve(),
     // 配置别名
     alias({
-      entries: [
-        {find: '@', replacement: process.cwd() + '/src'}
-      ]
+      entries: [{ find: "@", replacement: process.cwd() + "/src" }],
     }),
     // 图片内联打包插件
     image(),
@@ -73,18 +71,17 @@ export default {
       },
       onwarn: (warning, handler) => {
         // 忽略一些常见的警告
-        if (warning.code === 'css-unused-selector') return;
+        if (warning.code === "css-unused-selector") return;
         handler(warning);
       },
     }),
-
 
     // PostCSS plugin to handle Tailwind CSS
     postcss({
       extract: (outputChunk) => {
         // outputChunk.fileName will be like 'smart-finereport.esm.min.js' or 'smart-finereport.cjs.min.js'
         // We want to replace '.js' with '.css'
-        return outputChunk.fileName.replace(/\.js$/, '.css');
+        return outputChunk.fileName.replace(/\.js$/, ".css");
       },
       minimize: isProduction, // Minimize CSS in production
       sourceMap: !isProduction,
@@ -95,26 +92,26 @@ export default {
 
     // 开发服务器配置 (仅在开发环境下生效)
     !isProduction &&
-    serve({
-      open: true, // 自动在浏览器中打开
-      contentBase: ["public"], // 静态文件目录
-      host: "localhost",
-      port: 8080,
-      // 将 bundle.js 映射到正确的输出文件
-      onListening: function (server) {
-        console.log("Server listening at http://localhost:8080/");
-        const {address, port} = server.address();
-        const host = address === "0.0.0.0" ? "localhost" : address;
-        const url = `http://${host}:${port}`;
-        console.log(`Open your browser and go to ${url}/index.html`);
-      },
-    }),
+      serve({
+        open: true, // 自动在浏览器中打开
+        contentBase: ["public"], // 静态文件目录
+        host: "localhost",
+        port: 8080,
+        // 将 bundle.js 映射到正确的输出文件
+        onListening: function (server) {
+          console.log("Server listening at http://localhost:8080/");
+          const { address, port } = server.address();
+          const host = address === "0.0.0.0" ? "localhost" : address;
+          const url = `http://${host}:${port}`;
+          console.log(`Open your browser and go to ${url}/index.html`);
+        },
+      }),
 
     // 实时重新加载 (仅在开发环境下生效)
     !isProduction &&
-    livereload({
-      watch: ["public"],
-    }),
+      livereload({
+        watch: ["public"],
+      }),
   ],
 
   // 监视文件变化 (仅在开发环境下生效)

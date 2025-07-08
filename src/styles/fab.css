@@ -2,35 +2,35 @@
 
 /* Floating Action Button (FAB) Styles */
 #ai-assistant-fab {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 60px;
-    height: 60px;
-    background-color: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    cursor: grab;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px; /* Icon size */
-    z-index: 9999;
-    transition: background-color 0.3s, transform 0.2s ease-out;
-    user-select: none; /* Prevent text selection during drag */
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px; /* Icon size */
+  z-index: 9999;
+  transition: background-color 0.3s, transform 0.2s ease-out;
+  user-select: none; /* Prevent text selection during drag */
 }
 
 #ai-assistant-fab:hover {
-    background-color: #40a9ff;
-    transform: scale(1.05);
+  background-color: #40a9ff;
+  transform: scale(1.05);
 }
 
 #ai-assistant-fab:active {
-    cursor: grabbing;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-    transform: scale(0.98);
+  cursor: grabbing;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transform: scale(0.98);
 }
 
 /* Modal styles are now defined in App.svelte for better glass effects */

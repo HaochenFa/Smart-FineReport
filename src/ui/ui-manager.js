@@ -38,8 +38,8 @@ export class UIManager {
       target: this.container,
       props: {
         messages: [],
-        isDisabled: false
-      }
+        isDisabled: false,
+      },
     });
 
     // 监听组件事件
@@ -66,18 +66,18 @@ export class UIManager {
 
   disableInputs() {
     if (this.chatViewElement) {
-      this.chatViewElement.$set({isDisabled: true});
+      this.chatViewElement.$set({ isDisabled: true });
     }
   }
 
   enableInputs() {
     if (this.chatViewElement) {
-      this.chatViewElement.$set({isDisabled: false});
+      this.chatViewElement.$set({ isDisabled: false });
     }
   }
 
   addUserMessage(userInput) {
-    this.stateManager.addMessage({role: "user", content: userInput});
+    this.stateManager.addMessage({ role: "user", content: userInput });
   }
 
   showAssistantStatus(statusText) {
@@ -118,7 +118,7 @@ export class UIManager {
 
   _updateMessages(messages) {
     if (this.chatViewElement && this.isInitialized) {
-      this.chatViewElement.$set({messages: messages});
+      this.chatViewElement.$set({ messages: messages });
     }
   }
 }

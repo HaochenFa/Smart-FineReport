@@ -2,7 +2,13 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["public/dist/**", "dist/**", "coverage/**", "src/styles/tailwind.js", "node_modules/**"],
+    ignores: [
+      "public/dist/**",
+      "dist/**",
+      "coverage/**",
+      "src/styles/tailwind.js",
+      "node_modules/**",
+    ],
   },
   {
     files: ["src/**/*.js"],
@@ -11,14 +17,14 @@ export default [
       sourceType: "module",
       globals: {
         ...globals.browser,
-        ...globals.node
-      }
+        ...globals.node,
+      },
     },
     rules: {
-      "semi": ["error", "always"],
-      "quotes": ["error", "double"],
+      semi: ["error", "always"],
+      quotes: ["error", "double"],
       "no-unused-vars": ["warn"],
-      "no-undef": ["error"]
-    }
-  }
+      "no-undef": ["error"],
+    },
+  },
 ];

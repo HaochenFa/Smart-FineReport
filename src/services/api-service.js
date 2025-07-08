@@ -8,11 +8,10 @@
  * @import ../utils/settings.js
  */
 
-import {Logger as log} from "../utils/logger.js";
-import {SETTINGS} from "../utils/settings.js";
+import { Logger as log } from "../utils/logger.js";
+import { SETTINGS } from "../utils/settings.js";
 
 export class APIService {
-
   /**
    * @private
    * @description Handle fetch response and errors.
@@ -39,7 +38,6 @@ export class APIService {
       }
 
       return await response.json();
-
     } catch (error) {
       log.error(`APIService.${methodName} Error:`, error.message);
       throw error;
@@ -58,11 +56,11 @@ export class APIService {
   static async post(url, body, headers) {
     const defaultHeader = {
       "Content-Type": "application/json",
-      "Accept": "application/json",
+      Accept: "application/json",
     };
     const requestOptions = {
       method: "POST",
-      headers: new Headers({...defaultHeader, ...headers}),
+      headers: new Headers({ ...defaultHeader, ...headers }),
       body: JSON.stringify(body),
     };
 
@@ -78,7 +76,7 @@ export class APIService {
     params.append("data", JSON.stringify(body));
     const requestOptions = {
       method: "POST",
-      headers: new Headers({...defaultHeader, ...headers}),
+      headers: new Headers({ ...defaultHeader, ...headers }),
       body: params,
     };
 

@@ -5,8 +5,8 @@
  */
 
 import App from "./App.svelte";
-import {Logger} from "./utils/logger.js";
-import {SETTINGS} from "./utils/settings.js";
+import { Logger } from "./utils/logger.js";
+import { SETTINGS } from "./utils/settings.js";
 
 import "./styles/main.css";
 import "./styles/fab.css";

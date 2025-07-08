@@ -19,17 +19,20 @@ GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 
 ### 快速开始
 
-1. **使用正确的Node.js版本**（如果安装了nvm）：
+1. **使用正确的 Node.js 版本**（如果安装了 nvm）：
+
    ```bash
    nvm use
    ```
 
 2. **安装依赖**：
+
    ```bash
    npm install
    ```
 
 3. **开发模式**：
+
    ```bash
    npm run dev
    ```
