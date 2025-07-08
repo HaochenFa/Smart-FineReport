@@ -37,8 +37,19 @@ export class StateManager {
    * @returns {{messages: Array, isLoading: boolean}} 当前状态的副本。
    */
   getState() {
-    // 使用结构化克隆可以进行深拷贝，对于包含嵌套对象或数组的状态更安全
-    return structuredClone(this._state);
+    // 优先使用 structuredClone（性能更好），降级到 JSON 深拷贝以确保兼容性
+    if (typeof structuredClone === "function") {
+      return structuredClone(this._state);
+    }
+
+    // 降级到 JSON 深拷贝
+    try {
+      return JSON.parse(JSON.stringify(this._state));
+    } catch {
+      // 最后降级到浅拷贝
+      console.warn("[StateManager] Deep clone failed, using shallow copy");
+      return { ...this._state };
+    }
   }
 
   /**

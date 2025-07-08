@@ -23,6 +23,10 @@
   let fabPosition = { x: 0, y: 0 }; // FAB按钮中心坐标
   let modalOrigin = "50% 50%"; // Modal的transform-origin
 
+  // 事件监听器引用管理
+  let resizeHandler = null;
+  let clickHandler = null;
+
   // FAB 拖拽逻辑
   let isDragging = false;
   let wasDragged = false;
@@ -311,36 +315,48 @@
 
   $: {
     if (typeof window !== "undefined") {
+      // 清理旧的点击监听器
+      if (clickHandler) {
+        window.removeEventListener("click", clickHandler, true);
+        clickHandler = null;
+      }
+
       if (showModal) {
-        window.addEventListener("click", handleClickOutside, true);
+        clickHandler = handleClickOutside;
+        window.addEventListener("click", clickHandler, true);
         // 延迟初始化位置，确保DOM已渲染
         setTimeout(initializeModalPosition, 0);
-      } else {
-        window.removeEventListener("click", handleClickOutside, true);
       }
     }
   }
 
   // 窗口大小变化时重新计算
   $: if (typeof window !== "undefined") {
-    const handleResize = () => {
-      if (showModal && fab) {
+    // 清理旧的resize监听器
+    if (resizeHandler) {
+      window.removeEventListener("resize", resizeHandler);
+      resizeHandler = null;
+    }
+
+    if (showModal && fab) {
+      // 创建新的处理函数
+      resizeHandler = () => {
         fabPosition = calculateFabCenter();
         updateModalOrigin();
-      }
-    };
-
-    if (showModal) {
-      window.addEventListener("resize", handleResize);
-    } else {
-      window.removeEventListener("resize", handleResize);
+      };
+      window.addEventListener("resize", resizeHandler);
     }
   }
 
   onMount(() => {
-    // 修复：只在需要时添加事件监听器，避免全局污染
+    // 组件卸载时清理所有事件监听器
     return () => {
-      window.removeEventListener("click", handleClickOutside, true);
+      if (resizeHandler) {
+        window.removeEventListener("resize", resizeHandler);
+      }
+      if (clickHandler) {
+        window.removeEventListener("click", clickHandler, true);
+      }
     };
   });
 </script>

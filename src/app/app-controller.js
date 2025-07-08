@@ -42,7 +42,9 @@ export default class AppController {
 
     if (!containerElement) {
       // fixme)) Cannot initialize
-      Logger.error("Initialization failed: Invalid container element provided.");
+      Logger.error(
+        "Initialization failed: Invalid container element provided."
+      );
       return;
     }
 
@@ -55,7 +57,11 @@ export default class AppController {
     );
 
     // 4. 整合核心分析管线 ai-analysis-pipeline
-    this.pipeline = new AnalysisPipeline(promptBuilder, aiEngine, this.uiManager);
+    this.pipeline = new AnalysisPipeline(
+      promptBuilder,
+      aiEngine,
+      this.uiManager
+    );
 
     // 5. 启动 UI 渲染
     this.uiManager.init();
@@ -97,7 +103,13 @@ export default class AppController {
       Logger.error("Error during initial analysis:", error);
       this.uiManager.hideAssistantStatus(); // 隐藏状态栏
       this.stateManager.setState({
-        messages: [{ role: "system", content: this._getErrorMessage(error), type: "error" }],
+        messages: [
+          {
+            role: "system",
+            content: this._getErrorMessage(error),
+            type: "error",
+          },
+        ],
       });
     } finally {
       this.stateManager.setState({ isLoading: false });
@@ -151,7 +163,14 @@ export default class AppController {
         isInitial
       );
       this.uiManager.hideAssistantStatus(); // Hide status on success
-      const aiResponseHtml = await marked.parse(aiResponseMarkdown); // Parse Markdown to HTML here
+
+      // 基础安全检查：移除明显的恶意脚本
+      const sanitizedMarkdown = aiResponseMarkdown
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/javascript:/gi, "")
+        .replace(/on\w+\s*=/gi, "");
+
+      const aiResponseHtml = await marked.parse(sanitizedMarkdown); // Parse Markdown to HTML here
       return aiResponseHtml;
     } catch (error) {
       this.uiManager.hideAssistantStatus(); // Hide status on error
@@ -199,7 +218,11 @@ export default class AppController {
       this.stateManager.setState({
         messages: [
           ...errorState.messages,
-          { role: "system", content: this._getErrorMessage(error), type: "error" },
+          {
+            role: "system",
+            content: this._getErrorMessage(error),
+            type: "error",
+          },
         ],
       });
     } finally {
@@ -236,7 +259,9 @@ export default class AppController {
     ) {
       return "AI请求参数错误。请尝试使用更简洁的描述，或联系IT支持。";
     } else if (
-      errorMessage.includes("Invalid or unexpected response structure from ChatCompletion API.")
+      errorMessage.includes(
+        "Invalid or unexpected response structure from ChatCompletion API."
+      )
     ) {
       return "AI服务返回了异常响应。请稍后重试。如果问题持续存在，请联系IT支持并提供错误详情。";
     }
@@ -280,7 +305,9 @@ export default class AppController {
 
     // Rule 2: If not found by selector, switch to the "largest area" heuristic.
     // This rule assumes the report body is the largest visible block-level element.
-    Logger.log("Candidate selectors failed. Switching to largest-area heuristic.");
+    Logger.log(
+      "Candidate selectors failed. Switching to largest-area heuristic."
+    );
 
     let largestElement = null;
     let maxArea = 0;
@@ -288,9 +315,17 @@ export default class AppController {
 
     for (const div of allDivs) {
       // Check if the element is visible (cross-browser compatible way).
-      if (div.offsetWidth > 0 && div.offsetHeight > 0 && div.offsetParent !== null) {
+      if (
+        div.offsetWidth > 0 &&
+        div.offsetHeight > 0 &&
+        div.offsetParent !== null
+      ) {
         // Exclude the AI container itself from the search.
-        if (this.uiManager && this.uiManager.container && div === this.uiManager.container) {
+        if (
+          this.uiManager &&
+          this.uiManager.container &&
+          div === this.uiManager.container
+        ) {
           continue;
         }
 
