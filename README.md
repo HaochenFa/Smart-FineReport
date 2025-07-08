@@ -14,8 +14,8 @@ GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 
 ## 开发环境要求
 
-- **Node.js**: v22.17.0 或其他兼容版本
-- **npm**: v10.9.2 或其他兼容版本
+- **Node.js**: v18.x+ 或其他兼容版本
+- **npm**: v10.x+ 或其他兼容版本
 
 ### 快速开始
 
@@ -87,6 +87,15 @@ flowchart BT
 ├── docs/               # Project documentation
 │   └── DEPLOYMENT_GUIDE.md
 ├── public/             # Public assets and HTML entry
+│   ├── assets/         # Static assets
+│   │   ├── logo.png
+│   │   ├── logo-40w.png
+│   │   ├── logo-80w.png
+│   │   └── logo-120w.png
+│   ├── dist/           # Build output directory
+│   │   ├── smart-finereport.cjs.min.js
+│   │   ├── smart-finereport.esm.min.js
+│   │   └── *.css       # Generated CSS files
 │   ├── index.html
 │   └── smart-fr-plugin.js
 └── src/                # Source files
@@ -112,7 +121,6 @@ flowchart BT
     └── utils/          # Utility functions and configs
          ├── default-prompt.js        # Prompt template
          ├── logger.js                # Logger
-         ├── resizable.js             # Resizable panel utility
          └── settings.js              # Static config and secrets
 ```
 
@@ -147,11 +155,11 @@ export const SETTINGS = {
    npm run build
 ```
 
-3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `smart-finereport.cjs.min.js` (CommonJS 格式)、`smart-finereport.esm.min.js` (ES Module 格式) 以及对应的 CSS 文件。
+3. **获取产物**: 构建成功后，`public/dist/` 目录下会生成 `smart-finereport.cjs.min.js` (CommonJS 格式)、`smart-finereport.esm.min.js` (ES Module 格式) 以及对应的 CSS 文件。
 
 ### 步骤 2: 文件部署与帆软集成
 
-1. **部署文件**: 将 `dist/*.cjs.min.*`、`dist/*.esm.min.*`、`public/smart-fr-plugin.js` 和 `style/tailwind.js`
+1. **部署文件**: 将 `public/dist/*.cjs.min.*`、`public/dist/*.esm.min.*`、`public/smart-fr-plugin.js` 和 `src/styles/tailwind.js`
    文件复制到您服务器上的一个公共可访问文件夹中，例如 `your_server_root/public/smartfinereport/`。
 2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置 -> 引入JavaScript文件`。
 3. **引入路径**: 在弹出的对话框中，分别输入您部署的 JavaScript 和 CSS 文件的绝对路径。例如，如果您的文件部署在

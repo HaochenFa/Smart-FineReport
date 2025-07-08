@@ -290,11 +290,11 @@ npm run build
 ```
 
 **打包产物**:
-此命令会在 `dist/` 目录下生成多个核心文件：
+此命令会在 `public/dist/` 目录下生成多个核心文件：
 
 - `smart-finereport.cjs.min.js` (CommonJS 格式)
 - `smart-finereport.esm.min.js` (ES Module 格式)
-- `~.cjs.min.css` & `~.esm.min.css` (CSS 样式)
+- `smart-finereport.cjs.min.css` & `smart-finereport.esm.min.css` (CSS 样式)
 
 ---
 
@@ -330,13 +330,13 @@ export const SETTINGS = {
    npm run build
 ```
 
-3. **获取产物**: 构建成功后，`dist/` 目录下会生成 `smart-finereport.cjs.min.js`，`smart-finereport.esm.min.js`，
-   `~.cjs.min.css` & `~.esm.min.css`。
+3. **获取产物**: 构建成功后，`public/dist/` 目录下会生成 `smart-finereport.cjs.min.js`，`smart-finereport.esm.min.js`，
+   `smart-finereport.cjs.min.css` & `smart-finereport.esm.min.css`。
 
 ### **阶段三：文件部署与帆软集成**
 
-1. **部署文件**: 将 `smart-finereport.cjs.min.js`、`smart-finereport.esm.min.js` 目录、`public/smart-fr-plugin.js` 和
-   `style/tailwind.js`
+1. **部署文件**: 将 `public/dist/smart-finereport.cjs.min.js`、`public/dist/smart-finereport.esm.min.js`、`public/smart-fr-plugin.js` 和
+   `src/styles/tailwind.js`
    文件复制到您服务器上的一个公共可访问文件夹中，例如 `your_server_root/public/smartfinereport/`。
 
 2. **帆软设计器配置**: 在帆软设计器中，点击顶部菜单栏的 `服务器 -> 服务器配置`。分别在“引入 JavaScript 文件”和“引入 CSS 文件”选项卡中进行配置。
