@@ -569,28 +569,70 @@
     position: absolute;
     top: 10px; /* Aligned with container padding */
     right: 10px; /* Aligned with container padding */
-    background: rgba(0, 0, 0, 0.1);
-    border: none;
+
+    /* 毛玻璃背景效果 */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0.15) 100%
+    );
+
+    /* 高斯模糊效果 */
+    backdrop-filter: blur(16px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(1.1);
+
+    /* 边框效果 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    /* 多层阴影效果 - 营造上层感 */
+    box-shadow:
+      0 8px 16px rgba(0, 0, 0, 0.15),
+      0 4px 8px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+
     font-size: 18px;
     font-weight: bold;
     line-height: 28px;
     cursor: pointer;
-    color: #555;
+    color: #333;
     z-index: 10010;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    transition:
-      background-color 0.2s,
-      color 0.2s;
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .ai-modal-close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.2);
+    /* 悬停时增强效果 */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.25) 100%
+    );
+
+    box-shadow:
+      0 12px 24px rgba(0, 0, 0, 0.2),
+      0 6px 12px rgba(0, 0, 0, 0.15),
+      0 3px 6px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+
     color: #000;
+    transform: scale(1.05);
+  }
+
+  .ai-modal-close-btn:active {
+    transform: scale(0.95);
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.2),
+      0 2px 4px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   /* #ai-container 样式已移至 main.css 中统一管理 */
