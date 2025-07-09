@@ -497,17 +497,8 @@
     -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
     backdrop-filter: blur(24px) saturate(180%) brightness(1.15) contrast(1.1);
 
-    /* 玻璃边缘效果 */
-    border: 1px solid;
-    border-image: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.3) 0%,
-        rgba(255, 255, 255, 0.1) 25%,
-        rgba(255, 255, 255, 0.4) 50%,
-        rgba(255, 255, 255, 0.1) 75%,
-        rgba(255, 255, 255, 0.25) 100%
-      )
-      1;
+    /* 玻璃边缘效果 - 使用兼容圆角的边框 */
+    border: 1px solid rgba(255, 255, 255, 0.25);
 
     /* 多层阴影模拟玻璃深度和光线折射 */
     box-shadow:
@@ -520,7 +511,7 @@
       inset -1px 0 0 0 rgba(255, 255, 255, 0.1);
 
     border-radius: 20px;
-    padding: 10px;
+    padding: 8px;
 
     width: 90vw;
     max-width: 800px;
@@ -538,8 +529,8 @@
 
   .ai-modal-close-btn {
     position: absolute;
-    top: 14px; /* Adjusted for moderate padding */
-    right: 14px; /* Adjusted for moderate padding */
+    top: 10px; /* Aligned with container padding */
+    right: 10px; /* Aligned with container padding */
     background: rgba(0, 0, 0, 0.1);
     border: none;
     font-size: 18px;

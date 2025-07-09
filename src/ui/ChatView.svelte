@@ -228,6 +228,8 @@
         </svg>
       </button>
     </div>
+    <!-- 免责声明 -->
+    <div class="disclaimer-text">AI分析可能会犯错，请您核查重要信息</div>
   </div>
 </div>
 
