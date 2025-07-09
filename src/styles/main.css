@@ -11,7 +11,11 @@
 
 /* 外层容器 - Apple 2025 WWDC Liquid Glass 效果 */
 #smartfine-chat-container {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -24,15 +28,16 @@
 
 /* 内层容器 - 现代毛玻璃效果 */
 #ai-container {
-  width: calc(100% - 20px);
-  height: calc(100% - 20px);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px) saturate(130%);
-  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  margin: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  margin: 8px;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -161,13 +166,21 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, rgba(147, 197, 253, 0.4), rgba(59, 130, 246, 0.3));
+  background: linear-gradient(
+    to bottom,
+    rgba(147, 197, 253, 0.4),
+    rgba(59, 130, 246, 0.3)
+  );
   border-radius: 3px;
   transition: all 0.2s;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, rgba(147, 197, 253, 0.6), rgba(59, 130, 246, 0.5));
+  background: linear-gradient(
+    to bottom,
+    rgba(147, 197, 253, 0.6),
+    rgba(59, 130, 246, 0.5)
+  );
 }
 
 /* 禁用状态样式 */
@@ -219,7 +232,8 @@ textarea:focus-visible {
 
 #message-container textarea:focus {
   border-color: rgba(59, 130, 246, 0.8) !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.7), 0 0 0 4px rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.7),
+    0 0 0 4px rgba(255, 255, 255, 0.2) !important;
 }
 
 #message-container button {
@@ -248,13 +262,21 @@ textarea:focus-visible {
 
 /* 提交按钮样式 */
 #message-container button:last-child {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.9)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.95),
+    rgba(37, 99, 235, 0.9)
+  ) !important;
   border: 1px solid rgba(59, 130, 246, 0.6) !important;
   color: white !important;
 }
 
 #message-container button:last-child:hover {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.98), rgba(29, 78, 216, 0.95)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.98),
+    rgba(29, 78, 216, 0.95)
+  ) !important;
   transform: scale(1.05) !important;
 }
 
@@ -278,19 +300,25 @@ textarea:focus-visible {
 
 /* ChatView 消息气泡样式修复 */
 .message-bubble-user {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.95),
+    rgba(37, 99, 235, 0.95)
+  ) !important;
   color: white !important;
   border-radius: 16px !important;
-  padding: 12px 16px !important;
+  padding: 10px 14px !important;
   max-width: 32rem !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(59, 130, 246, 0.4) !important;
   transition: box-shadow 0.2s !important;
 }
 
 .message-bubble-user:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
 .message-bubble-assistant {
@@ -301,16 +329,18 @@ textarea:focus-visible {
   ) !important;
   color: #1f2937 !important;
   border-radius: 16px !important;
-  padding: 12px 16px !important;
+  padding: 10px 14px !important;
   max-width: 80% !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
   transition: box-shadow 0.2s !important;
 }
 
 .message-bubble-assistant:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
 .message-bubble-system {
@@ -438,7 +468,8 @@ textarea:focus-visible {
   border-radius: 12px !important;
   border: 1.5px solid rgba(156, 163, 175, 0.6) !important;
   backdrop-filter: blur(16px) !important;
-  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.12),
+    0 2px 4px -1px rgba(0, 0, 0, 0.08) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: flex !important;
   align-items: center !important;
@@ -456,7 +487,8 @@ textarea:focus-visible {
     rgba(209, 213, 219, 0.95)
   ) !important;
   transform: scale(1.08) translateY(-2px) !important;
-  box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.2), 0 6px 12px -2px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.2),
+    0 6px 12px -2px rgba(0, 0, 0, 0.15) !important;
   border-color: rgba(156, 163, 175, 0.8) !important;
 }
 
@@ -496,12 +528,17 @@ textarea:focus-visible {
 
 .chat-button-submit {
   padding: 12px 16px !important;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.98), rgba(37, 99, 235, 0.95)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.98),
+    rgba(37, 99, 235, 0.95)
+  ) !important;
   color: white !important;
   border-radius: 12px !important;
   border: 1.5px solid rgba(59, 130, 246, 0.8) !important;
   backdrop-filter: blur(16px) !important;
-  box-shadow: 0 4px 8px -2px rgba(59, 130, 246, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 8px -2px rgba(59, 130, 246, 0.25),
+    0 2px 4px -1px rgba(0, 0, 0, 0.08) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: flex !important;
   align-items: center !important;
@@ -512,9 +549,14 @@ textarea:focus-visible {
 }
 
 .chat-button-submit:hover {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 1), rgba(29, 78, 216, 0.98)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 1),
+    rgba(29, 78, 216, 0.98)
+  ) !important;
   transform: scale(1.08) translateY(-2px) !important;
-  box-shadow: 0 12px 20px -4px rgba(59, 130, 246, 0.4), 0 6px 12px -2px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 12px 20px -4px rgba(59, 130, 246, 0.4),
+    0 6px 12px -2px rgba(0, 0, 0, 0.15) !important;
   border-color: rgba(59, 130, 246, 1) !important;
 }
 
@@ -571,8 +613,8 @@ textarea:focus-visible {
   min-height: 40px !important;
   max-height: 100px !important;
   overflow-y: auto !important;
-  box-shadow: 0 4px 8px -2px rgba(147, 197, 253, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 8px -2px rgba(147, 197, 253, 0.15),
+    0 2px 4px -1px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
   color: #1f2937 !important;
   font-size: 14px !important;
   line-height: 1.4 !important;
@@ -587,9 +629,9 @@ textarea:focus-visible {
     rgba(255, 255, 255, 0.95),
     rgba(239, 246, 255, 0.9)
   ) !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 0 0 6px rgba(255, 255, 255, 0.2),
-    0 8px 16px -4px rgba(59, 130, 246, 0.25), 0 4px 8px -2px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3),
+    0 0 0 6px rgba(255, 255, 255, 0.2), 0 8px 16px -4px rgba(59, 130, 246, 0.25),
+    0 4px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -600,8 +642,8 @@ textarea:focus-visible {
 
 .chat-input:hover {
   border-color: rgba(147, 197, 253, 0.8) !important;
-  box-shadow: 0 8px 16px -4px rgba(147, 197, 253, 0.3), 0 4px 8px -2px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 8px 16px -4px rgba(147, 197, 253, 0.3),
+    0 4px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
 /* 输入框滚动条样式 */
@@ -634,12 +676,17 @@ textarea:focus-visible {
 /* 状态栏动画效果 */
 .status-bar {
   /* 保持背景和边框样式 */
-  background: linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(219, 234, 254, 0.85));
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.95),
+    rgba(219, 234, 254, 0.85)
+  );
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(147, 197, 253, 0.3);
   border-radius: 10px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   /* 动画相关样式 */
   transform: translateY(-100%);
@@ -670,4 +717,25 @@ textarea:focus-visible {
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+/* 免责声明样式 */
+.disclaimer-text {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(249, 250, 251, 0.5)
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 8px;
+  border: 1px solid rgba(229, 231, 235, 0.4);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  font-style: italic;
+  line-height: 1.3;
 }
