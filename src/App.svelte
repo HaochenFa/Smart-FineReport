@@ -31,10 +31,22 @@
   let isDragging = false;
   let wasDragged = false;
   let offsetX, offsetY;
+  let startX, startY; // 记录鼠标按下时的初始位置
+  let startTime; // 记录鼠标按下的时间
+
+  // 拖拽判断阈值
+  const DRAG_THRESHOLD = 5; // 像素，超过此距离才认为是拖拽
+  const CLICK_TIME_THRESHOLD = 300; // 毫秒，超过此时间认为可能是拖拽意图
 
   function handleMouseDown(e) {
     isDragging = true;
     wasDragged = false;
+
+    // 记录初始位置和时间
+    startX = e.clientX;
+    startY = e.clientY;
+    startTime = Date.now();
+
     fab.style.cursor = "grabbing";
     offsetX = e.clientX - fab.getBoundingClientRect().left;
     offsetY = e.clientY - fab.getBoundingClientRect().top;
@@ -47,22 +59,41 @@
 
   function handleMouseMove(e) {
     if (!isDragging) return;
-    wasDragged = true;
-    let newX = e.clientX - offsetX;
-    let newY = e.clientY - offsetY;
 
-    const fabRect = fab.getBoundingClientRect();
-    newX = Math.max(0, Math.min(newX, window.innerWidth - fabRect.width));
-    newY = Math.max(0, Math.min(newY, window.innerHeight - fabRect.height));
+    // 计算移动距离
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    fab.style.left = `${newX}px`;
-    fab.style.top = `${newY}px`;
-    fab.style.right = "auto";
-    fab.style.bottom = "auto";
+    // 只有移动距离超过阈值才认为是拖拽
+    if (distance > DRAG_THRESHOLD) {
+      wasDragged = true;
+
+      let newX = e.clientX - offsetX;
+      let newY = e.clientY - offsetY;
+
+      const fabRect = fab.getBoundingClientRect();
+      newX = Math.max(0, Math.min(newX, window.innerWidth - fabRect.width));
+      newY = Math.max(0, Math.min(newY, window.innerHeight - fabRect.height));
+
+      fab.style.left = `${newX}px`;
+      fab.style.top = `${newY}px`;
+      fab.style.right = "auto";
+      fab.style.bottom = "auto";
+    }
   }
 
   function handleMouseUp() {
     if (isDragging) {
+      const endTime = Date.now();
+      const totalTime = startTime ? endTime - startTime : 0;
+
+      console.log("Mouse up", {
+        wasDragged,
+        totalTime,
+        dragThreshold: DRAG_THRESHOLD,
+      });
+
       isDragging = false;
       fab.style.cursor = "grab";
 
@@ -144,10 +175,17 @@
   }
 
   async function handleFabClick() {
-    console.log("FAB clicked! wasDragged:", wasDragged);
+    const clickTime = Date.now();
+    const timeSinceMouseDown = startTime ? clickTime - startTime : 0;
+
+    console.log("FAB clicked!", {
+      wasDragged,
+      timeSinceMouseDown,
+      dragThreshold: DRAG_THRESHOLD,
+    });
 
     if (wasDragged) {
-      console.log("Click ignored due to drag");
+      console.log("Click ignored due to drag - movement exceeded threshold");
       return;
     }
 
