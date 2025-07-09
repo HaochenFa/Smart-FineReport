@@ -39,7 +39,11 @@ export default {
 
   // 6. 代码覆盖率配置
   collectCoverage: true,
-  collectCoverageFrom: ["src/**/*.{js,jsx}", "!src/index.js", "!**/node_modules/**"],
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx}",
+    "!src/index.js",
+    "!**/node_modules/**",
+  ],
   coverageDirectory: "coverage",
   coverageReporters: ["json", "lcov", "text"],
 };

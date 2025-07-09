@@ -17,7 +17,12 @@ export class UIManager {
    * @param {function(string): void} messageSubmitHandler - 当用户提交消息时要调用的处理函数。
    * @param {function(): void} resetAnalysisHandler - 当用户点击重置按钮时要调用的处理函数。
    */
-  constructor(container, stateManager, messageSubmitHandler, resetAnalysisHandler) {
+  constructor(
+    container,
+    stateManager,
+    messageSubmitHandler,
+    resetAnalysisHandler
+  ) {
     if (
       !container ||
       !stateManager ||
