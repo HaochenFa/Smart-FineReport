@@ -36,7 +36,6 @@
 
   // 拖拽判断阈值
   const DRAG_THRESHOLD = 5; // 像素，超过此距离才认为是拖拽
-  const CLICK_TIME_THRESHOLD = 300; // 毫秒，超过此时间认为可能是拖拽意图
 
   function handleMouseDown(e) {
     isDragging = true;
@@ -85,15 +84,6 @@
 
   function handleMouseUp() {
     if (isDragging) {
-      const endTime = Date.now();
-      const totalTime = startTime ? endTime - startTime : 0;
-
-      console.log("Mouse up", {
-        wasDragged,
-        totalTime,
-        dragThreshold: DRAG_THRESHOLD,
-      });
-
       isDragging = false;
       fab.style.cursor = "grab";
 
@@ -175,21 +165,9 @@
   }
 
   async function handleFabClick() {
-    const clickTime = Date.now();
-    const timeSinceMouseDown = startTime ? clickTime - startTime : 0;
-
-    console.log("FAB clicked!", {
-      wasDragged,
-      timeSinceMouseDown,
-      dragThreshold: DRAG_THRESHOLD,
-    });
-
     if (wasDragged) {
-      console.log("Click ignored due to drag - movement exceeded threshold");
       return;
     }
-
-    console.log("Processing FAB click...");
 
     // 按钮点击动画效果
     isButtonClicked = true;
@@ -205,37 +183,19 @@
     fabPosition = calculateFabCenter();
     updateModalOrigin();
 
-    console.log("Setting showModal to true...");
     // UI第一优先级：立即显示弹窗
     showModal = true;
-    console.log("showModal is now:", showModal);
-
-    // 调试：检查DOM元素
-    setTimeout(() => {
-      const modalElement = document.querySelector(".ai-modal-content");
-      console.log("Modal element found:", modalElement);
-      if (modalElement) {
-        console.log("Modal element styles:", window.getComputedStyle(modalElement));
-        console.log("Modal element position:", modalElement.getBoundingClientRect());
-      }
-    }, 100);
 
     // 后台异步初始化并自动开始分析（不阻塞UI）
     if (!isAssistantInitialized) {
-      console.log("Initializing assistant...");
       initializeAndStartAnalysis();
     } else {
-      console.log("Assistant already initialized, re-mounting UI");
-
       // 等待DOM更新完成
       await tick();
 
       if (appInstance && aiContainerElement) {
-        console.log("Re-initializing UI Manager with fresh container");
-
         // 清空容器内容
         aiContainerElement.innerHTML = "";
-        console.log("Container cleared");
 
         // 重新初始化UI管理器到新的容器
         appInstance.uiManager = new UIManager(
@@ -245,22 +205,11 @@
           appInstance.resetAnalysis.bind(appInstance)
         );
 
-        console.log("New UIManager created:", appInstance.uiManager);
-
         // 获取当前状态并更新UI
         const currentState = appInstance.stateManager.getState();
-        console.log("Current state for re-mount:", currentState);
 
         // 确保UI显示当前状态
         appInstance.uiManager._update(currentState);
-
-        // 检查容器内容
-        setTimeout(() => {
-          console.log("Container content after re-mount:", aiContainerElement.innerHTML);
-          console.log("ChatView element:", appInstance.uiManager.chatViewElement);
-        }, 200);
-
-        console.log("UI re-mounted successfully");
       }
     }
   }
@@ -346,8 +295,6 @@
       modalContent.style.left = `${Math.max(0, left)}px`;
       modalContent.style.top = `${Math.max(0, top)}px`;
       modalContent.style.transform = "none"; // 移除CSS transform
-
-      console.log("Modal positioned at:", { left, top, scrollTop, scrollLeft });
     }
   }
 

@@ -4,6 +4,8 @@
  * @description The core of UI layer UI 层的核心
  */
 
+import { Logger } from "../utils/logger.js";
+
 export class StateManager {
   /**
    * 构造一个 StateManager 实例。
@@ -47,7 +49,7 @@ export class StateManager {
       return JSON.parse(JSON.stringify(this._state));
     } catch {
       // 最后降级到浅拷贝
-      console.warn("[StateManager] Deep clone failed, using shallow copy");
+      Logger.warn("[StateManager] Deep clone failed, using shallow copy");
       return { ...this._state };
     }
   }
