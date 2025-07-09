@@ -193,23 +193,62 @@
       // 等待DOM更新完成
       await tick();
 
-      if (appInstance && aiContainerElement) {
-        // 清空容器内容
-        aiContainerElement.innerHTML = "";
+      // 验证appInstance状态，如果无效则重新初始化
+      if (!appInstance || !appInstance.stateManager || !appInstance.uiManager) {
+        Logger.warn("AppInstance is in invalid state, reinitializing...");
 
-        // 重新初始化UI管理器到新的容器
-        appInstance.uiManager = new UIManager(
-          aiContainerElement,
-          appInstance.stateManager,
-          appInstance.handleUserQuery.bind(appInstance),
-          appInstance.resetAnalysis.bind(appInstance)
-        );
+        // 清理可能存在的残留组件
+        if (appInstance && appInstance.uiManager) {
+          try {
+            appInstance.uiManager.destroy();
+          } catch (error) {
+            Logger.error("Error destroying invalid UI manager:", error);
+          }
+        }
 
-        // 获取当前状态并更新UI
-        const currentState = appInstance.stateManager.getState();
+        isAssistantInitialized = false;
+        appInstance = null;
+        initializeAndStartAnalysis();
+        return;
+      }
 
-        // 确保UI显示当前状态
-        appInstance.uiManager._update(currentState);
+      if (aiContainerElement) {
+        try {
+          // 销毁旧的UI管理器
+          if (appInstance.uiManager) {
+            appInstance.uiManager.destroy();
+          }
+
+          // 清空容器内容
+          aiContainerElement.innerHTML = "";
+
+          // 重新初始化UI管理器到新的容器
+          appInstance.uiManager = new UIManager(
+            aiContainerElement,
+            appInstance.stateManager,
+            appInstance.handleUserQuery.bind(appInstance),
+            appInstance.resetAnalysis.bind(appInstance)
+          );
+
+          // 获取当前状态并更新UI
+          const currentState = appInstance.stateManager.getState();
+
+          // 确保UI显示当前状态
+          appInstance.uiManager._update(currentState);
+        } catch (error) {
+          Logger.error("Error reinitializing UI:", error);
+          // 如果重新初始化UI失败，回退到完全重新初始化
+          if (appInstance && appInstance.uiManager) {
+            try {
+              appInstance.uiManager.destroy();
+            } catch (destroyError) {
+              Logger.error("Error destroying failed UI manager:", destroyError);
+            }
+          }
+          isAssistantInitialized = false;
+          appInstance = null;
+          initializeAndStartAnalysis();
+        }
       }
     }
   }
@@ -223,22 +262,59 @@
       const serviceUrl = SETTINGS.service.url;
       appInstance = new AppController(serviceUrl);
       appInstance.init(aiContainerElement);
-      isAssistantInitialized = true;
-      Logger.log("AI Assistant Initialized Successfully.");
+
+      // 确保在初始化过程中UI保持禁用状态
+      if (appInstance && appInstance.stateManager) {
+        appInstance.stateManager.setState({ isLoading: true });
+      }
+
+      Logger.log("AI Assistant base components initialized.");
 
       // 初始化完成后立即开始自动分析
       await appInstance.triggerInitialAnalysis();
+
+      // 只有在完整初始化（包括首次分析）成功后才设置为已初始化
+      isAssistantInitialized = true;
+
+      // 只有在成功时才清除加载状态
+      if (appInstance && appInstance.stateManager) {
+        appInstance.stateManager.setState({ isLoading: false });
+      }
+
+      Logger.log("AI Assistant fully initialized and ready.");
     } catch (error) {
       Logger.error("A critical error occurred during initialization:", error);
-      // 即使初始化失败，也要显示友好的错误信息，而不是隐藏弹窗
+
+      // 完全清理已创建的组件，防止状态不一致
+      if (appInstance && appInstance.uiManager) {
+        try {
+          appInstance.uiManager.destroy();
+        } catch (destroyError) {
+          Logger.error("Error destroying UI manager:", destroyError);
+        }
+      }
+
+      // 重置所有相关状态
+      isAssistantInitialized = false;
+      appInstance = null;
+
+      // 关键修复：不要清除加载状态，保持UI禁用
+      // 这样用户就无法在错误状态下输入内容
+
+      // 清空容器并显示友好的错误信息，包含重试选项
       if (aiContainerElement) {
         aiContainerElement.innerHTML = `
           <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
             <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
-            <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
-            <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-              重新加载页面
-            </button>
+            <p style="margin: 8px 0 0; font-size: 14px;">请检查网络连接或稍后重试。</p>
+            <div style="margin-top: 16px;">
+              <button onclick="window.location.reload()" style="margin-right: 8px; padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                重新加载页面
+              </button>
+              <button onclick="document.querySelector('#ai-assistant-fab').click()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                重试初始化
+              </button>
+            </div>
           </div>
         `;
       }

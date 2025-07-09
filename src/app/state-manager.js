@@ -86,7 +86,16 @@ export class StateManager {
    * @param {{role: string, content: string}} message - 要添加的消息对象。
    */
   addMessage(message) {
-    const newMessages = [...this._state.messages, message];
+    // 确保每个消息都有唯一的 ID
+    const messageWithId = {
+      ...message,
+      id:
+        message.id ||
+        `${message.role}-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 11)}`,
+    };
+    const newMessages = [...this._state.messages, messageWithId];
     this.setState({ messages: newMessages });
   }
 

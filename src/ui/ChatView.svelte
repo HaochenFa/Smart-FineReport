@@ -157,7 +157,7 @@
     class="flex-1 flex flex-col overflow-y-auto px-8 py-6 space-y-4 scrollbar-thin scrollbar-thumb-blue-300/40 scrollbar-track-transparent"
     id="message-container"
   >
-    {#each messages as message (message.id || JSON.stringify(message))}
+    {#each messages as message, index (message.id || `${message.role}-${index}-${Date.now()}`)}
       {@html renderMessage(message)}
     {/each}
   </div>
