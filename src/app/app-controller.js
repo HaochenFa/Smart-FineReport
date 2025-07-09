@@ -282,11 +282,11 @@ export default class AppController {
 
     // Rule 1: Search based on common FineReport CSS class names or IDs.
     const candidateSelectors = [
-      'body[id="body"]',
-      'div[id="wrapper"]',
-      'div[class*="fr-quick-border-layout"]',
-      'div[id*="fr"]',
-      'div[id^="content-pane"]',
+      "body[id=\"body\"]",
+      "div[id=\"wrapper\"]",
+      "div[class*=\"fr-quick-border-layout\"]",
+      "div[id*=\"fr\"]",
+      "div[id^=\"content-pane\"]",
     ];
 
     for (const selector of candidateSelectors) {
