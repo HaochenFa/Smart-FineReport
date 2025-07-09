@@ -15,27 +15,22 @@
 
   function autoResizeInput() {
     if (inputField) {
-      const defaultHeight = 40; // 两行文字的默认高度
-      const maxHeight = 100; // 最大高度
+      const minHeight = 28; // 最小高度
+      const maxHeight = 114; // 最大高度
 
-      // 如果内容为空，回到默认高度
+      // 如果内容为空，设置为最小高度
       if (!inputValue.trim()) {
-        inputField.style.height = defaultHeight + "px";
+        inputField.style.height = minHeight + "px";
         return;
       }
 
-      // 临时设置为auto来计算实际需要的高度
+      // 临时设置为auto来获取真实高度
       inputField.style.height = "auto";
       const scrollHeight = inputField.scrollHeight;
 
-      // 如果内容高度小于等于默认高度，保持默认高度
-      if (scrollHeight <= defaultHeight) {
-        inputField.style.height = defaultHeight + "px";
-      } else {
-        // 只有当内容超过默认高度时，才增加高度
-        const newHeight = Math.min(scrollHeight, maxHeight);
-        inputField.style.height = newHeight + "px";
-      }
+      // 设置高度，确保在最小和最大高度之间
+      const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
+      inputField.style.height = newHeight + "px";
     }
   }
 
@@ -139,6 +134,14 @@
       }
     }
   }
+
+  // Svelte action 用于设置初始高度
+  function setInitialHeight(node) {
+    node.style.height = "28px";
+    return {
+      destroy() {},
+    };
+  }
 </script>
 
 <div
@@ -146,12 +149,12 @@
 >
   <div
     bind:this={assistantStatusElement}
-    class="status-bar text-center text-gray-700 text-sm"
+    class="status-bar text-center text-gray-700 text-sm font-medium"
     style="display: none; z-index: 1000; position: relative;"
   ></div>
   <div
     bind:this={messageContainer}
-    class="flex-1 flex flex-col overflow-y-auto px-6 py-6 space-y-4 scrollbar-thin scrollbar-thumb-blue-300/40 scrollbar-track-transparent"
+    class="flex-1 flex flex-col overflow-y-auto px-8 py-6 space-y-4 scrollbar-thin scrollbar-thumb-blue-300/40 scrollbar-track-transparent"
     id="message-container"
   >
     {#each messages as message (message.id || JSON.stringify(message))}
@@ -160,9 +163,10 @@
   </div>
 
   <div
-    class="px-6 py-5 mt-4 bg-gradient-to-r from-white/40 to-blue-50/30 backdrop-blur-sm rounded-b-[16px]"
+    class="px-20 py-8 mt-4 bg-gradient-to-r from-white/40 to-blue-50/30 backdrop-blur-sm rounded-b-[16px]"
+    style="overflow: visible;"
   >
-    <div class="flex items-stretch gap-3 w-full">
+    <div class="flex items-center gap-4 w-full" style="overflow: visible;">
       <button
         bind:this={resetButton}
         class="chat-button-reset"
@@ -197,7 +201,6 @@
         bind:value={inputValue}
         class="chat-input"
         placeholder="输入你的分析请求... (Shift+Enter 换行)"
-        rows="1"
         on:input={autoResizeInput}
         on:keypress={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
@@ -205,6 +208,7 @@
             handleSubmit();
           }
         }}
+        use:setInitialHeight
         disabled={isDisabled}
       ></textarea>
       <button
