@@ -376,12 +376,8 @@ export default class AppController {
         div.offsetHeight > 0 &&
         div.offsetParent !== null
       ) {
-        // Exclude the AI container itself from the search.
-        if (
-          this.uiManager &&
-          this.uiManager.container &&
-          div === this.uiManager.container
-        ) {
+        // Enhanced AI container exclusion logic
+        if (this._isAIContainer(div)) {
           continue;
         }
 
@@ -400,5 +396,56 @@ export default class AppController {
     }
 
     return largestElement;
+  }
+
+  /**
+   * @private
+   * @description 检查元素是否为AI容器或其子元素
+   * @param {HTMLElement} element - 要检查的元素
+   * @return {boolean} - 如果是AI容器则返回true
+   */
+  _isAIContainer(element) {
+    // AI容器选择器黑名单
+    const aiContainerSelectors = [
+      "#smartfine-chat-container",
+      "#ai-container",
+      ".ai-modal-content",
+      ".ai-modal-close-btn",
+      ".welcome-loading",
+      "#ai-assistant-fab",
+    ];
+
+    // 检查元素是否匹配AI选择器
+    for (const selector of aiContainerSelectors) {
+      try {
+        if (element.matches && element.matches(selector)) {
+          Logger.log(`Excluded AI container: ${selector}`);
+          return true;
+        }
+
+        // 检查是否在AI容器内部
+        const aiContainer = document.querySelector(selector);
+        if (aiContainer && aiContainer.contains(element)) {
+          Logger.log(`Excluded element inside AI container: ${selector}`);
+          return true;
+        }
+      } catch (error) {
+        // 忽略选择器错误，继续检查其他选择器
+        Logger.warn(`Error checking selector ${selector}:`, error);
+      }
+    }
+
+    // 兼容性检查：排除原有的UIManager容器
+    if (
+      this.uiManager &&
+      this.uiManager.container &&
+      (element === this.uiManager.container ||
+        this.uiManager.container.contains(element))
+    ) {
+      Logger.log("Excluded UIManager container or its child");
+      return true;
+    }
+
+    return false;
   }
 }

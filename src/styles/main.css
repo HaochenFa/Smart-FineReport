@@ -413,15 +413,6 @@ textarea:focus-visible {
   animation: spin 1s linear infinite !important;
 }
 
-@keyframes spin {
-  0% {
-    transform: translateY(-50%) rotate(0deg);
-  }
-  100% {
-    transform: translateY(-50%) rotate(360deg);
-  }
-}
-
 /* 顶部状态提示样式 */
 .text-center.text-gray-600.text-sm.py-3.px-4 {
   background: linear-gradient(
