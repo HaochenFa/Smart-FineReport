@@ -353,7 +353,7 @@ textarea:focus-visible {
   border-radius: 20px !important;
   padding: 6px 14px !important;
   /* font-size: 0.75rem !important; */
-  font-size: 16px !important;
+  font-size: 14px !important;
   line-height: 1.4 !important;
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
