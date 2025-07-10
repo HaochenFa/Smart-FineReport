@@ -187,8 +187,12 @@
     showModal = true;
 
     // 后台异步初始化并自动开始分析（不阻塞UI）
-    if (!isAssistantInitialized) {
-      initializeAndStartAnalysis();
+    // 防止重复初始化：检查是否已初始化，以及是否正在加载中
+    if (
+      !isAssistantInitialized &&
+      (!appInstance || !appInstance.stateManager || !appInstance.stateManager.getState().isLoading)
+    ) {
+      await initializeAndStartAnalysis(); // 添加await确保初始化完成后才继续执行
     } else {
       // 等待DOM更新完成
       await tick();
