@@ -33,7 +33,11 @@ export class AIEngine {
    * @param {string} [config.apiKey] - The optional API key (bearer token).
    */
   constructor(config) {
-    if (!config || !config.url || (Array.isArray(config.url) && config.url.length === 0)) {
+    if (
+      !config ||
+      !config.url ||
+      (Array.isArray(config.url) && config.url.length === 0)
+    ) {
       const errorMsg =
         "AIEngine Error: Configuration object must contain a 'url' (string or non-empty array).";
       log.error(errorMsg);
@@ -59,7 +63,8 @@ export class AIEngine {
     log.log("[AIEngine] Preparing to send prompt...");
 
     if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
-      const errorMsg = "[AIEngine] Error: Prompt cannot be null, empty, or invalid.";
+      const errorMsg =
+        "[AIEngine] Error: Prompt cannot be null, empty, or invalid.";
       log.error(errorMsg);
       throw new Error(errorMsg);
     }

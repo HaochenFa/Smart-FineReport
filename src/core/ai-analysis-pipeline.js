@@ -37,7 +37,9 @@ export class AnalysisPipeline {
     this.#aiEngine = aiEngine;
     this.uiManager = uiManager;
 
-    log.log("[AnalysisPipeline] Pipeline initialized successfully with all dependencies.");
+    log.log(
+      "[AnalysisPipeline] Pipeline initialized successfully with all dependencies."
+    );
   }
 
   /**
@@ -75,7 +77,10 @@ export class AnalysisPipeline {
       this.uiManager.hideAssistantStatus();
       return aiResponse;
     } catch (error) {
-      log.error("[AnalysisPipeline] An error occurred during the analysis pipeline:", error);
+      log.error(
+        "[AnalysisPipeline] An error occurred during the analysis pipeline:",
+        error
+      );
       throw new Error(`Analysis failed: ${error.message}`);
     }
   }

@@ -352,7 +352,8 @@ textarea:focus-visible {
   color: #4b5563 !important;
   border-radius: 20px !important;
   padding: 6px 14px !important;
-  font-size: 0.75rem !important;
+  /* font-size: 0.75rem !important; */
+  font-size: 14px !important;
   line-height: 1.4 !important;
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
@@ -412,15 +413,6 @@ textarea:focus-visible {
   animation: spin 1s linear infinite !important;
 }
 
-@keyframes spin {
-  0% {
-    transform: translateY(-50%) rotate(0deg);
-  }
-  100% {
-    transform: translateY(-50%) rotate(360deg);
-  }
-}
-
 /* 顶部状态提示样式 */
 .text-center.text-gray-600.text-sm.py-3.px-4 {
   background: linear-gradient(
@@ -458,38 +450,34 @@ textarea:focus-visible {
 
 /* ChatView 按钮样式增强 */
 .chat-button-reset {
-  padding: 12px !important;
-  background: linear-gradient(
-    135deg,
-    rgba(243, 244, 246, 0.95),
-    rgba(229, 231, 235, 0.9)
-  ) !important;
+  padding: 9px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   color: #374151 !important;
-  border-radius: 12px !important;
-  border: 1.5px solid rgba(156, 163, 175, 0.6) !important;
-  backdrop-filter: blur(16px) !important;
-  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.12),
-    0 2px 4px -1px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 50% !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(20px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+  box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.08),
+    0 2px 4px -1px rgba(0, 0, 0, 0.05) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
-  min-width: 40px !important;
-  min-height: 40px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
   cursor: pointer !important;
+  margin: 4px !important;
 }
 
 .chat-button-reset:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(229, 231, 235, 0.98),
-    rgba(209, 213, 219, 0.95)
-  ) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
   transform: scale(1.08) translateY(-2px) !important;
-  box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.2),
-    0 6px 12px -2px rgba(0, 0, 0, 0.15) !important;
-  border-color: rgba(156, 163, 175, 0.8) !important;
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.15),
+    0 4px 8px -2px rgba(0, 0, 0, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .chat-button-reset:active {
@@ -498,8 +486,8 @@ textarea:focus-visible {
 }
 
 .chat-button-reset svg {
-  width: 20px !important;
-  height: 20px !important;
+  width: 18px !important;
+  height: 18px !important;
   stroke-width: 2 !important;
 }
 
@@ -507,19 +495,19 @@ textarea:focus-visible {
 .chat-button-reset::after {
   content: "重置" !important;
   position: absolute !important;
-  bottom: -32px !important;
+  top: -40px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   background: rgba(0, 0, 0, 0.8) !important;
   color: white !important;
-  padding: 4px 8px !important;
+  padding: 6px 10px !important;
   border-radius: 6px !important;
   font-size: 12px !important;
   white-space: nowrap !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 0.2s !important;
-  z-index: 1000 !important;
+  z-index: 9999 !important;
 }
 
 .chat-button-reset:hover::after {
@@ -527,14 +515,14 @@ textarea:focus-visible {
 }
 
 .chat-button-submit {
-  padding: 12px 16px !important;
+  padding: 9px !important;
   background: linear-gradient(
     135deg,
     rgba(59, 130, 246, 0.98),
     rgba(37, 99, 235, 0.95)
   ) !important;
   color: white !important;
-  border-radius: 12px !important;
+  border-radius: 50% !important;
   border: 1.5px solid rgba(59, 130, 246, 0.8) !important;
   backdrop-filter: blur(16px) !important;
   box-shadow: 0 4px 8px -2px rgba(59, 130, 246, 0.25),
@@ -543,9 +531,12 @@ textarea:focus-visible {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-width: 40px !important;
-  min-height: 40px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
   cursor: pointer !important;
+  margin: 4px !important;
 }
 
 .chat-button-submit:hover {
@@ -566,8 +557,8 @@ textarea:focus-visible {
 }
 
 .chat-button-submit svg {
-  width: 20px !important;
-  height: 20px !important;
+  width: 18px !important;
+  height: 18px !important;
   stroke-width: 2 !important;
 }
 
@@ -575,19 +566,19 @@ textarea:focus-visible {
 .chat-button-submit::after {
   content: "发送" !important;
   position: absolute !important;
-  bottom: -32px !important;
+  top: -40px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   background: rgba(0, 0, 0, 0.8) !important;
   color: white !important;
-  padding: 4px 8px !important;
+  padding: 6px 10px !important;
   border-radius: 6px !important;
   font-size: 12px !important;
   white-space: nowrap !important;
   opacity: 0 !important;
   pointer-events: none !important;
   transition: opacity 0.2s !important;
-  z-index: 1000 !important;
+  z-index: 9999 !important;
 }
 
 .chat-button-submit:hover::after {
@@ -597,6 +588,7 @@ textarea:focus-visible {
 /* ChatView 输入框样式增强 */
 .chat-input {
   flex: 1 !important;
+  max-width: calc(100% - 100px) !important;
   padding: 8px 12px !important;
   border-radius: 12px !important;
   border: 1.5px solid rgba(147, 197, 253, 0.7) !important;
@@ -609,9 +601,8 @@ textarea:focus-visible {
   -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   resize: none !important;
-  height: 40px !important;
-  min-height: 40px !important;
-  max-height: 100px !important;
+  min-height: 28px !important;
+  max-height: 114px !important;
   overflow-y: auto !important;
   box-shadow: 0 4px 8px -2px rgba(147, 197, 253, 0.15),
     0 2px 4px -1px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;

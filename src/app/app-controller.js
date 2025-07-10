@@ -41,7 +41,6 @@ export default class AppController {
     this.contextManager = new ContextManager();
 
     if (!containerElement) {
-      // fixme)) Cannot initialize
       Logger.error(
         "Initialization failed: Invalid container element provided."
       );
@@ -66,10 +65,10 @@ export default class AppController {
     // 5. 启动 UI 渲染
     this.uiManager.init();
 
-    // 6. 触发初次分析
-    this.triggerInitialAnalysis();
+    // 注意：不在这里触发初次分析，由上层调用者控制
+    // 这样可以避免重复调用导致的错误消息重复
 
-    Logger.log("AppController Initialized and Ready");
+    Logger.log("AppController base components initialized");
   }
 
   /**
@@ -84,6 +83,9 @@ export default class AppController {
           role: "system",
           content: "您好，我是您的AI分析助手，正在为您分析当前报表...",
           type: "info",
+          id: `system-init-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 11)}`,
         },
       ],
     });
@@ -108,11 +110,17 @@ export default class AppController {
             role: "system",
             content: this._getErrorMessage(error),
             type: "error",
+            id: `system-error-${Date.now()}-${Math.random()
+              .toString(36)
+              .substring(2, 11)}`,
           },
         ],
+        isLoading: true, // 关键修复：保持加载状态，确保UI禁用
       });
     } finally {
-      this.stateManager.setState({ isLoading: false });
+      // 注意：不要在这里设置 isLoading: false
+      // 因为如果初始化失败，我们希望保持UI禁用状态
+      // isLoading 状态应该由上层调用者控制
     }
   }
 
@@ -120,9 +128,25 @@ export default class AppController {
    * @function resetAnalysis() - 重置分析流程
    */
   async resetAnalysis() {
-    this.contextManager.clear();
-    this.stateManager.setState({ isDataStale: false });
-    await this.triggerInitialAnalysis();
+    // 检查系统状态，确保组件已正确初始化
+    if (!this.contextManager || !this.stateManager) {
+      Logger.error(
+        "Cannot reset analysis - system components not properly initialized"
+      );
+      return;
+    }
+
+    try {
+      this.contextManager.clear();
+      this.stateManager.setState({ isDataStale: false });
+      await this.triggerInitialAnalysis();
+    } catch (error) {
+      Logger.error("Error during reset analysis:", error);
+      // 如果重置失败，至少要清除加载状态
+      if (this.stateManager) {
+        this.stateManager.setState({ isLoading: false });
+      }
+    }
   }
 
   /**
@@ -188,12 +212,34 @@ export default class AppController {
       return;
     }
 
+    // 检查系统状态，确保所有组件都已正确初始化且未被销毁
+    if (
+      !this.stateManager ||
+      !this.uiManager ||
+      !this.contextManager ||
+      !this.pipeline ||
+      !this.uiManager.isInitialized
+    ) {
+      Logger.error(
+        "System components not properly initialized or have been destroyed, cannot handle user query"
+      );
+      return;
+    }
+
+    // 额外的安全检查：确保UI输入当前是启用状态
+    // 如果UI被禁用，说明系统可能处于错误状态或正在初始化中
+    const currentState = this.stateManager.getState();
+    if (currentState.isLoading) {
+      Logger.warn("System is currently loading, ignoring user input");
+      return;
+    }
+
     try {
       // 1. 更新 UI 状态，立即显示用户的消息，并进入加载状态
-      const currentState = this.stateManager.getState();
+      const userState = this.stateManager.getState();
       const userMessage = { role: "user", content: text };
       this.stateManager.setState({
-        messages: [...currentState.messages, userMessage],
+        messages: [...userState.messages, userMessage],
         isLoading: true,
       });
 
@@ -213,21 +259,31 @@ export default class AppController {
     } catch (error) {
       // 错误处理：如果 pipeline 分析失败，应当告知用户
       Logger.error("Error occurred while handling user query:", error);
-      this.uiManager.hideAssistantStatus(); // 隐藏状态栏
-      const errorState = this.stateManager.getState();
-      this.stateManager.setState({
-        messages: [
-          ...errorState.messages,
-          {
-            role: "system",
-            content: this._getErrorMessage(error),
-            type: "error",
-          },
-        ],
-      });
+
+      // 安全地隐藏状态栏
+      if (this.uiManager && this.uiManager.hideAssistantStatus) {
+        this.uiManager.hideAssistantStatus();
+      }
+
+      // 安全地获取当前状态并添加错误消息
+      if (this.stateManager) {
+        const errorState = this.stateManager.getState();
+        this.stateManager.setState({
+          messages: [
+            ...errorState.messages,
+            {
+              role: "system",
+              content: this._getErrorMessage(error),
+              type: "error",
+            },
+          ],
+        });
+      }
     } finally {
       // 无论成功与否，取消加载状态，避免 UI 卡顿
-      this.stateManager.setState({ isLoading: false });
+      if (this.stateManager) {
+        this.stateManager.setState({ isLoading: false });
+      }
     }
   }
 
@@ -320,12 +376,8 @@ export default class AppController {
         div.offsetHeight > 0 &&
         div.offsetParent !== null
       ) {
-        // Exclude the AI container itself from the search.
-        if (
-          this.uiManager &&
-          this.uiManager.container &&
-          div === this.uiManager.container
-        ) {
+        // Enhanced AI container exclusion logic
+        if (this._isAIContainer(div)) {
           continue;
         }
 
@@ -344,5 +396,56 @@ export default class AppController {
     }
 
     return largestElement;
+  }
+
+  /**
+   * @private
+   * @description 检查元素是否为AI容器或其子元素
+   * @param {HTMLElement} element - 要检查的元素
+   * @return {boolean} - 如果是AI容器则返回true
+   */
+  _isAIContainer(element) {
+    // AI容器选择器黑名单
+    const aiContainerSelectors = [
+      "#smartfine-chat-container",
+      "#ai-container",
+      ".ai-modal-content",
+      ".ai-modal-close-btn",
+      ".welcome-loading",
+      "#ai-assistant-fab",
+    ];
+
+    // 检查元素是否匹配AI选择器
+    for (const selector of aiContainerSelectors) {
+      try {
+        if (element.matches && element.matches(selector)) {
+          Logger.log(`Excluded AI container: ${selector}`);
+          return true;
+        }
+
+        // 检查是否在AI容器内部
+        const aiContainer = document.querySelector(selector);
+        if (aiContainer && aiContainer.contains(element)) {
+          Logger.log(`Excluded element inside AI container: ${selector}`);
+          return true;
+        }
+      } catch (error) {
+        // 忽略选择器错误，继续检查其他选择器
+        Logger.warn(`Error checking selector ${selector}:`, error);
+      }
+    }
+
+    // 兼容性检查：排除原有的UIManager容器
+    if (
+      this.uiManager &&
+      this.uiManager.container &&
+      (element === this.uiManager.container ||
+        this.uiManager.container.contains(element))
+    ) {
+      Logger.log("Excluded UIManager container or its child");
+      return true;
+    }
+
+    return false;
   }
 }

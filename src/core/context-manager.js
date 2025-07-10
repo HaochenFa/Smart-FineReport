@@ -26,7 +26,9 @@ export class ContextManager {
    */
   addMessage(role, content) {
     if (role === "system") {
-      Logger.log(`[ContextManager] System message is not added to history: { role: "${role}" }`);
+      Logger.log(
+        `[ContextManager] System message is not added to history: { role: "${role}" }`
+      );
       return; // Do not add system messages to the history
     }
 
@@ -40,7 +42,9 @@ export class ContextManager {
       // which is the first user follow-up question after the initial analysis.
       // This preserves the initial analysis (index 0 and 1) and recent conversations.
       this.history.splice(2, 1);
-      Logger.log("[ContextManager] History exceeded max size. Oldest non-initial message removed.");
+      Logger.log(
+        "[ContextManager] History exceeded max size. Oldest non-initial message removed."
+      );
     }
   }
 

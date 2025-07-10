@@ -34,7 +34,11 @@ export class APIService {
         } catch {
           errorData.body = "Could not parse error response body as JSON.";
         }
-        throw new Error(`HTTP error: ${response.status}. Details: ${JSON.stringify(errorData)}`);
+        throw new Error(
+          `HTTP error: ${response.status}. Details: ${JSON.stringify(
+            errorData
+          )}`
+        );
       }
 
       return await response.json();
@@ -80,6 +84,9 @@ export class APIService {
       body: params,
     };
 
-    return this._handleResponse(fetch(SETTINGS.service.proxy, requestOptions), "proxyPost");
+    return this._handleResponse(
+      fetch(SETTINGS.service.proxy, requestOptions),
+      "proxyPost"
+    );
   }
 }

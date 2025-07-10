@@ -36,7 +36,6 @@
 
   // 拖拽判断阈值
   const DRAG_THRESHOLD = 5; // 像素，超过此距离才认为是拖拽
-  const CLICK_TIME_THRESHOLD = 300; // 毫秒，超过此时间认为可能是拖拽意图
 
   function handleMouseDown(e) {
     isDragging = true;
@@ -85,15 +84,6 @@
 
   function handleMouseUp() {
     if (isDragging) {
-      const endTime = Date.now();
-      const totalTime = startTime ? endTime - startTime : 0;
-
-      console.log("Mouse up", {
-        wasDragged,
-        totalTime,
-        dragThreshold: DRAG_THRESHOLD,
-      });
-
       isDragging = false;
       fab.style.cursor = "grab";
 
@@ -175,21 +165,9 @@
   }
 
   async function handleFabClick() {
-    const clickTime = Date.now();
-    const timeSinceMouseDown = startTime ? clickTime - startTime : 0;
-
-    console.log("FAB clicked!", {
-      wasDragged,
-      timeSinceMouseDown,
-      dragThreshold: DRAG_THRESHOLD,
-    });
-
     if (wasDragged) {
-      console.log("Click ignored due to drag - movement exceeded threshold");
       return;
     }
-
-    console.log("Processing FAB click...");
 
     // 按钮点击动画效果
     isButtonClicked = true;
@@ -205,62 +183,76 @@
     fabPosition = calculateFabCenter();
     updateModalOrigin();
 
-    console.log("Setting showModal to true...");
     // UI第一优先级：立即显示弹窗
     showModal = true;
-    console.log("showModal is now:", showModal);
-
-    // 调试：检查DOM元素
-    setTimeout(() => {
-      const modalElement = document.querySelector(".ai-modal-content");
-      console.log("Modal element found:", modalElement);
-      if (modalElement) {
-        console.log("Modal element styles:", window.getComputedStyle(modalElement));
-        console.log("Modal element position:", modalElement.getBoundingClientRect());
-      }
-    }, 100);
 
     // 后台异步初始化并自动开始分析（不阻塞UI）
-    if (!isAssistantInitialized) {
-      console.log("Initializing assistant...");
-      initializeAndStartAnalysis();
+    // 防止重复初始化：检查是否已初始化，以及是否正在加载中
+    if (
+      !isAssistantInitialized &&
+      (!appInstance || !appInstance.stateManager || !appInstance.stateManager.getState().isLoading)
+    ) {
+      await initializeAndStartAnalysis(); // 添加await确保初始化完成后才继续执行
     } else {
-      console.log("Assistant already initialized, re-mounting UI");
-
       // 等待DOM更新完成
       await tick();
 
-      if (appInstance && aiContainerElement) {
-        console.log("Re-initializing UI Manager with fresh container");
+      // 验证appInstance状态，如果无效则重新初始化
+      if (!appInstance || !appInstance.stateManager || !appInstance.uiManager) {
+        Logger.warn("AppInstance is in invalid state, reinitializing...");
 
-        // 清空容器内容
-        aiContainerElement.innerHTML = "";
-        console.log("Container cleared");
+        // 清理可能存在的残留组件
+        if (appInstance && appInstance.uiManager) {
+          try {
+            appInstance.uiManager.destroy();
+          } catch (error) {
+            Logger.error("Error destroying invalid UI manager:", error);
+          }
+        }
 
-        // 重新初始化UI管理器到新的容器
-        appInstance.uiManager = new UIManager(
-          aiContainerElement,
-          appInstance.stateManager,
-          appInstance.handleUserQuery.bind(appInstance),
-          appInstance.resetAnalysis.bind(appInstance)
-        );
+        isAssistantInitialized = false;
+        appInstance = null;
+        initializeAndStartAnalysis();
+        return;
+      }
 
-        console.log("New UIManager created:", appInstance.uiManager);
+      if (aiContainerElement) {
+        try {
+          // 销毁旧的UI管理器
+          if (appInstance.uiManager) {
+            appInstance.uiManager.destroy();
+          }
 
-        // 获取当前状态并更新UI
-        const currentState = appInstance.stateManager.getState();
-        console.log("Current state for re-mount:", currentState);
+          // 清空容器内容
+          aiContainerElement.innerHTML = "";
 
-        // 确保UI显示当前状态
-        appInstance.uiManager._update(currentState);
+          // 重新初始化UI管理器到新的容器
+          appInstance.uiManager = new UIManager(
+            aiContainerElement,
+            appInstance.stateManager,
+            appInstance.handleUserQuery.bind(appInstance),
+            appInstance.resetAnalysis.bind(appInstance)
+          );
 
-        // 检查容器内容
-        setTimeout(() => {
-          console.log("Container content after re-mount:", aiContainerElement.innerHTML);
-          console.log("ChatView element:", appInstance.uiManager.chatViewElement);
-        }, 200);
+          // 获取当前状态并更新UI
+          const currentState = appInstance.stateManager.getState();
 
-        console.log("UI re-mounted successfully");
+          // 确保UI显示当前状态
+          appInstance.uiManager._update(currentState);
+        } catch (error) {
+          Logger.error("Error reinitializing UI:", error);
+          // 如果重新初始化UI失败，回退到完全重新初始化
+          if (appInstance && appInstance.uiManager) {
+            try {
+              appInstance.uiManager.destroy();
+            } catch (destroyError) {
+              Logger.error("Error destroying failed UI manager:", destroyError);
+            }
+          }
+          isAssistantInitialized = false;
+          appInstance = null;
+          initializeAndStartAnalysis();
+        }
       }
     }
   }
@@ -274,22 +266,59 @@
       const serviceUrl = SETTINGS.service.url;
       appInstance = new AppController(serviceUrl);
       appInstance.init(aiContainerElement);
-      isAssistantInitialized = true;
-      Logger.log("AI Assistant Initialized Successfully.");
+
+      // 确保在初始化过程中UI保持禁用状态
+      if (appInstance && appInstance.stateManager) {
+        appInstance.stateManager.setState({ isLoading: true });
+      }
+
+      Logger.log("AI Assistant base components initialized.");
 
       // 初始化完成后立即开始自动分析
       await appInstance.triggerInitialAnalysis();
+
+      // 只有在完整初始化（包括首次分析）成功后才设置为已初始化
+      isAssistantInitialized = true;
+
+      // 只有在成功时才清除加载状态
+      if (appInstance && appInstance.stateManager) {
+        appInstance.stateManager.setState({ isLoading: false });
+      }
+
+      Logger.log("AI Assistant fully initialized and ready.");
     } catch (error) {
       Logger.error("A critical error occurred during initialization:", error);
-      // 即使初始化失败，也要显示友好的错误信息，而不是隐藏弹窗
+
+      // 完全清理已创建的组件，防止状态不一致
+      if (appInstance && appInstance.uiManager) {
+        try {
+          appInstance.uiManager.destroy();
+        } catch (destroyError) {
+          Logger.error("Error destroying UI manager:", destroyError);
+        }
+      }
+
+      // 重置所有相关状态
+      isAssistantInitialized = false;
+      appInstance = null;
+
+      // 关键修复：不要清除加载状态，保持UI禁用
+      // 这样用户就无法在错误状态下输入内容
+
+      // 清空容器并显示友好的错误信息，包含重试选项
       if (aiContainerElement) {
         aiContainerElement.innerHTML = `
           <div style="padding: 20px; text-align: center; color: #757575; font-family: sans-serif;">
             <p style="margin: 0; font-weight: 500;">AI 分析助手初始化失败</p>
-            <p style="margin: 8px 0 0; font-size: 14px;">请检查控制台日志或联系技术支持。</p>
-            <button onclick="location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-              重新加载页面
-            </button>
+            <p style="margin: 8px 0 0; font-size: 14px;">请检查网络连接或稍后重试。</p>
+            <div style="margin-top: 16px;">
+              <button onclick="window.location.reload()" style="margin-right: 8px; padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                重新加载页面
+              </button>
+              <button onclick="document.querySelector('#ai-assistant-fab').click()" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                重试初始化
+              </button>
+            </div>
           </div>
         `;
       }
@@ -346,8 +375,6 @@
       modalContent.style.left = `${Math.max(0, left)}px`;
       modalContent.style.top = `${Math.max(0, top)}px`;
       modalContent.style.transform = "none"; // 移除CSS transform
-
-      console.log("Modal positioned at:", { left, top, scrollTop, scrollLeft });
     }
   }
 
@@ -569,28 +596,70 @@
     position: absolute;
     top: 10px; /* Aligned with container padding */
     right: 10px; /* Aligned with container padding */
-    background: rgba(0, 0, 0, 0.1);
-    border: none;
+
+    /* 毛玻璃背景效果 */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0.15) 100%
+    );
+
+    /* 高斯模糊效果 */
+    backdrop-filter: blur(16px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(1.1);
+
+    /* 边框效果 */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    /* 多层阴影效果 - 营造上层感 */
+    box-shadow:
+      0 8px 16px rgba(0, 0, 0, 0.15),
+      0 4px 8px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+
     font-size: 18px;
     font-weight: bold;
     line-height: 28px;
     cursor: pointer;
-    color: #555;
+    color: #333;
     z-index: 10010;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    transition:
-      background-color 0.2s,
-      color 0.2s;
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .ai-modal-close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.2);
+    /* 悬停时增强效果 */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.25) 100%
+    );
+
+    box-shadow:
+      0 12px 24px rgba(0, 0, 0, 0.2),
+      0 6px 12px rgba(0, 0, 0, 0.15),
+      0 3px 6px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+
     color: #000;
+    transform: scale(1.05);
+  }
+
+  .ai-modal-close-btn:active {
+    transform: scale(0.95);
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.2),
+      0 2px 4px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   /* #ai-container 样式已移至 main.css 中统一管理 */

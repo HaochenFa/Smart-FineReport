@@ -8,7 +8,10 @@
  * @import ../utils/logger.js
  */
 
-import { INITIAL_ANALYSIS_TEMPLATE, FOLLOW_UP_TEMPLATE } from "../utils/default-prompt.js";
+import {
+  INITIAL_ANALYSIS_TEMPLATE,
+  FOLLOW_UP_TEMPLATE,
+} from "../utils/default-prompt.js";
 import { Logger as log } from "../utils/logger.js";
 
 export class PromptBuilder {
@@ -38,16 +41,26 @@ export class PromptBuilder {
           );
         }
       } else {
-        log.warn("No valid contextProvider was provided, conversation history will be empty.");
+        log.warn(
+          "No valid contextProvider was provided, conversation history will be empty."
+        );
       }
 
       // 步骤 1.5: 验证 Base64 字符串
-      if (typeof imageBase64 !== "string" || !imageBase64.startsWith("data:image/")) {
-        log.warn("提供的imageBase64字符串无效，可能无法被模型正确解析：", imageBase64);
+      if (
+        typeof imageBase64 !== "string" ||
+        !imageBase64.startsWith("data:image/")
+      ) {
+        log.warn(
+          "提供的imageBase64字符串无效，可能无法被模型正确解析：",
+          imageBase64
+        );
       }
 
       // 根据 isInitial 标志选择系统预设
-      const systemPrompt = isInitial ? INITIAL_ANALYSIS_TEMPLATE.System : FOLLOW_UP_TEMPLATE.System;
+      const systemPrompt = isInitial
+        ? INITIAL_ANALYSIS_TEMPLATE.System
+        : FOLLOW_UP_TEMPLATE.System;
 
       // 步骤 2: 构建多模态消息结构
       const messages = [

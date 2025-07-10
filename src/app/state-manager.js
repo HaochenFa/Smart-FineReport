@@ -4,6 +4,8 @@
  * @description The core of UI layer UI 层的核心
  */
 
+import { Logger } from "../utils/logger.js";
+
 export class StateManager {
   /**
    * 构造一个 StateManager 实例。
@@ -47,7 +49,7 @@ export class StateManager {
       return JSON.parse(JSON.stringify(this._state));
     } catch {
       // 最后降级到浅拷贝
-      console.warn("[StateManager] Deep clone failed, using shallow copy");
+      Logger.warn("[StateManager] Deep clone failed, using shallow copy");
       return { ...this._state };
     }
   }
@@ -84,7 +86,16 @@ export class StateManager {
    * @param {{role: string, content: string}} message - 要添加的消息对象。
    */
   addMessage(message) {
-    const newMessages = [...this._state.messages, message];
+    // 确保每个消息都有唯一的 ID
+    const messageWithId = {
+      ...message,
+      id:
+        message.id ||
+        `${message.role}-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 11)}`,
+    };
+    const newMessages = [...this._state.messages, messageWithId];
     this.setState({ messages: newMessages });
   }
 

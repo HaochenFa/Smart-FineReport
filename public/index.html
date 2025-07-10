@@ -10,26 +10,80 @@
     <!--<script type="module" src="./smart-fr-plugin.js"></script>-->
 
     <style>
+      :root {
+        /* Light theme colors */
+        --bg-primary: #f0f2f5;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #fafafa;
+        --bg-table-header: #f2f2f2;
+        --text-primary: #333;
+        --text-secondary: #555;
+        --text-accent: #1890ff;
+        --border-primary: #d9d9d9;
+        --border-secondary: #e8e8e8;
+        --border-table: #ddd;
+        --shadow-light: rgba(0, 0, 0, 0.1);
+        --shadow-subtle: rgba(0, 0, 0, 0.05);
+      }
+
+      [data-theme="dark"] {
+        /* Dark theme colors */
+        --bg-primary: #0f0f23;
+        --bg-secondary: #1a1a2e;
+        --bg-tertiary: #16213e;
+        --bg-table-header: #0e3460;
+        --text-primary: #e6e6e6;
+        --text-secondary: #b3b3b3;
+        --text-accent: #4da6ff;
+        --border-primary: #3a3a5c;
+        --border-secondary: #2a2a4a;
+        --border-table: #404040;
+        --shadow-light: rgba(0, 0, 0, 0.3);
+        --shadow-subtle: rgba(0, 0, 0, 0.2);
+      }
+
       body {
         font-family: sans-serif;
         padding: 20px;
-        background-color: #f0f2f5;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-primary);
+        border-radius: 20px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .theme-toggle:hover {
+        background: var(--bg-tertiary);
       }
 
       #report-mock {
-        border: 1px solid #d9d9d9;
+        border: 1px solid var(--border-primary);
         padding: 20px;
         margin-bottom: 20px;
-        background-color: #ffffff;
+        background-color: var(--bg-secondary);
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px var(--shadow-light);
+        transition: all 0.3s ease;
       }
 
       #report-mock h2 {
         text-align: center;
         margin-bottom: 25px;
         font-size: 24px;
-        color: #333;
+        color: var(--text-primary);
       }
 
       .grid-container {
@@ -39,11 +93,12 @@
       }
 
       .grid-item {
-        background-color: #fff;
+        background-color: var(--bg-secondary);
         padding: 20px;
-        border: 1px solid #e8e8e8;
+        border: 1px solid var(--border-secondary);
         border-radius: 5px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 1px 3px var(--shadow-subtle);
+        transition: all 0.3s ease;
       }
 
       .grid-item.chart-large {
@@ -61,20 +116,21 @@
       .kpi h4 {
         margin: 0 0 10px 0;
         font-size: 1em;
-        color: #555;
+        color: var(--text-secondary);
       }
 
       .kpi p {
         margin: 0;
         font-size: 2em;
         font-weight: bold;
-        color: #1890ff;
+        color: var(--text-accent);
       }
 
       .chart h4,
       .table-container h4 {
         margin-top: 0;
         margin-bottom: 15px;
+        color: var(--text-primary);
       }
 
       .chart canvas {
@@ -89,22 +145,30 @@
 
       th,
       td {
-        border: 1px solid #ddd;
+        border: 1px solid var(--border-table);
         padding: 12px;
         text-align: left;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
       }
 
       th {
-        background-color: #f2f2f2;
+        background-color: var(--bg-table-header);
         font-weight: 600;
       }
 
       tbody tr:nth-child(odd) {
-        background-color: #fafafa;
+        background-color: var(--bg-tertiary);
+      }
+
+      h1 {
+        color: var(--text-primary);
+        transition: color 0.3s ease;
       }
     </style>
   </head>
   <body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 暗黑模式</button>
     <h1>本地测试环境</h1>
     <div id="report-mock">
       <!-- The trigger button is now injected by the script -->
@@ -168,10 +232,46 @@
     </div>
 
     <script>
+      // Theme toggle functionality
+      function toggleTheme() {
+        const body = document.body;
+        const themeToggle = document.querySelector(".theme-toggle");
+        const currentTheme = body.getAttribute("data-theme");
+
+        if (currentTheme === "dark") {
+          body.removeAttribute("data-theme");
+          themeToggle.innerHTML = "🌙 暗黑模式";
+          localStorage.setItem("theme", "light");
+        } else {
+          body.setAttribute("data-theme", "dark");
+          themeToggle.innerHTML = "☀️ 明亮模式";
+          localStorage.setItem("theme", "dark");
+        }
+      }
+
+      // Initialize theme from localStorage
+      function initTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const body = document.body;
+        const themeToggle = document.querySelector(".theme-toggle");
+
+        if (savedTheme === "dark") {
+          body.setAttribute("data-theme", "dark");
+          themeToggle.innerHTML = "☀️ 明亮模式";
+        } else {
+          body.removeAttribute("data-theme");
+          themeToggle.innerHTML = "🌙 暗黑模式";
+        }
+      }
+
       // Chart.js Initialization
       document.addEventListener("DOMContentLoaded", function () {
+        // Initialize theme
+        initTheme();
         // Sales Trend Chart (Bar)
-        const salesCtx = document.getElementById("salesTrendChart").getContext("2d");
+        const salesCtx = document
+          .getElementById("salesTrendChart")
+          .getContext("2d");
         new Chart(salesCtx, {
           type: "bar",
           data: {
@@ -197,7 +297,9 @@
         });
 
         // Product Category Chart (Pie)
-        const productCtx = document.getElementById("productCategoryChart").getContext("2d");
+        const productCtx = document
+          .getElementById("productCategoryChart")
+          .getContext("2d");
         new Chart(productCtx, {
           type: "pie",
           data: {
