@@ -207,6 +207,15 @@ textarea:focus-visible {
   animation: messageSlideIn 0.3s ease-out;
 }
 
+/* 确保消息容器内的文字可以被选择 */
+#message-container {
+  user-select: text !important;
+}
+
+#message-container * {
+  user-select: text !important;
+}
+
 @keyframes messageSlideIn {
   from {
     opacity: 0;
@@ -314,6 +323,8 @@ textarea:focus-visible {
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(59, 130, 246, 0.4) !important;
   transition: box-shadow 0.2s !important;
+  user-select: text !important; /* 确保文字可以被选择 */
+  cursor: text !important; /* 显示文字选择光标 */
 }
 
 .message-bubble-user:hover {
@@ -336,6 +347,8 @@ textarea:focus-visible {
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
   transition: box-shadow 0.2s !important;
+  user-select: text !important; /* 确保文字可以被选择 */
+  cursor: text !important; /* 显示文字选择光标 */
 }
 
 .message-bubble-assistant:hover {
@@ -366,6 +379,8 @@ textarea:focus-visible {
   margin: 0 auto !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  user-select: text !important; /* 确保文字可以被选择 */
+  cursor: text !important; /* 显示文字选择光标 */
 }
 
 .message-bubble-system.error {
