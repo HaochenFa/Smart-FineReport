@@ -100,7 +100,12 @@
     let isDraggingModal = false;
 
     function handleMousedown(e) {
-      if (e.target.closest("button, textarea, input")) {
+      // 排除按钮、输入框和消息气泡区域
+      if (
+        e.target.closest(
+          "button, textarea, input, .message-bubble-user, .message-bubble-assistant, .message-bubble-system, #message-container"
+        )
+      ) {
         return;
       }
 
