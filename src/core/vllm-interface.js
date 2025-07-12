@@ -28,9 +28,10 @@ import { Logger as log } from "../utils/logger.js";
 
 export class AIEngine {
   /**
-   * @param {Object} config - The config (API KEY, URL) from "../utils/settings.js", but injected by main.js
+   * @param {Object} config - The config (API KEY, URL, proxy) from "../utils/settings.js", but injected by main.js
    * @param {string} config.url - The API endpoint URL for the vLLM server.
    * @param {string} [config.apiKey] - The optional API key (bearer token).
+   * @param {string} [config.proxy] - The optional proxy server URL.
    */
   constructor(config) {
     if (
@@ -46,6 +47,7 @@ export class AIEngine {
 
     this.url = config.url;
     this.apiKey = config.apiKey;
+    this.proxy = config.proxy;
 
     log.log(
       `[AIEngine] Initialized with URL(s): ${
@@ -91,7 +93,11 @@ export class AIEngine {
           headers["Authorization"] = `Bearer ${this.apiKey}`;
         }
 
-        const response = await APIService.proxyPost(url, body, headers);
+        // 智能选择代理模式：如果配置了有效的proxy地址则使用代理，否则直接请求
+        const response =
+          this.proxy && this.proxy.trim() !== ""
+            ? await APIService.proxyPost(url, body, headers)
+            : await APIService.post(url, body, headers);
         log.log("[AIEngine] Received API response.");
 
         // Validate the structure of the response for chat completions and extract the message content

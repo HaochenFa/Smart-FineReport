@@ -12,6 +12,7 @@ import { AIEngine } from "../core/vllm-interface.js";
 import { AnalysisPipeline } from "../core/ai-analysis-pipeline.js";
 import { Logger } from "../utils/logger.js";
 import { ContextManager } from "@/core/context-manager.js";
+import { SETTINGS } from "../utils/settings.js";
 import html2canvas from "html2canvas";
 import { marked } from "marked";
 
@@ -37,7 +38,10 @@ export default class AppController {
     // 2. 初始化所有后端的逻辑和 AI 模块
     // 注意实例化顺序
     const promptBuilder = new PromptBuilder();
-    const aiEngine = new AIEngine({ url: this.serviceUrl });
+    const aiEngine = new AIEngine({
+      url: this.serviceUrl,
+      proxy: SETTINGS.service.proxy,
+    });
     this.contextManager = new ContextManager();
 
     if (!containerElement) {
