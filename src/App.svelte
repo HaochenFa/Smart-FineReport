@@ -93,60 +93,290 @@
     }
   }
 
-  // Modal 拖拽 action
-  function draggable(node) {
-    let x;
-    let y;
-    let isDraggingModal = false;
+  // Modal 窗口行为 action - 支持拖拽和resize
+  function windowBehavior(node) {
+    let currentOperation = "none"; // 'drag', 'resize', 'none'
+    let resizeDirection = ""; // 'n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'
+    let initialMousePos = { x: 0, y: 0 };
+    let initialModalSize = { width: 0, height: 0 };
+    let initialModalPos = { left: 0, top: 0 };
+
+    const BORDER_WIDTH = 8; // 边界检测区域宽度
+    const CORNER_SIZE = 16; // 角落检测区域大小，比边界更大
+    const MIN_WIDTH = 400;
+    const MIN_HEIGHT = 300;
+    const MAX_WIDTH_RATIO = 0.9; // 90% of viewport width
+    const MAX_HEIGHT_RATIO = 0.9; // 90% of viewport height
+
+    // 检测鼠标是否在边界区域
+    function detectBorderRegion(e) {
+      const rect = node.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // 首先检测角落区域（更大的检测范围）
+      const inTopLeftCorner = x <= CORNER_SIZE && y <= CORNER_SIZE;
+      const inTopRightCorner = x >= rect.width - CORNER_SIZE && y <= CORNER_SIZE;
+      const inBottomLeftCorner = x <= CORNER_SIZE && y >= rect.height - CORNER_SIZE;
+      const inBottomRightCorner = x >= rect.width - CORNER_SIZE && y >= rect.height - CORNER_SIZE;
+
+      if (inTopLeftCorner) return "nw";
+      if (inTopRightCorner) return "ne";
+      if (inBottomLeftCorner) return "sw";
+      if (inBottomRightCorner) return "se";
+
+      // 然后检测边界区域
+      const onTop = y <= BORDER_WIDTH;
+      const onBottom = y >= rect.height - BORDER_WIDTH;
+      const onLeft = x <= BORDER_WIDTH;
+      const onRight = x >= rect.width - BORDER_WIDTH;
+
+      if (onTop) return "n";
+      if (onBottom) return "s";
+      if (onLeft) return "w";
+      if (onRight) return "e";
+
+      return "center";
+    }
+
+    // 设置cursor样式
+    function setCursor(region) {
+      const cursorMap = {
+        n: "ns-resize",
+        s: "ns-resize",
+        e: "ew-resize",
+        w: "ew-resize",
+        ne: "ne-resize",
+        nw: "nw-resize",
+        se: "se-resize",
+        sw: "sw-resize",
+        center: "grab",
+      };
+      node.style.cursor = cursorMap[region] || "grab";
+    }
+
+    // 节流函数，避免过于频繁的cursor更新
+    let cursorUpdateTimer = null;
+    function handleMousemove(e) {
+      if (currentOperation !== "none") return;
+
+      // 使用requestAnimationFrame进行节流
+      if (cursorUpdateTimer) return;
+
+      cursorUpdateTimer = requestAnimationFrame(() => {
+        const region = detectBorderRegion(e);
+        setCursor(region);
+        cursorUpdateTimer = null;
+      });
+    }
 
     function handleMousedown(e) {
-      // 排除按钮、输入框和消息气泡区域
+      // 排除按钮、输入框和具体的交互元素
       if (
         e.target.closest(
-          "button, textarea, input, .message-bubble-user, .message-bubble-assistant, .message-bubble-system, #message-container"
-        )
+          "button, textarea, input, .message-bubble-user, .message-bubble-assistant, .message-bubble-system"
+        ) ||
+        // 排除输入区域，但允许消息显示区域拖拽
+        (e.target.closest("#message-container") && e.target.closest("textarea, button"))
       ) {
         return;
       }
 
-      isDraggingModal = true;
-      x = e.clientX;
-      y = e.clientY;
+      const region = detectBorderRegion(e);
 
-      node.style.cursor = "grabbing";
+      // 记录初始状态
+      initialMousePos = { x: e.clientX, y: e.clientY };
+      const rect = node.getBoundingClientRect();
+      initialModalSize = { width: rect.width, height: rect.height };
 
-      window.addEventListener("mousemove", handleMousemove);
+      // 获取当前位置，统一使用style坐标系统
+      initialModalPos = {
+        left: parseInt(node.style.left) || 0,
+        top: parseInt(node.style.top) || 0,
+      };
+
+      // 防止文字选择干扰
+      e.preventDefault();
+      document.body.style.userSelect = "none";
+      document.body.style.webkitUserSelect = "none";
+
+      if (region === "center") {
+        // 拖拽模式
+        currentOperation = "drag";
+        node.style.cursor = "grabbing";
+      } else {
+        // Resize模式
+        currentOperation = "resize";
+        resizeDirection = region;
+
+        // 确保弹窗有明确的尺寸设置，但不要立即应用，避免突然跳跃
+        // 只记录当前尺寸，在实际resize时才应用
+      }
+
+      window.addEventListener("mousemove", handleGlobalMousemove);
       window.addEventListener("mouseup", handleMouseup);
     }
 
-    function handleMousemove(e) {
-      if (!isDraggingModal) return;
+    // 使用requestAnimationFrame优化resize和drag性能
+    let animationFrameId = null;
+    let lastMouseEvent = null;
 
-      const dx = e.clientX - x;
-      const dy = e.clientY - y;
+    function handleGlobalMousemove(e) {
+      // 存储最新的鼠标事件
+      lastMouseEvent = e;
 
-      const currentLeft = parseInt(node.style.left) || 0;
-      const currentTop = parseInt(node.style.top) || 0;
+      if (animationFrameId) return;
 
-      node.style.left = `${currentLeft + dx}px`;
-      node.style.top = `${currentTop + dy}px`;
+      animationFrameId = requestAnimationFrame(() => {
+        if (lastMouseEvent && currentOperation === "drag") {
+          handleDrag(lastMouseEvent);
+        } else if (lastMouseEvent && currentOperation === "resize") {
+          handleResize(lastMouseEvent);
+        }
+        animationFrameId = null;
+      });
+    }
 
-      x = e.clientX;
-      y = e.clientY;
+    function handleDrag(e) {
+      const dx = e.clientX - initialMousePos.x;
+      const dy = e.clientY - initialMousePos.y;
+
+      // 获取视口尺寸
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // 计算新位置，确保不超出视口边界
+      let newLeft = initialModalPos.left + dx;
+      let newTop = initialModalPos.top + dy;
+
+      // 限制在视口范围内（留出一些边距）
+      const margin = 10;
+      newLeft = Math.max(
+        margin,
+        Math.min(viewportWidth - initialModalSize.width - margin, newLeft)
+      );
+      newTop = Math.max(
+        margin,
+        Math.min(viewportHeight - initialModalSize.height - margin, newTop)
+      );
+
+      // 直接应用更改，避免双重requestAnimationFrame导致的延迟
+      node.style.left = `${newLeft}px`;
+      node.style.top = `${newTop}px`;
+    }
+
+    function handleResize(e) {
+      const dx = e.clientX - initialMousePos.x;
+      const dy = e.clientY - initialMousePos.y;
+
+      // 获取视口尺寸和边界
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const maxWidth = viewportWidth * MAX_WIDTH_RATIO;
+      const maxHeight = viewportHeight * MAX_HEIGHT_RATIO;
+      const margin = 20;
+
+      // 基于初始状态计算新的尺寸和位置
+      let newWidth = initialModalSize.width;
+      let newHeight = initialModalSize.height;
+      let newLeft = initialModalPos.left;
+      let newTop = initialModalPos.top;
+
+      // 处理水平方向的resize（独立处理，支持角落resize）
+      if (resizeDirection.includes("e")) {
+        // 右边界resize：左边界固定，只改变宽度
+        newWidth = Math.max(MIN_WIDTH, Math.min(maxWidth, initialModalSize.width + dx));
+        // 确保不超出视口右边界
+        const maxAllowedWidth = viewportWidth - initialModalPos.left - margin;
+        newWidth = Math.min(newWidth, maxAllowedWidth);
+        // 左边界位置保持不变
+        newLeft = initialModalPos.left;
+      }
+
+      if (resizeDirection.includes("w")) {
+        // 左边界resize：右边界固定，改变宽度和左边界位置
+        const rightEdge = initialModalPos.left + initialModalSize.width;
+        newWidth = Math.max(MIN_WIDTH, Math.min(maxWidth, initialModalSize.width - dx));
+        newLeft = rightEdge - newWidth;
+        // 确保不超出视口左边界
+        if (newLeft < margin) {
+          newLeft = margin;
+          newWidth = rightEdge - margin;
+        }
+      }
+
+      // 处理垂直方向的resize（独立处理，支持角落resize）
+      if (resizeDirection.includes("s")) {
+        // 下边界resize：上边界固定，只改变高度
+        newHeight = Math.max(MIN_HEIGHT, Math.min(maxHeight, initialModalSize.height + dy));
+        // 确保不超出视口下边界
+        const maxAllowedHeight = viewportHeight - initialModalPos.top - margin;
+        newHeight = Math.min(newHeight, maxAllowedHeight);
+        // 上边界位置保持不变
+        newTop = initialModalPos.top;
+      }
+
+      if (resizeDirection.includes("n")) {
+        // 上边界resize：下边界固定，改变高度和上边界位置
+        const bottomEdge = initialModalPos.top + initialModalSize.height;
+        newHeight = Math.max(MIN_HEIGHT, Math.min(maxHeight, initialModalSize.height - dy));
+        newTop = bottomEdge - newHeight;
+        // 确保不超出视口上边界
+        if (newTop < margin) {
+          newTop = margin;
+          newHeight = bottomEdge - margin;
+        }
+      }
+
+      // 直接应用新的尺寸和位置，不做额外的尺寸设置
+      node.style.width = `${newWidth}px`;
+      node.style.height = `${newHeight}px`;
+      node.style.left = `${newLeft}px`;
+      node.style.top = `${newTop}px`;
     }
 
     function handleMouseup() {
-      isDraggingModal = false;
+      currentOperation = "none";
+      resizeDirection = "";
       node.style.cursor = "grab";
-      window.removeEventListener("mousemove", handleMousemove);
+
+      // 恢复文字选择
+      document.body.style.userSelect = "";
+      document.body.style.webkitUserSelect = "";
+
+      // 清理动画帧
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      if (cursorUpdateTimer) {
+        cancelAnimationFrame(cursorUpdateTimer);
+        cursorUpdateTimer = null;
+      }
+
+      window.removeEventListener("mousemove", handleGlobalMousemove);
       window.removeEventListener("mouseup", handleMouseup);
     }
 
+    // 设置事件监听器
+    node.addEventListener("mousemove", handleMousemove);
     node.addEventListener("mousedown", handleMousedown);
 
     return {
       destroy() {
+        // 清理事件监听器
+        node.removeEventListener("mousemove", handleMousemove);
         node.removeEventListener("mousedown", handleMousedown);
+        window.removeEventListener("mousemove", handleGlobalMousemove);
+        window.removeEventListener("mouseup", handleMouseup);
+
+        // 清理动画帧
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+        if (cursorUpdateTimer) {
+          cancelAnimationFrame(cursorUpdateTimer);
+        }
       },
     };
   }
@@ -345,35 +575,35 @@
     };
   }
 
-  // Click outside to close logic
-  function handleClickOutside(event) {
-    if (fab && fab.contains(event.target)) {
-      return;
-    }
+  // 移除点击外部关闭逻辑，仅保留X按钮关闭
+  // function handleClickOutside(event) {
+  //   if (fab && fab.contains(event.target)) {
+  //     return;
+  //   }
+  //
+  //   if (modalContent && !modalContent.contains(event.target)) {
+  //     showModal = false;
+  //   }
+  // }
 
-    if (modalContent && !modalContent.contains(event.target)) {
-      showModal = false;
-    }
-  }
-
-  // 初始化模态框位置 - 相对于页面内容居中
+  // 初始化模态框位置和尺寸 - 统一设置像素值
   function initializeModalPosition() {
     if (modalContent && typeof window !== "undefined") {
-      // 获取页面滚动位置
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-
       // 获取视口尺寸
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      // 获取弹窗尺寸
-      const modalWidth = modalContent.offsetWidth;
-      const modalHeight = modalContent.offsetHeight;
+      // 设置合理的默认尺寸（避免CSS冲突）
+      const defaultWidth = Math.min(800, viewportWidth * 0.9);
+      const defaultHeight = Math.min(600, viewportHeight * 0.85);
 
-      // 计算相对于当前视口的居中位置
-      const left = scrollLeft + (viewportWidth - modalWidth) / 2;
-      const top = scrollTop + (viewportHeight - modalHeight) / 2;
+      // 立即设置明确的像素尺寸
+      modalContent.style.width = `${defaultWidth}px`;
+      modalContent.style.height = `${defaultHeight}px`;
+
+      // 计算居中位置
+      const left = (viewportWidth - defaultWidth) / 2;
+      const top = (viewportHeight - defaultHeight) / 2;
 
       // 设置位置
       modalContent.style.position = "absolute";
@@ -385,6 +615,7 @@
 
   $: {
     if (typeof window !== "undefined") {
+      // 移除点击外部关闭逻辑
       // 清理旧的点击监听器
       if (clickHandler) {
         window.removeEventListener("click", clickHandler, true);
@@ -392,8 +623,7 @@
       }
 
       if (showModal) {
-        clickHandler = handleClickOutside;
-        window.addEventListener("click", clickHandler, true);
+        // 不再添加点击外部关闭的监听器
         // 延迟初始化位置，确保DOM已渲染
         setTimeout(initializeModalPosition, 0);
       }
@@ -451,7 +681,7 @@
   <div
     class="ai-modal-content"
     bind:this={modalContent}
-    use:draggable
+    use:windowBehavior
     transition:dynamicScale={{ duration: 180, start: 0.8, origin: modalOrigin }}
   >
     <button
@@ -583,12 +813,7 @@
     border-radius: 20px;
     padding: 8px;
 
-    width: 90vw;
-    max-width: 800px;
-    min-width: 550px;
-    height: 85vh;
-    max-height: 900px;
-    min-height: 600px;
+    /* 尺寸由JavaScript动态设置，避免CSS冲突 */
     display: flex;
     z-index: 10000;
 
