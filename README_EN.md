@@ -4,7 +4,7 @@
 
 GitHub Repo: https://github.com/HaochenFa/Smart-FineReport
 
-An AI-integrated FineReport framework. The current version is`v1.3.x-vision`, with the core concept of capturing report interface screenshots and sending them to multimodal large language models (vLLM deployment) to achieve intelligent analysis of report data.
+An AI-integrated FineReport framework. The current version is`v1.4.x-vision`, with the core concept of capturing report interface screenshots and sending them to multimodal large language models (vLLM deployment) to achieve intelligent analysis of report data.
 
 ## Core Features
 
