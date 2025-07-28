@@ -96,7 +96,15 @@ export default class AppController {
 
     try {
       // 2. 运行分析
-      const defaultQuery = "请对当前报表进行全面分析";
+      const defaultQuery = `请对这个报表进行全面的专业分析，包括：
+
+1. 识别报表类型和核心业务指标
+2. 提取关键数据并分析变化趋势
+3. 识别异常情况和潜在问题
+4. 基于制造业最佳实践提供改善建议
+5. 指出需要重点关注的管理要点
+
+请运用你的专业知识为我提供有价值的分析洞察。`;
       this.contextManager.addMessage("user", defaultQuery);
       const aiResponse = await this.runAnalysis(defaultQuery, true);
 
