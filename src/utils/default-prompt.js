@@ -1,7 +1,7 @@
 /**
  * @file default-prompt.js
  * @author Haochen (Billy) Fa
- * @description Default Prompt Template for Vision Analysis (v1.3.x-vision)
+ * @description Default Prompt Template for Vision Analysis (v1.4.x-vision)
  */
 
 export const INITIAL_ANALYSIS_TEMPLATE = {
